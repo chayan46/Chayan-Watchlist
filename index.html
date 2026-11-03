@@ -35,10 +35,23 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 .reading-document .movie:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(18,59,112,.08)}.reading-document .poster{height:205px;background:#f2f6fa}
 .reading-document .moviebody{padding:11px 12px 13px}.reading-document .moviebody h4{color:#26384a;font-size:14px;margin:3px 0 9px}.reading-document .detail-label{display:block;color:#718196;font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-top:7px}.reading-document .detail-value{display:block;color:#26384a;font-size:12px;font-weight:650;overflow-wrap:anywhere}.reading-document .tag{background:#edf3f8;color:#176b72;border-radius:4px}
 .reading-document .empty{border:1px dashed #cbd9e6;border-radius:7px;background:#fbfcfe}
+.reading-document .movies{display:block;border-top:1px solid #dce5ee}
+.reading-document .movie.text-record{display:flex;align-items:flex-start;gap:14px;padding:14px 42px 14px 12px;border:0;border-bottom:1px solid #e4eaf0;border-radius:0;position:relative;background:#fff}
+.reading-document .movie.text-record:hover{transform:none;box-shadow:none;background:#fbfcfe}
+.reading-document .movie.text-record .moviebody{display:flex;gap:14px;align-items:flex-start;padding:0;width:100%}
+.reading-document .record-number{flex:0 0 30px;color:#176b72;font-size:12px;font-weight:800;padding-top:3px}
+.reading-document .record-content{min-width:0;flex:1}
+.reading-document .record-content .detail-label{margin:0 0 2px}
+.reading-document .record-content h4{font-size:15px!important;font-weight:700;margin:0 0 5px!important}
+.reading-document .record-meta{display:flex;flex-wrap:wrap;gap:8px;margin:0;color:#5c6d80;font-size:11px}
+.reading-document .record-separator{color:#a9b5c2}
+.reading-document .movie.text-record .delete{top:12px;right:8px;background:#edf2f7;color:#617287}
+.reading-document .movie.text-record .delete:hover{background:#fce9ec;color:#b4233a}
+
 @media(max-width:760px){.reading-document{padding:12px}.reading-meta{grid-template-columns:repeat(2,minmax(0,1fr))}.reading-meta span:nth-child(2){border-right:0}.reading-meta span:nth-child(-n+2){border-bottom:1px solid #9eb2c5}.reading-toolbar{align-items:flex-start;flex-direction:column}.reading-toolbar .tools{width:100%}.reading-toolbar .search{flex:1;width:auto}.reading-document .movies{grid-template-columns:repeat(2,minmax(0,1fr))}.reading-document .poster{height:190px}}
 </style></head>
 <body>
-<header><div class="topline"><div class="brand"><div class="logo">▣</div><div><div class="eyebrow">Personal collection manager</div><h1>Chayan Watchlist</h1></div></div><div class="topnote">YOUR CINEMA, ORGANIZED.</div></div></header>
+<header><div class="topline"><div class="brand"><div class="logo">▣</div><div><div class="eyebrow">Personal collection manager</div><h1>Chayan Watchlist</h1></div></div><div class="topnote">A SIMPLE, DEVICE-LOCAL MOVIE RECORD.</div></div></header>
 <main>
 
 <div class="workspace">
@@ -56,16 +69,16 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 <div class="reading-document">
 <header class="reading-header">
 <div class="kicker">PERSONAL MOVIE LIBRARY</div>
-<h2>CHAYAN WATCHLIST</h2><h3>MOVIE COLLECTION &amp; READING VIEW</h3>
+<h2>CHAYAN WATCHLIST</h2><h3>MOVIE REGISTER · TEXT READING FORMAT</h3>
 <div class="reading-meta">
 <span><b>TOTAL COLLECTION</b><strong id="total">0</strong></span>
 <span><b>BENGALI MOVIES</b><strong id="bnCard">0</strong></span>
 <span><b>HINDI MOVIES</b><strong id="hiCard">0</strong></span>
 <span><b>ENGLISH MOVIES</b><strong id="enCard">0</strong></span>
 </div></header>
-<div class="reading-toolbar"><div><div class="kicker">COLLECTION INDEX</div><p>Browse your saved movies by language.</p></div><div class="tools"><input id="search" class="search" type="search" placeholder="Search movies…"><button class="secondary" id="clearSearch" type="button">Clear</button></div></div>
+<div class="reading-toolbar"><div><div class="kicker">COLLECTION INDEX</div><p>Text-only document view · entries appear here as soon as you add them.</p></div><div class="tools"><input id="search" class="search" type="search" placeholder="Search movies…"><button class="secondary" id="clearSearch" type="button">Clear</button></div></div>
 <div id="sections"></div>
-</div></section></div><footer>CHAYAN WATCHLIST · PERSONAL MOVIE LIBRARY</footer></main>
+</div></section></div><footer>CHAYAN WATCHLIST · LOCAL TEXT READING VIEW</footer></main>
 <script>
 'use strict';
 const KEY='chayan-watchlist-v1';
@@ -128,28 +141,24 @@ function render(){
       grid.append(el('div','empty',query?'No matching '+language.toLowerCase()+' movies.':'No '+language.toLowerCase()+' movies added yet. Add one using the form.'));
     } else {
       items.forEach(movie=>{
-        const card=el('article','movie');
+        const card=el('article','movie text-record');
         const remove=el('button','delete','×');
         remove.type='button';
         remove.dataset.remove=movie.id;
         remove.setAttribute('aria-label','Delete '+movie.name);
         remove.title='Remove movie';
-        const poster=el('div','poster');
-        if(movie.poster){
-          const img=el('img');
-          img.src=movie.poster;
-          img.alt=movie.name+' poster';
-          poster.append(img);
-        } else poster.append(el('span','placeholder','▣'));
         const body=el('div','moviebody');
-        body.append(el('span','detail-label','Movie title'));
-        body.append(el('h4','',movie.name));
-        body.append(el('span','detail-label','Release year'));
-        body.append(el('span','detail-value',String(movie.year)));
-        body.append(el('span','detail-label','Language'));
-        body.append(el('span','detail-value',movie.language));
-        body.append(el('span','tag','Saved in collection'));
-        card.append(remove,poster,body);
+        const serial=el('span','record-number',String(movies.indexOf(movie)+1).padStart(2,'0'));
+        const details=el('div','record-content');
+        details.append(el('span','detail-label','Movie title'));
+        details.append(el('h4','',movie.name));
+        const metadata=el('p','record-meta');
+        metadata.append(el('span','', 'Release year: '+String(movie.year)));
+        metadata.append(el('span','record-separator','|'));
+        metadata.append(el('span','', 'Language: '+movie.language));
+        details.append(metadata);
+        body.append(serial,details);
+        card.append(remove,body);
         grid.append(card);
       });
     }
