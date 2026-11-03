@@ -20,16 +20,27 @@ main{max-width:1500px;margin:24px auto;padding:0 clamp(14px,3vw,42px) 50px}.stat
 footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 @media(max-width:900px){.workspace{grid-template-columns:280px minmax(0,1fr)}.langgrid{grid-template-columns:1fr}.langstat{min-height:70px}}
 @media(max-width:680px){header{padding:18px}.topnote{display:none}.stats{grid-template-columns:repeat(2,1fr);gap:9px}.stat{padding:12px}.stat strong{font-size:23px}.workspace{grid-template-columns:1fr}.formpanel{position:static}.langgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.langstat{padding:10px;min-height:76px}.langstat strong{font-size:22px}.langstat .name{font-size:8px;letter-spacing:.5px}.movies{grid-template-columns:repeat(2,minmax(0,1fr))}.poster{height:190px}.dashbar{align-items:flex-start;flex-direction:column}.tools{width:100%}.search{flex:1;width:auto}}
+/* SOP-inspired document reading view */
+.reading-panel{min-width:0}.reading-document{max-width:1100px;margin:0 auto;padding:clamp(14px,2.4vw,30px);border:1px solid #dce5ee;border-radius:12px;background:#fff;color:#26384a;box-shadow:0 3px 12px rgba(18,59,112,.045);line-height:1.58}
+.reading-header{text-align:center;padding:8px 0 22px;border-bottom:2px solid #174f7d;margin-bottom:22px}
+.reading-header h2{margin:6px 0 0;color:#123b70;font-size:clamp(21px,3vw,28px);letter-spacing:.06em}
+.reading-header h3{margin:3px 0 18px;color:#176b72;font-size:clamp(14px,2vw,18px)}
+.reading-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #9eb2c5;text-align:left}
+.reading-meta span{display:grid;gap:4px;padding:8px;border-right:1px solid #9eb2c5;font-size:11px}.reading-meta span:last-child{border:0}
+.reading-meta b{color:#fff;background:#123b70;margin:-8px -8px 2px;padding:6px 8px;font-size:10px}.reading-meta strong{font-size:20px;color:#123b70;padding-left:2px}
+.reading-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 20px}.reading-toolbar p{font-size:11px;color:#66788a;margin:3px 0 0}
+.reading-document .section{margin:0 0 25px;scroll-margin-top:20px}.reading-document .sectionhead{display:flex;align-items:center;justify-content:space-between;padding:0 0 8px;border-bottom:1px solid #cbd9e6;margin-bottom:12px}
+.reading-document .sectiontitle{gap:9px}.reading-document .sectionhead h3{color:#123b70;font-size:17px;margin:0}.reading-document .count{font-size:10px;color:#64788b;background:#f2f6fa;padding:3px 8px;border-radius:4px;font-weight:800}
+.reading-document .movies{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:13px}.reading-document .movie{border:1px solid #dce5ee;border-radius:8px;box-shadow:none}
+.reading-document .movie:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(18,59,112,.08)}.reading-document .poster{height:205px;background:#f2f6fa}
+.reading-document .moviebody{padding:10px 11px 12px}.reading-document .moviebody h4{color:#26384a;font-size:13px}.reading-document .tag{background:#edf3f8;color:#176b72;border-radius:4px}
+.reading-document .empty{border:1px dashed #cbd9e6;border-radius:7px;background:#fbfcfe}
+@media(max-width:760px){.reading-document{padding:12px}.reading-meta{grid-template-columns:repeat(2,minmax(0,1fr))}.reading-meta span:nth-child(2){border-right:0}.reading-meta span:nth-child(-n+2){border-bottom:1px solid #9eb2c5}.reading-toolbar{align-items:flex-start;flex-direction:column}.reading-toolbar .tools{width:100%}.reading-toolbar .search{flex:1;width:auto}.reading-document .movies{grid-template-columns:repeat(2,minmax(0,1fr))}.reading-document .poster{height:190px}}
 </style></head>
 <body>
 <header><div class="topline"><div class="brand"><div class="logo">▣</div><div><div class="eyebrow">Personal collection manager</div><h1>Chayan Watchlist</h1></div></div><div class="topnote">YOUR CINEMA, ORGANIZED.</div></div></header>
 <main>
-<div class="stats">
-<div class="stat"><label>Total watchlist</label><strong id="total">0</strong><small>Movies in your collection</small></div>
-<div class="stat"><label>Bengali movies</label><strong id="bnTotal">0</strong><small>Titles collected</small></div>
-<div class="stat"><label>Hindi movies</label><strong id="hiTotal">0</strong><small>Titles collected</small></div>
-<div class="stat"><label>English movies</label><strong id="enTotal">0</strong><small>Titles collected</small></div>
-</div>
+
 <div class="workspace">
 <aside class="panel formpanel">
 <div class="panelhead"><div><div class="kicker">Add to collection</div><h2>Movie details</h2></div><span>＋</span></div>
@@ -38,18 +49,23 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 <div class="field"><label for="movieName">MOVIE NAME</label><input id="movieName" placeholder="Enter movie title" required maxlength="120"></div>
 <div class="field"><label for="movieYear">MOVIE YEAR</label><input id="movieYear" type="number" min="1888" max="2100" placeholder="e.g. 2024" required></div>
 <div class="field"><label>MOVIE POSTER</label><label class="upload" for="posterFile"><strong id="uploadTitle">＋ Upload movie poster</strong><span id="uploadHint">JPG, PNG, WEBP, GIF · Max 8 MB</span><img id="posterPreview" class="poster-preview" alt="Selected poster preview"><input id="posterFile" type="file" accept="image/*"></label></div>
-<button class="primary" type="submit">＋ Add movie to dashboard</button>
-</form><div class="formhint">Your entries are saved in this browser on this device. Poster images are stored locally.</div>
+<button class="primary" type="submit">＋ Add movie to collection</button>
+</form><div class="formhint">Your entries are saved in this browser on this device. Poster images are stored locally; they do not automatically sync across devices.</div>
 </aside>
-<section class="right">
-<div class="dashbar"><div><div class="kicker">Collection overview</div><h2>Your movie dashboard</h2><p>Browse your watchlist by language.</p></div><div class="tools"><input id="search" class="search" type="search" placeholder="Search movies…"><button class="secondary" id="clearSearch" type="button">Clear</button></div></div>
-<div class="langgrid">
-<div class="langstat bn"><div class="name">Bengali collection</div><strong id="bnCard">0</strong><small>Movies</small></div>
-<div class="langstat hi"><div class="name">Hindi collection</div><strong id="hiCard">0</strong><small>Movies</small></div>
-<div class="langstat en"><div class="name">English collection</div><strong id="enCard">0</strong><small>Movies</small></div>
-</div>
+<section class="right reading-panel">
+<div class="reading-document">
+<header class="reading-header">
+<div class="kicker">PERSONAL MOVIE LIBRARY</div>
+<h2>CHAYAN WATCHLIST</h2><h3>MOVIE COLLECTION &amp; READING VIEW</h3>
+<div class="reading-meta">
+<span><b>TOTAL COLLECTION</b><strong id="total">0</strong></span>
+<span><b>BENGALI MOVIES</b><strong id="bnCard">0</strong></span>
+<span><b>HINDI MOVIES</b><strong id="hiCard">0</strong></span>
+<span><b>ENGLISH MOVIES</b><strong id="enCard">0</strong></span>
+</div></header>
+<div class="reading-toolbar"><div><div class="kicker">COLLECTION INDEX</div><p>Browse your saved movies by language.</p></div><div class="tools"><input id="search" class="search" type="search" placeholder="Search movies…"><button class="secondary" id="clearSearch" type="button">Clear</button></div></div>
 <div id="sections"></div>
-</section></div><footer>CHAYAN WATCHLIST · PERSONAL MOVIE LIBRARY</footer></main>
+</div></section></div><footer>CHAYAN WATCHLIST · PERSONAL MOVIE LIBRARY</footer></main>
 <script>
 const KEY='chayan-watchlist-v1';const langs=['Bengali','Hindi','English'];let movies=[];let posterData='';
 const $=id=>document.getElementById(id);
@@ -58,7 +74,7 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(movies))}catch(e){al
 $('posterFile').addEventListener('change',e=>{const f=e.target.files[0];posterData='';$('posterPreview').style.display='none';$('uploadTitle').textContent='＋ Upload movie poster';$('uploadHint').textContent='JPG, PNG, WEBP, GIF · Max 8 MB';if(!f)return;if(!f.type.startsWith('image/')){alert('Please choose a valid image file.');e.target.value='';return}if(f.size>8*1024*1024){alert('Poster must be 8 MB or smaller.');e.target.value='';return}const reader=new FileReader();reader.onload=()=>{posterData=reader.result;$('posterPreview').src=posterData;$('posterPreview').style.display='block';$('uploadTitle').textContent=f.name;$('uploadHint').textContent='Poster ready to add'};reader.readAsDataURL(f)});
 $('movieForm').addEventListener('submit',e=>{e.preventDefault();const item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),language:$('language').value,name:$('movieName').value.trim(),year:Number($('movieYear').value),poster:posterData};if(!item.language||!item.name||!item.year)return;movies.unshift(item);try{save()}catch{return}$('movieForm').reset();posterData='';$('posterPreview').style.display='none';$('uploadTitle').textContent='＋ Upload movie poster';$('uploadHint').textContent='JPG, PNG, WEBP, GIF · Max 8 MB';render()});
 function removeMovie(id){if(!confirm('Remove this movie from your watchlist?'))return;movies=movies.filter(m=>m.id!==id);save();render()}
-function render(){const counts=Object.fromEntries(langs.map(l=>[l,movies.filter(m=>m.language===l).length]));$('total').textContent=movies.length;$('bnTotal').textContent=counts.Bengali;$('hiTotal').textContent=counts.Hindi;$('enTotal').textContent=counts.English;$('bnCard').textContent=counts.Bengali;$('hiCard').textContent=counts.Hindi;$('enCard').textContent=counts.English;const q=$('search').value.trim().toLowerCase();$('sections').innerHTML=langs.map((lang,i)=>{const items=movies.filter(m=>m.language===lang&&(!q||(m.name+' '+m.year).toLowerCase().includes(q)));const color=['#168b7e','#c68a36','#536bd0'][i];return '<section class="section"><div class="sectionhead"><div class="sectiontitle"><span class="dot" style="background:'+color+'"></span><h3>'+lang+' Movies</h3><span class="count">'+counts[lang]+' TOTAL</span></div></div><div class="movies">'+(items.length?items.map(m=>'<article class="movie"><button class="delete" aria-label="Delete '+escapeHtml(m.name)+'" title="Remove movie" data-remove="'+m.id+'">×</button><div class="poster">'+(m.poster?'<img src="'+m.poster+'" alt="'+escapeHtml(m.name)+' poster">':'<span class="placeholder">▣</span>')+'</div><div class="moviebody"><h4>'+escapeHtml(m.name)+'</h4><div class="year">'+m.year+'</div><span class="tag">'+lang.toUpperCase()+'</span></div></article>').join(''):'<div class="empty">'+(q?'No matching '+lang.toLowerCase()+' movies.':'No '+lang.toLowerCase()+' movies added yet. Add one using the form.')+'</div>')+'</div></section>'}).join('');document.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>removeMovie(b.dataset.remove)))}
+function render(){const counts=Object.fromEntries(langs.map(l=>[l,movies.filter(m=>m.language===l).length]));$('total').textContent=movies.length;$('bnCard').textContent=counts.Bengali;$('hiCard').textContent=counts.Hindi;$('enCard').textContent=counts.English;const q=$('search').value.trim().toLowerCase();$('sections').innerHTML=langs.map((lang,i)=>{const items=movies.filter(m=>m.language===lang&&(!q||(m.name+' '+m.year).toLowerCase().includes(q)));const color=['#168b7e','#c68a36','#536bd0'][i];return '<section class="section"><div class="sectionhead"><div class="sectiontitle"><span class="dot" style="background:'+color+'"></span><h3>'+lang+' Movies</h3><span class="count">'+counts[lang]+' TOTAL</span></div></div><div class="movies">'+(items.length?items.map(m=>'<article class="movie"><button class="delete" aria-label="Delete '+escapeHtml(m.name)+'" title="Remove movie" data-remove="'+m.id+'">×</button><div class="poster">'+(m.poster?'<img src="'+m.poster+'" alt="'+escapeHtml(m.name)+' poster">':'<span class="placeholder">▣</span>')+'</div><div class="moviebody"><h4>'+escapeHtml(m.name)+'</h4><div class="year">Release Year: '+m.year+'</div><span class="tag">'+lang.toUpperCase()+'</span></div></article>').join(''):'<div class="empty">'+(q?'No matching '+lang.toLowerCase()+' movies.':'No '+lang.toLowerCase()+' movies added yet. Add one using the form.')+'</div>')+'</div></section>'}).join('');document.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>removeMovie(b.dataset.remove)))}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 $('search').addEventListener('input',render);$('clearSearch').addEventListener('click',()=>{$('search').value='';render()});load();
 </script></body></html>
