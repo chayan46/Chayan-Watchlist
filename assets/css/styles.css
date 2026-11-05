@@ -116,3 +116,14 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 .sheet-select-stage .excel-sheet-select{display:block;width:100%;max-width:none;min-height:43px;padding:10px 12px;font-size:12px;background:#fff;border:1px solid #c8d2e4;border-radius:9px}
 .show-preview-button{margin-top:11px;background:linear-gradient(105deg,#1681e5,#1748c8)}
 .show-preview-button:hover{background:linear-gradient(105deg,#086dce,#123eaf)}
+
+/* Spreadsheet-style grid, including completely blank worksheets */
+.excel-grid-table{width:max-content;min-width:100%;table-layout:fixed}
+.excel-grid-table th,.excel-grid-table td{min-width:92px;height:34px;padding:6px 9px;white-space:pre-wrap}
+.excel-grid-table thead th{position:sticky;top:0;z-index:3;background:#e8edf4;color:#53647b;text-align:center;font-weight:800}
+.excel-grid-table .excel-grid-corner{left:0;z-index:5;min-width:42px;width:42px;background:#dfe6ef}
+.excel-grid-table .excel-column-heading{min-width:92px}
+.excel-grid-table .excel-row-heading{position:sticky;left:0;z-index:2;min-width:42px;width:42px;text-align:center;background:#f0f3f7;color:#64748b;font-weight:750}
+.excel-grid-table td{height:35px;background:#fff}
+.excel-grid-table tbody tr:nth-child(even) td{background:#fbfcfe}
+.excel-preview-note{line-height:1.5}
