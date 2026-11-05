@@ -390,10 +390,15 @@ export function initExcelInterface(){
 
   fileInput.addEventListener('change',async()=>{
     const attempt=++uploadAttempt;
-    selectedFile=fileInput.files&&fileInput.files[0]||null;
+    // Clear the native input after capturing the File. This lets users select
+    // the same workbook again and still receive a change event (including on Android).
+    const newlySelectedFile=fileInput.files&&fileInput.files[0]||null;
+    fileInput.value='';
+    if(!newlySelectedFile)return; // Picker cancelled: preserve the current workbook and preview.
+    selectedFile=newlySelectedFile;
     workbook=null;currentPreviewSheet='';setWorkbookLoaded(false);previewWrap.hidden=true;
+    preview.replaceChildren();
     if(completeStage)completeStage.hidden=true;
-    if(!selectedFile){fileName.textContent='Choose Excel workbook';fileHint.textContent='Click to browse · Upload required each time';showMessage('Upload a reference workbook to begin.');return;}
     if(!/\.xlsx$/i.test(selectedFile.name)){
       selectedFile=null;fileInput.value='';fileName.textContent='Choose Excel workbook';fileHint.textContent='Please select an .xlsx file';
       showMessage('This formatted movie-collection workflow requires an .xlsx workbook. Please save legacy .xls files as .xlsx and upload again.');return;
@@ -407,7 +412,10 @@ export function initExcelInterface(){
       await syncLanguageSheets();
       await saveWorkbookLocally(selectedFile);
       setWorkbookLoaded(true);
-      showMessage('Workbook loaded and saved on this device. It will remain available after refresh until you upload a new workbook.');
+      // Re-render from the newly parsed workbook, replacing any previous preview.
+      currentPreviewSheet=sheetSelect.value||workbook.worksheets[0]?.name||'';
+      if(currentPreviewSheet)renderSelectedPreview();
+      showMessage('New workbook loaded and preview refreshed: '+selectedFile.name+'. It is saved on this device until you upload another workbook.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
       if(attempt!==uploadAttempt)return;
