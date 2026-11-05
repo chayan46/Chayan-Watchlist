@@ -127,3 +127,16 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 .excel-grid-table td{height:35px;background:#fff}
 .excel-grid-table tbody tr:nth-child(even) td{background:#fbfcfe}
 .excel-preview-note{line-height:1.5}
+
+/* Large Excel preview: native two-axis scrolling with virtualized cells */
+.excel-table-scroll.excel-virtual-scroll{display:block;width:100%;height:440px;max-height:65vh;overflow:scroll;overscroll-behavior:contain;position:relative;border:1px solid #cbd8e5;border-radius:9px;background:#fff;scrollbar-width:auto;scrollbar-color:#8798ad #edf1f6}
+.excel-virtual-canvas{position:relative;min-width:0;min-height:0;background-color:#fff;background-image:linear-gradient(to right,#e5eaf0 1px,transparent 1px),linear-gradient(to bottom,#e5eaf0 1px,transparent 1px);background-size:92px 35px;background-position:42px 34px}
+.excel-virtual-cell,.excel-virtual-colhead,.excel-virtual-rowhead,.excel-virtual-corner{position:absolute;display:flex;align-items:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border-right:1px solid #e0e6ed;border-bottom:1px solid #e0e6ed;font-size:11px;padding:0 8px}
+.excel-virtual-cell{background:#ffffff;color:#263449}
+.excel-virtual-colhead{justify-content:center;background:#e8edf4;color:#53647b;font-weight:800;z-index:4;border-top:1px solid #d8e0e9}
+.excel-virtual-rowhead{justify-content:center;background:#f0f3f7;color:#64748b;font-weight:750;z-index:4;border-left:1px solid #d8e0e9}
+.excel-virtual-corner{background:#dfe6ef;z-index:6;border-top:1px solid #d8e0e9;border-left:1px solid #d8e0e9}
+.excel-table-scroll.excel-virtual-scroll::-webkit-scrollbar{width:13px;height:13px}
+.excel-table-scroll.excel-virtual-scroll::-webkit-scrollbar-track{background:#edf1f6;border-radius:8px}
+.excel-table-scroll.excel-virtual-scroll::-webkit-scrollbar-thumb{background:#8798ad;border:3px solid #edf1f6;border-radius:8px}
+.excel-table-scroll.excel-virtual-scroll::-webkit-scrollbar-thumb:hover{background:#5e7189}
