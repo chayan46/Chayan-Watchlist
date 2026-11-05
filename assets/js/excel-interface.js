@@ -138,7 +138,9 @@ export function initExcelInterface(){
     workbook=new ExcelJS.Workbook();
     await workbook.xlsx.load(await selectedFile.arrayBuffer());
     if(attempt!==uploadAttempt)return;
-    await syncLanguageSheets();
+    // Do not rebuild/overwrite the uploaded workbook's language sheets during
+    // restore. The preview must reflect the exact file the user selected.
+    refreshSheetOptions();
     setWorkbookLoaded(true);
     currentPreviewSheet=sheetSelect.value||'';
     if(currentPreviewSheet)renderSelectedPreview();
@@ -352,9 +354,9 @@ export function initExcelInterface(){
     if(!workbook||!currentPreviewSheet)throw new Error('Select a worksheet to preview.');
     const sheet=workbook.getWorksheet(currentPreviewSheet);
     if(!sheet)throw new Error('The selected worksheet is no longer available. Please select it again.');
-    const language=getLanguageForSheet(sheet.name);
-    if(language)renderLanguagePreview(language);
-    else renderGenericSheet(sheet);
+    // Preview the actual worksheet parsed from the currently selected XLSX.
+    // Language-sheet regeneration belongs to live movie updates/export, not upload.
+    renderGenericSheet(sheet);
     if(previewWrap)previewWrap.hidden=false;
   }
 
@@ -409,7 +411,10 @@ export function initExcelInterface(){
       const ExcelJS=await loadExcelJS();if(attempt!==uploadAttempt)return;
       workbook=new ExcelJS.Workbook();
       await workbook.xlsx.load(await selectedFile.arrayBuffer());if(attempt!==uploadAttempt)return;
-      await syncLanguageSheets();
+      // Keep the newly uploaded workbook intact for preview. Rebuilding the
+      // language sheets here replaced the selected file's contents with the
+      // browser's older movie collection, which made the preview look stale.
+      refreshSheetOptions();
       await saveWorkbookLocally(selectedFile);
       setWorkbookLoaded(true);
       // Re-render from the newly parsed workbook, replacing any previous preview.
