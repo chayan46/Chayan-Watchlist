@@ -1,9 +1,9 @@
+import {getMovies} from './data-management.js';
 export function initExcelInterface(){
   const fileInput=document.getElementById('excelFile');
   const fileName=document.getElementById('excelFileName');
   const fileHint=document.getElementById('excelFileHint');
-  const readyButton=document.getElementById('readyExcel');
-  const completeButton=document.getElementById('completeExcel');
+  const exportButton=document.getElementById('exportUpdatedExcel');
   const completeStage=document.getElementById('completeStage');
   const confirmPreviewButton=document.getElementById('confirmExcelPreview');
   const status=document.getElementById('excelStatus');
@@ -12,8 +12,7 @@ export function initExcelInterface(){
   const showPreviewButton=document.getElementById('showExcelPreview');
   const previewWrap=document.getElementById('excelPreviewWrap');
   const preview=document.getElementById('excelPreview');
-  const downloadPanel=document.getElementById('excelDownload');
-  if(!fileInput||!readyButton||!sheetSelectWrap||!sheetSelect||!showPreviewButton||!previewWrap||!preview)return;
+  if(!fileInput||!sheetSelectWrap||!sheetSelect||!showPreviewButton||!previewWrap||!preview)return;
 
   let selectedFile=null;
   let workbook=null;
@@ -43,63 +42,24 @@ export function initExcelInterface(){
     return xlsxLibraryPromise;
   }
 
-  fileInput.addEventListener('change',()=>{
+  fileInput.addEventListener('change',async()=>{
     selectedFile=fileInput.files&&fileInput.files[0]||null;
-    workbook=null;
-    sheetSelectWrap.hidden=true;
-    previewWrap.hidden=true;
-    downloadPanel.hidden=true;
+    workbook=null;sheetSelectWrap.hidden=true;previewWrap.hidden=true;
     if(completeStage)completeStage.hidden=true;
-    readyButton.disabled=true;
-    if(!selectedFile){
-      fileName.textContent='Choose Excel workbook';
-      fileHint.textContent='Click to browse · Upload required each time';
-      showMessage('Upload a reference workbook to begin.');
-      return;
-    }
+    if(!selectedFile){fileName.textContent='Choose Excel workbook';fileHint.textContent='Click to browse · Upload required each time';showMessage('Upload a reference workbook to begin.');return;}
     const ext=selectedFile.name.split('.').pop().toLowerCase();
-    if(!['xlsx','xls'].includes(ext)){
-      selectedFile=null;fileInput.value='';
-      fileName.textContent='Choose Excel workbook';
-      fileHint.textContent='Please select an .xlsx or .xls file';
-      showMessage('Unsupported file type. Please upload an Excel workbook.');
-      return;
-    }
-    fileName.textContent=selectedFile.name;
-    fileHint.textContent=(selectedFile.size/1024/1024).toFixed(2)+' MB · File selected successfully';
-    readyButton.disabled=false;
-    showMessage('Workbook selected. Click “Ready to update” to read its worksheet names.');
-  });
-
-  readyButton.addEventListener('click',async()=>{
-    if(!selectedFile)return;
-    readyButton.disabled=true;
-    readyButton.textContent='Reading workbook…';
-    sheetSelectWrap.hidden=true;previewWrap.hidden=true;
-    showMessage('Opening workbook and detecting all worksheets…');
+    if(!['xlsx','xls'].includes(ext)){selectedFile=null;fileInput.value='';fileName.textContent='Choose Excel workbook';fileHint.textContent='Please select an .xlsx or .xls file';showMessage('Unsupported file type. Please upload an Excel workbook.');return;}
+    fileName.textContent=selectedFile.name;fileHint.textContent=(selectedFile.size/1024/1024).toFixed(2)+' MB · File selected successfully';
+    showMessage('Excel detected. Reading workbook and loading available sheets…');
     try{
-      const XLSX=await loadXLSX();
-      const buffer=await selectedFile.arrayBuffer();
-      workbook=XLSX.read(buffer,{type:'array',cellDates:true});
+      const XLSX=await loadXLSX();const buffer=await selectedFile.arrayBuffer();workbook=XLSX.read(buffer,{type:'array',cellDates:true});
       if(!workbook.SheetNames||!workbook.SheetNames.length)throw new Error('No worksheets were found in this workbook.');
       sheetSelect.replaceChildren();
-      workbook.SheetNames.forEach((name,index)=>{
-        const option=document.createElement('option');
-        option.value=name;
-        option.textContent=(index+1)+'. '+name;
-        sheetSelect.appendChild(option);
-      });
-      sheetSelect.value=workbook.SheetNames[0];
-      sheetSelectWrap.hidden=false;
-      showMessage(workbook.SheetNames.length+' worksheet(s) detected. Choose a sheet, then click “Show selected sheet preview”.');
+      workbook.SheetNames.forEach((name,index)=>{const option=document.createElement('option');option.value=name;option.textContent=(index+1)+'. '+name;sheetSelect.appendChild(option);});
+      sheetSelect.value=workbook.SheetNames[0];sheetSelectWrap.hidden=false;
+      showMessage(workbook.SheetNames.length+' worksheet(s) detected. Select a sheet for preview.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
-    }catch(error){
-      workbook=null;
-      showMessage(error&&error.message?error.message:'Unable to read this Excel workbook.');
-    }finally{
-      readyButton.disabled=!selectedFile;
-      readyButton.innerHTML='<span aria-hidden="true">▷</span> Ready to update';
-    }
+    }catch(error){workbook=null;showMessage(error&&error.message?error.message:'Unable to read this Excel workbook.');}
   });
 
   showPreviewButton.addEventListener('click',()=>{
@@ -108,7 +68,7 @@ export function initExcelInterface(){
       renderSheet(window.XLSX,workbook,sheetSelect.value);
       previewWrap.hidden=false;
       if(completeStage)completeStage.hidden=true;
-      showMessage('Showing worksheet: '+sheetSelect.value);
+      showMessage('Showing worksheet: '+sheetSelect.value+'. Review it, then proceed to export.');
       previewWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
       showMessage('Could not display this worksheet: '+(error.message||'Unknown error'));
@@ -242,12 +202,22 @@ export function initExcelInterface(){
   confirmPreviewButton?.addEventListener('click',()=>{
     if(previewWrap.hidden)return;
     if(completeStage)completeStage.hidden=false;
-    showMessage('Preview confirmed. Continue to the final update stage.');
+    showMessage('Preview confirmed. Export your updated workbook below.');
     completeStage?.scrollIntoView({behavior:'smooth',block:'nearest'});
   });
 
-  completeButton?.addEventListener('click',()=>{
-    downloadPanel.hidden=false;
-    showMessage('Preview stage complete. Movie-to-workbook updates and download generation are still pending integration.');
+  exportButton?.addEventListener('click',()=>{
+    if(!workbook||!window.XLSX)return;
+    try{
+      const XLSX=window.XLSX;
+      const rows=getMovies().map(movie=>({Language:movie.language,'Movie Name':movie.name,Year:movie.year}));
+      const exportSheet=XLSX.utils.json_to_sheet(rows.length?rows:[{Language:'','Movie Name':'',Year:''}]);
+      let sheetName='Watchlist',suffix=2;
+      while(workbook.SheetNames.includes(sheetName)){sheetName='Watchlist '+suffix;suffix++;}
+      XLSX.utils.book_append_sheet(workbook,exportSheet,sheetName);
+      const originalName=selectedFile.name.replace(/\.(xlsx|xls)$/i,'');
+      XLSX.writeFile(workbook,originalName+'_updated.xlsx');
+      showMessage('Export started: '+originalName+'_updated.xlsx');
+    }catch(error){showMessage('Could not export workbook: '+(error.message||'Unknown error'));}
   });
 }
