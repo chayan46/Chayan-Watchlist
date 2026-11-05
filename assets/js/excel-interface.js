@@ -1,6 +1,8 @@
 import {getMovies,subscribeToMovies} from './data-management.js';
 
-const LANGUAGES=['Bengali','Hindi','English'];
+const LANGUAGE_SHEETS={Bengali:'Bengali Movies',Hindi:'Hindi Movies',English:'English Movies'};
+const LANGUAGES=Object.keys(LANGUAGE_SHEETS);
+const getLanguageForSheet=name=>LANGUAGES.find(language=>[LANGUAGE_SHEETS[language],language].includes(name))||null;
 const EXCELJS_CDN='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';
 let excelJsPromise=null;
 
@@ -51,9 +53,24 @@ export function initExcelInterface(){
   const showMessage=message=>{if(status)status.textContent=message;};
 
   function getOrCreateLanguageSheet(language){
-    let sheet=workbook.getWorksheet(language);
-    if(!sheet)sheet=workbook.addWorksheet(language);
+    const targetName=LANGUAGE_SHEETS[language];
+    let sheet=workbook.getWorksheet(targetName);
+    const legacySheet=workbook.getWorksheet(language);
+    if(!sheet&&legacySheet){
+      legacySheet.name=targetName;
+      sheet=legacySheet;
+    }
+    if(!sheet)sheet=workbook.addWorksheet(targetName);
+    if(legacySheet&&legacySheet.id!==sheet.id)workbook.removeWorksheet(legacySheet.id);
     return sheet;
+  }
+
+  function removeDuplicateLanguageSheets(){
+    LANGUAGES.forEach(language=>{
+      const preferred=workbook.getWorksheet(LANGUAGE_SHEETS[language]);
+      const duplicate=workbook.getWorksheet(language);
+      if(preferred&&duplicate&&preferred.id!==duplicate.id)workbook.removeWorksheet(duplicate.id);
+    });
   }
 
   function buildLanguageSheet(language){
@@ -188,8 +205,7 @@ export function initExcelInterface(){
     preview.replaceChildren();
     preview.classList.remove('movie-excel-preview');
     const table=document.createElement('table');table.className='excel-grid-table';
-    const range=sheet.dimensions?sheet.dimensions.bottomRight:{row:1,column:1};
-    const maxRow=Math.min(range.row||1,100),maxCol=Math.min(range.column||1,30);
+    const maxRow=Math.min(sheet.actualRowCount||1,100),maxCol=Math.min(sheet.actualColumnCount||1,30);
     const head=document.createElement('thead'),headRow=document.createElement('tr');
     const corner=document.createElement('th');corner.textContent='';headRow.appendChild(corner);
     for(let c=1;c<=maxCol;c++){const th=document.createElement('th');th.textContent=String.fromCharCode(64+c);headRow.appendChild(th);}
@@ -201,12 +217,14 @@ export function initExcelInterface(){
 
   function renderSelectedPreview(){
     if(!workbook||!currentPreviewSheet)return;
-    if(LANGUAGES.includes(currentPreviewSheet))renderLanguagePreview(currentPreviewSheet);
+    const language=getLanguageForSheet(currentPreviewSheet);
+    if(language)renderLanguagePreview(language);
     else renderGenericSheet(workbook.getWorksheet(currentPreviewSheet));
   }
 
   function syncLanguageSheets(){
     if(!workbook)return;
+    removeDuplicateLanguageSheets();
     LANGUAGES.forEach(language=>buildLanguageSheet(language));
     refreshSheetOptions();
     if(currentPreviewSheet)renderSelectedPreview();
@@ -220,7 +238,7 @@ export function initExcelInterface(){
       const option=document.createElement('option');option.value=sheet.name;option.textContent=(index+1)+'. '+sheet.name;sheetSelect.appendChild(option);
     });
     if(workbook.getWorksheet(previous))sheetSelect.value=previous;
-    else if(workbook.getWorksheet('Bengali'))sheetSelect.value='Bengali';
+    else if(workbook.getWorksheet(LANGUAGE_SHEETS.Bengali))sheetSelect.value=LANGUAGE_SHEETS.Bengali;
     else sheetSelect.value=workbook.worksheets[0]?.name||'';
   }
 
