@@ -217,8 +217,9 @@ export function initExcelInterface(){
         if(ext){
           try{
             const fittedPoster=await cropPosterToCell(movie.poster);
-            const base64=fittedPoster.substring(fittedPoster.indexOf(',')+1);
-            const imageId=workbook.addImage({base64,extension:'png'});
+            // ExcelJS expects the complete data URI in its base64 field.
+            // Keeping the MIME prefix is essential for the generated XLSX media part.
+            const imageId=workbook.addImage({base64:fittedPoster,extension:'png'});
             // Anchor to the exact poster cell boundaries: move and size with cells.
             sheet.addImage(imageId,{tl:{col:col-1,row:row+2},br:{col:col,row:row+3},editAs:'twoCell'});
           }catch(error){console.warn('Could not embed fitted poster for '+movie.name,error);}
