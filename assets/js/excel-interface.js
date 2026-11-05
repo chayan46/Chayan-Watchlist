@@ -4,6 +4,8 @@ export function initExcelInterface(){
   const fileHint=document.getElementById('excelFileHint');
   const readyButton=document.getElementById('readyExcel');
   const completeButton=document.getElementById('completeExcel');
+  const completeStage=document.getElementById('completeStage');
+  const confirmPreviewButton=document.getElementById('confirmExcelPreview');
   const status=document.getElementById('excelStatus');
   const sheetSelectWrap=document.getElementById('sheetSelectWrap');
   const sheetSelect=document.getElementById('excelSheetSelect');
@@ -47,6 +49,7 @@ export function initExcelInterface(){
     sheetSelectWrap.hidden=true;
     previewWrap.hidden=true;
     downloadPanel.hidden=true;
+    if(completeStage)completeStage.hidden=true;
     readyButton.disabled=true;
     if(!selectedFile){
       fileName.textContent='Choose Excel workbook';
@@ -104,6 +107,7 @@ export function initExcelInterface(){
     try{
       renderSheet(window.XLSX,workbook,sheetSelect.value);
       previewWrap.hidden=false;
+      if(completeStage)completeStage.hidden=true;
       showMessage('Showing worksheet: '+sheetSelect.value);
       previewWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
@@ -234,6 +238,13 @@ export function initExcelInterface(){
     note.textContent='100 rows × 100 columns available · Worksheet data range: '+declared+'. Scroll in both directions to explore the grid.';
     preview.appendChild(note);
   }
+
+  confirmPreviewButton?.addEventListener('click',()=>{
+    if(previewWrap.hidden)return;
+    if(completeStage)completeStage.hidden=false;
+    showMessage('Preview confirmed. Continue to the final update stage.');
+    completeStage?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  });
 
   completeButton?.addEventListener('click',()=>{
     downloadPanel.hidden=false;
