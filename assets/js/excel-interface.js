@@ -204,15 +204,55 @@ export function initExcelInterface(){
   function renderGenericSheet(sheet){
     preview.replaceChildren();
     preview.classList.remove('movie-excel-preview');
-    const table=document.createElement('table');table.className='excel-grid-table';
-    const maxRow=Math.min(sheet.actualRowCount||1,100),maxCol=Math.min(sheet.actualColumnCount||1,30);
-    const head=document.createElement('thead'),headRow=document.createElement('tr');
-    const corner=document.createElement('th');corner.textContent='';headRow.appendChild(corner);
-    for(let c=1;c<=maxCol;c++){const th=document.createElement('th');th.textContent=String.fromCharCode(64+c);headRow.appendChild(th);}
-    head.appendChild(headRow);table.appendChild(head);
+    if(!sheet){
+      const message=document.createElement('p');
+      message.className='movie-excel-empty';
+      message.textContent='The selected worksheet could not be found. Please choose a worksheet again.';
+      preview.appendChild(message);
+      return;
+    }
+    const table=document.createElement('table');
+    table.className='excel-grid-table';
+    const maxRow=Math.min(Math.max(sheet.rowCount||sheet.actualRowCount||1,1),100);
+    const maxCol=Math.min(Math.max(sheet.columnCount||sheet.actualColumnCount||1,1),30);
+    const head=document.createElement('thead');
+    const headRow=document.createElement('tr');
+    const corner=document.createElement('th');
+    corner.textContent='';
+    headRow.appendChild(corner);
+    for(let col=1;col<=maxCol;col++){
+      const th=document.createElement('th');
+      th.textContent=col<=26?String.fromCharCode(64+col):'C'+col;
+      headRow.appendChild(th);
+    }
+    head.appendChild(headRow);
+    table.appendChild(head);
     const body=document.createElement('tbody');
-    for(let r=1;r<=maxRow;r++){const tr=document.createElement('tr');const th=document.createElement('th');th.className='excel-grid-row-heading';th.textContent=String(r);tr.appendChild(th);for(let c=1;c<=maxCol;c++){const td=document.createElement('td');const value=sheet.getRow(r).getCell(c).value;td.textContent=value&&typeof value==='object'?(value.text||value.result||''):String(value??'');tr.appendChild(td);}body.appendChild(tr);}
-    table.appendChild(body);const wrap=document.createElement('div');wrap.className='movie-excel-scroll';wrap.appendChild(table);preview.appendChild(wrap);
+    for(let rowIndex=1;rowIndex<=maxRow;rowIndex++){
+      const row=document.createElement('tr');
+      const rowHeading=document.createElement('th');
+      rowHeading.className='excel-grid-row-heading';
+      rowHeading.textContent=String(rowIndex);
+      row.appendChild(rowHeading);
+      for(let col=1;col<=maxCol;col++){
+        const cell=document.createElement('td');
+        const value=sheet.getCell(rowIndex,col).value;
+        if(value&&typeof value==='object'){
+          if(value.text)cell.textContent=value.text;
+          else if(Array.isArray(value.richText))cell.textContent=value.richText.map(part=>part.text||'').join('');
+          else if(value.result!==undefined)cell.textContent=String(value.result);
+          else if(value.hyperlink)cell.textContent=value.text||value.hyperlink;
+          else cell.textContent='';
+        }else cell.textContent=String(value??'');
+        row.appendChild(cell);
+      }
+      body.appendChild(row);
+    }
+    table.appendChild(body);
+    const wrap=document.createElement('div');
+    wrap.className='movie-excel-scroll';
+    wrap.appendChild(table);
+    preview.appendChild(wrap);
   }
 
   function renderSelectedPreview(){
