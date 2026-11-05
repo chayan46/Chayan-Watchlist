@@ -104,6 +104,7 @@ export function initExcelInterface(){
     sheet.columns=[{width:9},...Array.from({length:Math.max(1,sortMovies(getMovies().filter(m=>m.language===language)).length)},()=>({width:27}))];
     sheet.views=[{state:'frozen',xSplit:1,ySplit:0,showGridLines:false}];
     sheet.properties.defaultRowHeight=20;
+    sheet.properties.defaultColWidth=27;
     const languageMovies=sortMovies(getMovies().filter(movie=>movie.language===language));
     const groups=new Map();
     languageMovies.forEach(movie=>{
@@ -117,9 +118,9 @@ export function initExcelInterface(){
       const groupCell=sheet.getCell(row,1);
       groupCell.value=letter;
       groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFFFFF'}};
-      groupCell.font={name:'Arial',size:24,color:{argb:'FF111111'}};
+      groupCell.font={name:'Aptos Display',size:24,bold:true,color:{argb:'FF202A35'}};
       groupCell.alignment={vertical:'middle',horizontal:'center'};
-      groupCell.border={top:{style:'medium',color:{argb:'FF333333'}},bottom:{style:'medium',color:{argb:'FF333333'}},left:{style:'medium',color:{argb:'FF333333'}},right:{style:'medium',color:{argb:'FF333333'}}};
+      groupCell.border={top:{style:'medium',color:{argb:'FFB8C6D8'}},bottom:{style:'medium',color:{argb:'FFB8C6D8'}},left:{style:'medium',color:{argb:'FFB8C6D8'}},right:{style:'medium',color:{argb:'FFB8C6D8'}}};
       sheet.getRow(row).height=25;
       sheet.getRow(row+1).height=25;
       sheet.getRow(row+2).height=22;
@@ -128,24 +129,24 @@ export function initExcelInterface(){
         const col=index+2;
         const year=sheet.getCell(row,col);
         year.value=movie.year;
-        year.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF990000'}};
-        year.font={name:'Arial',size:15,bold:true,color:{argb:'FFFFFFFF'}};
+        year.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF172B4D'}};
+        year.font={name:'Aptos Display',size:15,bold:true,color:{argb:'FFFFFFFF'}};
         year.alignment={horizontal:'center',vertical:'middle'};
         const title=sheet.getCell(row+1,col);
         title.value=movie.name;
-        title.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFFF00'}};
-        title.font={name:'Arial',size:12,bold:true,color:{argb:'FF333333'}};
+        title.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE8D7A5'}};
+        title.font={name:'Aptos',size:12,bold:true,color:{argb:'FF202A35'}};
         title.alignment={horizontal:'center',vertical:'middle',wrapText:true};
         const indexCell=sheet.getCell(row+2,col);
         indexCell.value=index+1;
-        indexCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF00DDEB'}};
-        indexCell.font={name:'Arial',size:11,bold:true,color:{argb:'FF174F58'}};
+        indexCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF9CCBC5'}};
+        indexCell.font={name:'Aptos',size:11,bold:true,color:{argb:'FF202A35'}};
         indexCell.alignment={horizontal:'center',vertical:'middle'};
         const posterCell=sheet.getCell(row+3,col);
         posterCell.value=movie.poster?'':'Poster not supplied';
         posterCell.alignment={horizontal:'center',vertical:'middle',wrapText:true};
         posterCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFFFFF'}};
-        posterCell.border={left:{style:'thin',color:{argb:'FFB7B7B7'}},right:{style:'thin',color:{argb:'FFB7B7B7'}},bottom:{style:'thin',color:{argb:'FFB7B7B7'}}};
+        posterCell.border={left:{style:'thin',color:{argb:'FFB8C6D8'}},right:{style:'thin',color:{argb:'FFB8C6D8'}},bottom:{style:'thin',color:{argb:'FFB8C6D8'}}};
         const ext=getPosterExtension(movie.poster);
         if(ext){
           try{
