@@ -414,16 +414,9 @@ export function initExcelInterface(){
     }
   });
 
-  uploadNewButton?.addEventListener('click',async()=>{
-    try{
-      await clearSavedWorkbook();
-      uploadAttempt++;
-      selectedFile=null;workbook=null;currentPreviewSheet='';fileInput.value='';
-      fileName.textContent='Choose Excel workbook';fileHint.textContent='Click to browse · Upload required';
-      setWorkbookLoaded(false);previewWrap.hidden=true;if(completeStage)completeStage.hidden=true;
-      showMessage('Choose a new Excel workbook to replace the saved workbook.');
-      fileInput.click();
-    }catch(error){showMessage('Could not prepare a new workbook upload: '+(error.message||'Storage error'));}
+  uploadNewButton?.addEventListener('click',()=>{
+    // Keep the current workbook intact unless a replacement file is actually selected and loaded.
+    fileInput.click();
   });
 
   showPreviewButton.addEventListener('click',()=>{
