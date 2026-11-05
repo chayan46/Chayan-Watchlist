@@ -160,3 +160,22 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 #excelPreview .excel-virtual-canvas>.excel-virtual-rowhead{height:35px!important;min-width:42px!important;max-width:42px!important}
 #excelPreview .excel-virtual-canvas>.excel-virtual-cell{height:35px!important;min-width:92px!important;max-width:92px!important}
 #excelPreview .excel-virtual-canvas>.excel-virtual-corner{width:42px!important;height:34px!important}
+
+/* Responsive workspace fix: stack entry form and workbook panel on tablet/mobile */
+.workspace{width:100%;max-width:100%;min-width:0;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr)}
+.workspace>.formpanel,.workspace>.excelpanel{min-width:0;max-width:100%}
+.excelpanel,.excel-content,.excel-stage,.preview-stage,#excelPreview{min-width:0;max-width:100%}
+#excelPreview .excel-virtual-scroll{width:100%!important;max-width:100%!important}
+@media(max-width:900px){
+  .workspace{grid-template-columns:minmax(0,1fr)!important;gap:16px}
+  .workspace>.formpanel,.workspace>.excelpanel{grid-column:1;width:100%;min-width:0}
+  .formpanel{position:static}
+  .excelpanel{width:100%;overflow:hidden}
+  .excel-content{width:100%;padding:14px}
+  .excel-stage{width:100%;min-width:0}
+  .excel-table-scroll.excel-virtual-scroll{width:100%!important;max-width:100%!important}
+}
+@media(max-width:680px){
+  main{width:100%;max-width:100%;padding-left:12px;padding-right:12px}
+  .workspace{width:100%;grid-template-columns:minmax(0,1fr)!important}
+}
