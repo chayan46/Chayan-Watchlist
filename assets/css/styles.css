@@ -464,3 +464,8 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   background:#DCE5F0!important;
   color:#172B4D!important;
 }
+
+/* Explicit full-reset action for the Excel workspace */
+.reset-excel-button{width:100%;margin-top:10px;min-height:40px;border-color:#d7deea;color:#52617b;background:#fff}
+.reset-excel-button:hover{border-color:#c45a65;background:#fff7f7;color:#a33a46}
+.reset-excel-button:disabled{opacity:.55;cursor:wait}
