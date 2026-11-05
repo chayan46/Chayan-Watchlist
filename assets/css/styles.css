@@ -414,3 +414,6 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 #excelPreview .movie-excel-table{display:table!important;width:max-content!important;min-width:max-content!important;max-width:none!important;table-layout:fixed!important}
 #excelPreview .movie-excel-table th,#excelPreview .movie-excel-table td{white-space:normal}
 #excelPreview .movie-excel-table .movie-excel-letter{background:#fff!important;color:#111!important}
+
+/* Poster thumbnails use the same crop-to-fill behaviour as exported Excel cells. */
+#excelPreview .movie-excel-table .movie-excel-poster img{width:100%!important;height:275px!important;object-fit:cover!important;object-position:center!important}
