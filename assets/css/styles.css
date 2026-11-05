@@ -417,3 +417,43 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 
 /* Poster thumbnails use the same crop-to-fill behaviour as exported Excel cells. */
 #excelPreview .movie-excel-table .movie-excel-poster img{width:100%!important;height:275px!important;object-fit:cover!important;object-position:center!important}
+
+
+/* Premium cinematic palette: Midnight Navy / Champagne Gold / Muted Teal */
+#excelPreview .movie-excel-table{
+  font-family:"Aptos","Segoe UI",Arial,sans-serif!important;
+  color:#202A35!important;
+}
+#excelPreview .movie-excel-table th,
+#excelPreview .movie-excel-table td{
+  border-color:#B8C6D8!important;
+}
+#excelPreview .movie-excel-table .movie-excel-letter{
+  background:#FFFFFF!important;color:#202A35!important;
+  font-family:"Aptos Display","Segoe UI",Arial,sans-serif!important;
+  font-weight:700!important;
+}
+#excelPreview .movie-excel-table .movie-excel-year{
+  background:#172B4D!important;color:#FFFFFF!important;
+  font-family:"Aptos Display","Segoe UI",Arial,sans-serif!important;
+  font-weight:750!important;letter-spacing:.35px;
+}
+#excelPreview .movie-excel-table .movie-excel-title{
+  background:#E8D7A5!important;color:#202A35!important;
+  font-family:"Aptos","Segoe UI",Arial,sans-serif!important;
+  font-weight:700!important;
+}
+#excelPreview .movie-excel-table .movie-excel-index{
+  background:#9CCBC5!important;color:#202A35!important;
+  font-family:"Aptos","Segoe UI",Arial,sans-serif!important;
+  font-weight:700!important;
+}
+#excelPreview .movie-excel-table .movie-excel-poster{
+  background:#FFFFFF!important;border-color:#B8C6D8!important;
+}
+#excelPreview .movie-excel-table .movie-excel-gap{
+  background:#E8EDF3!important;height:9px!important;
+}
+#excelPreview .excel-preview-note{
+  color:#52647B!important;font-family:"Aptos","Segoe UI",Arial,sans-serif!important;
+}
