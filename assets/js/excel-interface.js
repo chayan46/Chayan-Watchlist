@@ -378,9 +378,9 @@ export function initExcelInterface(){
     if(currentPreviewSheet)renderSelectedPreview();
   }
 
-  function refreshSheetOptions(){
+  function refreshSheetOptions(resetSelection=false){
     if(!workbook)return;
-    const previous=sheetSelect.value;
+    const previous=resetSelection?'':sheetSelect.value;
     sheetSelect.replaceChildren();
     workbook.worksheets.forEach((sheet,index)=>{
       const option=document.createElement('option');option.value=sheet.name;option.textContent=(index+1)+'. '+sheet.name;sheetSelect.appendChild(option);
@@ -414,12 +414,19 @@ export function initExcelInterface(){
       // Keep the newly uploaded workbook intact for preview. Rebuilding the
       // language sheets here replaced the selected file's contents with the
       // browser's older movie collection, which made the preview look stale.
-      refreshSheetOptions();
+      refreshSheetOptions(true);
+      currentPreviewSheet='';
+      previewWrap.hidden=true;
+      preview.replaceChildren();
+      preview.classList.remove('movie-excel-preview');
       await saveWorkbookLocally(selectedFile);
       setWorkbookLoaded(true);
       // Re-render from the newly parsed workbook, replacing any previous preview.
-      currentPreviewSheet=sheetSelect.value||workbook.worksheets[0]?.name||'';
-      if(currentPreviewSheet)renderSelectedPreview();
+      currentPreviewSheet=sheetSelect.options[0]?.value||workbook.worksheets[0]?.name||'';
+      if(currentPreviewSheet){
+        sheetSelect.value=currentPreviewSheet;
+        renderSelectedPreview();
+      }
       showMessage('New workbook loaded and preview refreshed: '+selectedFile.name+'. It is saved on this device until you upload another workbook.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
