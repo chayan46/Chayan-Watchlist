@@ -117,8 +117,8 @@ export function initExcelInterface(){
 
     // A virtualized 1000 × 1000 spreadsheet: the scroll area represents
     // all cells, while only cells near the visible viewport are rendered.
-    const ROWS=1000;
-    const COLS=1000;
+    const ROWS=100;
+    const COLS=100;
     const ROW_HEIGHT=35;
     const COL_WIDTH=92;
     const ROW_HEADER=42;
