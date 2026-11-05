@@ -107,3 +107,12 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 .excel-preview-note{font-size:10px;color:#758196;margin:9px 0 0}
 .preview-error{padding:24px 10px;text-align:center;color:#a52a3a}
 .preview-error strong{font-size:13px}.preview-error p{font-size:11px;margin:5px 0}
+
+/* Worksheet selection appears before the preview is rendered */
+.excel-stage[hidden],.excel-preview-placeholder[hidden]{display:none!important}
+.sheet-select-stage{background:linear-gradient(135deg,#f3f5ff,#fff);border-color:#c9d1ff}
+.sheet-select-stage .stage-icon{background:#5357a8;color:#fff}
+.sheet-select-label{display:block;font-size:10px;font-weight:850;letter-spacing:.8px;color:#52617b;margin:0 0 7px}
+.sheet-select-stage .excel-sheet-select{display:block;width:100%;max-width:none;min-height:43px;padding:10px 12px;font-size:12px;background:#fff;border:1px solid #c8d2e4;border-radius:9px}
+.show-preview-button{margin-top:11px;background:linear-gradient(105deg,#1681e5,#1748c8)}
+.show-preview-button:hover{background:linear-gradient(105deg,#086dce,#123eaf)}
