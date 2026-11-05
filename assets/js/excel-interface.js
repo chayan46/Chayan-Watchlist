@@ -317,8 +317,12 @@ export function initExcelInterface(){
     // Preserve Excel's merged-cell geometry. ExcelJS returns the master value
     // from every cell in a merge; rendering each cell independently duplicates
     // labels (for example A in all four rows of A1:A4).
-    (sheet.model.merges||[]).forEach(range=>{
-      const match=String(range).match(/^([A-Z]+)(\\d+):([A-Z]+)(\\d+)$/i);
+    const mergeRanges=Array.isArray(sheet.model?.merges)?sheet.model.merges:[];
+    mergeRanges.forEach(range=>{
+      // ExcelJS normally stores merge ranges as "A1:A4"; normalize whitespace/case
+      // and support either a string or an object carrying a range reference.
+      const ref=typeof range==='string'?range:(range?.range||range?.ref||'');
+      const match=String(ref).replace(/\\s/g,'').match(/^([A-Z]+)(\\d+):([A-Z]+)(\\d+)$/i);
       if(!match)return;
       const r1=Number(match[2]),c1=columnNumber(match[1].toUpperCase());
       const r2=Number(match[4]),c2=columnNumber(match[3].toUpperCase());
@@ -330,6 +334,24 @@ export function initExcelInterface(){
         }
       }
     });
+    // Fallback to the cell-level merge metadata if the workbook's model does
+    // not expose a merge list (some imported XLSX variants behave this way).
+    for(let row=1;row<=maxRow;row++){
+      for(let col=1;col<=maxCol;col++){
+        const current=sheet.getCell(row,col);
+        if(!current.isMerged)continue;
+        const master=current.master||current;
+        if(master.address===current.address)continue;
+        const masterRow=master.row,masterCol=master.col;
+        if(!mergedMasters.has(masterRow+':'+masterCol)){
+          let rowSpan=1,colSpan=1;
+          while(masterRow+rowSpan<=maxRow&&sheet.getCell(masterRow+rowSpan,masterCol).isMerged&&sheet.getCell(masterRow+rowSpan,masterCol).master.address===master.address)rowSpan++;
+          while(masterCol+colSpan<=maxCol&&sheet.getCell(masterRow,masterCol+colSpan).isMerged&&sheet.getCell(masterRow,masterCol+colSpan).master.address===master.address)colSpan++;
+          mergedMasters.set(masterRow+':'+masterCol,{rowSpan,colSpan});
+        }
+        mergedCovered.add(row+':'+col);
+      }
+    }
     const head=document.createElement('thead');
     const headRow=document.createElement('tr');
     const corner=document.createElement('th');
