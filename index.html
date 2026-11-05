@@ -47,8 +47,9 @@
     <div class="excel-stage preview-stage" id="excelPreviewWrap" hidden>
       <div class="stage-heading"><span class="stage-icon" aria-hidden="true">◉</span><div><div class="stage-title">Live Excel preview</div><p>Preview of the selected worksheet.</p></div></div>
       <div class="excel-preview-placeholder" id="excelPreview"><div class="preview-sheet-icon" aria-hidden="true">▦</div><strong>Excel preview will appear here</strong><p>Select a worksheet to display its contents.</p></div>
+      <button class="primary confirm-preview-button" id="confirmExcelPreview" type="button">Confirm preview and continue</button>
     </div>
-    <div class="excel-stage complete-stage">
+    <div class="excel-stage complete-stage" id="completeStage" hidden>
       <div class="stage-heading"><span class="stage-number">3</span><div><div class="stage-title">Update complete</div><p>Confirm once all movie entries are added</p></div></div>
       <button class="primary complete-button" id="completeExcel" type="button"><span aria-hidden="true">✓</span> Update complete</button>
       <div class="download-placeholder" id="excelDownload" hidden><strong>Workbook update stage</strong><p>Download will be enabled when Excel reading and writing functionality is implemented.</p><button class="secondary" type="button" disabled>↓ Download updated Excel</button></div>
