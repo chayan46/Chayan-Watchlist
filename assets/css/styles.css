@@ -93,3 +93,17 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 .excel-status{font-size:11px;color:#66758b;margin:0;padding:2px 2px 0;min-height:18px}
 @media(max-width:900px){.excel-content{padding:14px}.excel-stage{padding:14px}.ready-stage{align-items:stretch;flex-direction:column}.ready-excel-button,.complete-button{width:100%}}
 @media(max-width:480px){.excel-hero{padding:18px 16px;gap:12px}.excel-brand-icon{width:46px;height:46px;flex-basis:46px}.excel-hero h2{font-size:19px}.excel-hero p{font-size:8px;letter-spacing:.65px}.excel-content{padding:12px}.excel-stage{padding:13px;border-radius:12px}.stage-title{font-size:13px}.stage-heading p{font-size:10px}.excel-upload{gap:9px;padding:11px}.excel-cloud{width:36px;height:36px;flex-basis:36px}.excel-upload-copy strong{font-size:11px}.excel-upload-copy small{font-size:9px}.excel-file-badge{font-size:9px;padding:6px}.excel-preview-placeholder{min-height:175px}}
+
+/* Actual workbook preview table */
+.excel-preview-placeholder{display:block;min-height:0;text-align:left;padding:12px;background:#fff}
+.excel-preview-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.excel-preview-toolbar strong{font-size:11px;color:#315b4b;text-transform:uppercase;letter-spacing:.6px}
+.excel-sheet-select{max-width:65%;border:1px solid #cbd9d2;border-radius:7px;padding:7px 9px;background:#f8fffb;color:#244a3b;font:inherit;font-size:11px}
+.excel-table-scroll{max-width:100%;max-height:390px;overflow:auto;border:1px solid #dce5e1;border-radius:8px}
+.excel-data-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:11px;line-height:1.4;background:#fff}
+.excel-data-table th,.excel-data-table td{border:1px solid #e2e9e5;padding:8px 10px;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;min-width:90px;max-width:240px}
+.excel-data-table th{position:sticky;top:0;z-index:1;background:#e8f5ee;color:#155c3e;font-weight:800}
+.excel-data-table tr:nth-child(even) td{background:#f8fbf9}
+.excel-preview-note{font-size:10px;color:#758196;margin:9px 0 0}
+.preview-error{padding:24px 10px;text-align:center;color:#a52a3a}
+.preview-error strong{font-size:13px}.preview-error p{font-size:11px;margin:5px 0}
