@@ -124,7 +124,7 @@ export function initExcelInterface(){
       sheet.getRow(row+1).height=25;
       sheet.getRow(row+2).height=22;
       sheet.getRow(row+3).height=190;
-      items.forEach((movie,index)=>{
+      for(const [index,movie] of items.entries()){
         const col=index+2;
         const year=sheet.getCell(row,col);
         year.value=movie.year;
@@ -156,7 +156,7 @@ export function initExcelInterface(){
             sheet.addImage(imageId,{tl:{col:col-1,row:row+2},br:{col:col,row:row+3},editAs:'twoCell'});
           }catch(error){console.warn('Could not embed fitted poster for '+movie.name,error);}
         }
-      });
+      }
       row+=4;
       sheet.getRow(row).height=8;
       row++;
