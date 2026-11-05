@@ -143,7 +143,7 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 
 /* Fix mobile layout of the virtual Excel canvas: preserve its full 2-D dimensions */
 .excel-table-scroll.excel-virtual-scroll{display:block!important;position:relative!important;width:100%!important;max-width:100%!important;overflow-x:scroll!important;overflow-y:scroll!important;white-space:normal!important;touch-action:pan-x pan-y!important;-webkit-overflow-scrolling:touch!important}
-.excel-table-scroll.excel-virtual-scroll>.excel-virtual-canvas{display:block!important;position:relative!important;flex:none!important;min-width:92042px!important;min-height:35034px!important;max-width:none!important;margin:0!important;padding:0!important;overflow:visible!important}
+.excel-table-scroll.excel-virtual-scroll>.excel-virtual-canvas{display:block!important;position:relative!important;flex:none!important;min-width:9242px!important;min-height:3534px!important;max-width:none!important;margin:0!important;padding:0!important;overflow:visible!important}
 .excel-table-scroll.excel-virtual-scroll .excel-virtual-colhead{position:absolute!important;display:flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;box-sizing:border-box!important}
 .excel-table-scroll.excel-virtual-scroll .excel-virtual-rowhead{position:absolute!important;display:flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;box-sizing:border-box!important}
 .excel-table-scroll.excel-virtual-scroll .excel-virtual-cell{position:absolute!important;display:flex!important;align-items:center!important;white-space:nowrap!important;box-sizing:border-box!important}
