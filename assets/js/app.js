@@ -1,4 +1,4 @@
 import {initInputSection} from './input-section.js';
-import {initExcelInterface} from './excel-interface.js?v=20261105-3';
+import {initExcelInterface} from './excel-interface.js?v=20261105-4';
 initInputSection();
 initExcelInterface();
