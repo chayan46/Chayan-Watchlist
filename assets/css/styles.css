@@ -403,3 +403,6 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 .movie-excel-table .movie-excel-poster span{font:12px Arial,sans-serif;color:#748094}
 .movie-excel-table .movie-excel-gap{height:10px;border:0;background:#222}
 .movie-excel-empty{padding:20px;color:#63758a;font-size:13px}
+
+/* Alphabet group cell uses the white fill specified for the reference workbook. */
+.movie-excel-table .movie-excel-letter{background:#fff!important;color:#111!important}
