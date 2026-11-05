@@ -138,9 +138,7 @@ export function initExcelInterface(){
     workbook=new ExcelJS.Workbook();
     await workbook.xlsx.load(await selectedFile.arrayBuffer());
     if(attempt!==uploadAttempt)return;
-    // Do not rebuild/overwrite the uploaded workbook's language sheets during
-    // restore. The preview must reflect the exact file the user selected.
-    refreshSheetOptions();
+    await syncLanguageSheets();
     setWorkbookLoaded(true);
     currentPreviewSheet=sheetSelect.value||'';
     if(currentPreviewSheet)renderSelectedPreview();
@@ -308,50 +306,8 @@ export function initExcelInterface(){
     }
     const table=document.createElement('table');
     table.className='excel-grid-table';
-    const hasCellContent=Boolean(sheet.actualRowCount||sheet.actualColumnCount);
-    const maxRow=Math.min(Math.max(sheet.rowCount||sheet.actualRowCount||20,20),100);
-    const maxCol=Math.min(Math.max(sheet.columnCount||sheet.actualColumnCount||10,10),30);
-    const columnNumber=letters=>[...letters].reduce((n,ch)=>n*26+ch.charCodeAt(0)-64,0);
-    const mergedMasters=new Map();
-    const mergedCovered=new Set();
-    // Preserve Excel's merged-cell geometry. ExcelJS returns the master value
-    // from every cell in a merge; rendering each cell independently duplicates
-    // labels (for example A in all four rows of A1:A4).
-    const mergeRanges=Array.isArray(sheet.model?.merges)?sheet.model.merges:[];
-    mergeRanges.forEach(range=>{
-      // ExcelJS normally stores merge ranges as "A1:A4"; normalize whitespace/case
-      // and support either a string or an object carrying a range reference.
-      const ref=typeof range==='string'?range:(range?.range||range?.ref||'');
-      const match=String(ref).replace(/\\s/g,'').match(/^([A-Z]+)(\\d+):([A-Z]+)(\\d+)$/i);
-      if(!match)return;
-      const r1=Number(match[2]),c1=columnNumber(match[1].toUpperCase());
-      const r2=Number(match[4]),c2=columnNumber(match[3].toUpperCase());
-      if(r1>maxRow||c1>maxCol)return;
-      mergedMasters.set(r1+':'+c1,{rowSpan:Math.min(r2,maxRow)-r1+1,colSpan:Math.min(c2,maxCol)-c1+1});
-      for(let rr=r1;rr<=Math.min(r2,maxRow);rr++){
-        for(let cc=c1;cc<=Math.min(c2,maxCol);cc++){
-          if(rr!==r1||cc!==c1)mergedCovered.add(rr+':'+cc);
-        }
-      }
-    });
-    // Fallback to the cell-level merge metadata if the workbook's model does
-    // not expose a merge list (some imported XLSX variants behave this way).
-    for(let row=1;row<=maxRow;row++){
-      for(let col=1;col<=maxCol;col++){
-        const current=sheet.getCell(row,col);
-        if(!current.isMerged)continue;
-        const master=current.master||current;
-        if(master.address===current.address)continue;
-        const masterRow=master.row,masterCol=master.col;
-        if(!mergedMasters.has(masterRow+':'+masterCol)){
-          let rowSpan=1,colSpan=1;
-          while(masterRow+rowSpan<=maxRow&&sheet.getCell(masterRow+rowSpan,masterCol).isMerged&&sheet.getCell(masterRow+rowSpan,masterCol).master.address===master.address)rowSpan++;
-          while(masterCol+colSpan<=maxCol&&sheet.getCell(masterRow,masterCol+colSpan).isMerged&&sheet.getCell(masterRow,masterCol+colSpan).master.address===master.address)colSpan++;
-          mergedMasters.set(masterRow+':'+masterCol,{rowSpan,colSpan});
-        }
-        mergedCovered.add(row+':'+col);
-      }
-    }
+    const maxRow=Math.min(Math.max(sheet.rowCount||sheet.actualRowCount||1,1),100);
+    const maxCol=Math.min(Math.max(sheet.columnCount||sheet.actualColumnCount||1,1),30);
     const head=document.createElement('thead');
     const headRow=document.createElement('tr');
     const corner=document.createElement('th');
@@ -372,15 +328,7 @@ export function initExcelInterface(){
       rowHeading.textContent=String(rowIndex);
       row.appendChild(rowHeading);
       for(let col=1;col<=maxCol;col++){
-        const key=rowIndex+':'+col;
-        if(mergedCovered.has(key))continue;
         const cell=document.createElement('td');
-        const merge=mergedMasters.get(key);
-        if(merge){
-          if(merge.rowSpan>1)cell.rowSpan=merge.rowSpan;
-          if(merge.colSpan>1)cell.colSpan=merge.colSpan;
-          cell.classList.add('excel-grid-merged-cell');
-        }
         const value=sheet.getCell(rowIndex,col).value;
         if(value&&typeof value==='object'){
           if(value.text)cell.textContent=value.text;
@@ -398,21 +346,15 @@ export function initExcelInterface(){
     wrap.className='movie-excel-scroll';
     wrap.appendChild(table);
     preview.appendChild(wrap);
-    if(!hasCellContent){
-      const note=document.createElement('p');
-      note.className='excel-preview-note';
-      note.textContent='Blank worksheet · Empty cells are shown in spreadsheet table view. Start entering data in Excel to populate this sheet.';
-      preview.appendChild(note);
-    }
   }
 
   function renderSelectedPreview(){
     if(!workbook||!currentPreviewSheet)throw new Error('Select a worksheet to preview.');
     const sheet=workbook.getWorksheet(currentPreviewSheet);
     if(!sheet)throw new Error('The selected worksheet is no longer available. Please select it again.');
-    // Preview the actual worksheet parsed from the currently selected XLSX.
-    // Language-sheet regeneration belongs to live movie updates/export, not upload.
-    renderGenericSheet(sheet);
+    const language=getLanguageForSheet(sheet.name);
+    if(language)renderLanguagePreview(language);
+    else renderGenericSheet(sheet);
     if(previewWrap)previewWrap.hidden=false;
   }
 
@@ -434,9 +376,9 @@ export function initExcelInterface(){
     if(currentPreviewSheet)renderSelectedPreview();
   }
 
-  function refreshSheetOptions(resetSelection=false){
+  function refreshSheetOptions(){
     if(!workbook)return;
-    const previous=resetSelection?'':sheetSelect.value;
+    const previous=sheetSelect.value;
     sheetSelect.replaceChildren();
     workbook.worksheets.forEach((sheet,index)=>{
       const option=document.createElement('option');option.value=sheet.name;option.textContent=(index+1)+'. '+sheet.name;sheetSelect.appendChild(option);
@@ -448,15 +390,10 @@ export function initExcelInterface(){
 
   fileInput.addEventListener('change',async()=>{
     const attempt=++uploadAttempt;
-    // Clear the native input after capturing the File. This lets users select
-    // the same workbook again and still receive a change event (including on Android).
-    const newlySelectedFile=fileInput.files&&fileInput.files[0]||null;
-    fileInput.value='';
-    if(!newlySelectedFile)return; // Picker cancelled: preserve the current workbook and preview.
-    selectedFile=newlySelectedFile;
+    selectedFile=fileInput.files&&fileInput.files[0]||null;
     workbook=null;currentPreviewSheet='';setWorkbookLoaded(false);previewWrap.hidden=true;
-    preview.replaceChildren();
     if(completeStage)completeStage.hidden=true;
+    if(!selectedFile){fileName.textContent='Choose Excel workbook';fileHint.textContent='Click to browse · Upload required each time';showMessage('Upload a reference workbook to begin.');return;}
     if(!/\.xlsx$/i.test(selectedFile.name)){
       selectedFile=null;fileInput.value='';fileName.textContent='Choose Excel workbook';fileHint.textContent='Please select an .xlsx file';
       showMessage('This formatted movie-collection workflow requires an .xlsx workbook. Please save legacy .xls files as .xlsx and upload again.');return;
@@ -467,23 +404,10 @@ export function initExcelInterface(){
       const ExcelJS=await loadExcelJS();if(attempt!==uploadAttempt)return;
       workbook=new ExcelJS.Workbook();
       await workbook.xlsx.load(await selectedFile.arrayBuffer());if(attempt!==uploadAttempt)return;
-      // Keep the newly uploaded workbook intact for preview. Rebuilding the
-      // language sheets here replaced the selected file's contents with the
-      // browser's older movie collection, which made the preview look stale.
-      refreshSheetOptions(true);
-      currentPreviewSheet='';
-      previewWrap.hidden=true;
-      preview.replaceChildren();
-      preview.classList.remove('movie-excel-preview');
+      await syncLanguageSheets();
       await saveWorkbookLocally(selectedFile);
       setWorkbookLoaded(true);
-      // Re-render from the newly parsed workbook, replacing any previous preview.
-      currentPreviewSheet=sheetSelect.options[0]?.value||workbook.worksheets[0]?.name||'';
-      if(currentPreviewSheet){
-        sheetSelect.value=currentPreviewSheet;
-        renderSelectedPreview();
-      }
-      showMessage('New workbook loaded and preview refreshed: '+selectedFile.name+'. It is saved on this device until you upload another workbook.');
+      showMessage('Workbook loaded and saved on this device. It will remain available after refresh until you upload a new workbook.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
       if(attempt!==uploadAttempt)return;
