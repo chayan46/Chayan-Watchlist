@@ -198,3 +198,85 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 #excelPreview .excel-horizontal-label{flex:0 0 auto!important;color:#52647b!important;font-size:10px!important;font-weight:800!important;letter-spacing:.4px!important;white-space:nowrap!important}
 #excelPreview .excel-horizontal-range{display:block!important;flex:1 1 auto!important;width:100%!important;min-width:30px!important;height:30px!important;margin:0!important;padding:0!important;accent-color:#1769c2!important;cursor:ew-resize!important;touch-action:pan-y!important}
 #excelPreview .excel-table-scroll.excel-virtual-scroll{overscroll-behavior-x:contain!important;touch-action:pan-x pan-y!important;scrollbar-width:thin!important}
+
+
+/* YETI Flight Trial-inspired visual system — Watchlist edition */
+:root{
+  --ink:#263747;--muted:#6b7c8e;--line:#d8e4ef;--paper:#f3f7fb;
+  --navy:#123b70;--blue:#1769aa;--teal:#287fbd;--gold:#d99a38;--rose:#c86b7c;
+  --vv-panel:#fff;--vv-head-start:#e7f1fb;--vv-head-end:#f4f8fc;
+  --vv-accent:#287fbd;--vv-heading:#174f7d;--vv-border:#dbe7f2;--vv-soft:#f6f9fc;
+}
+html{background:var(--paper)}
+body{background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:linear-gradient(112deg,#102f57 0%,#123b70 56%,#1769aa 100%);padding:25px clamp(18px,4vw,54px) 29px;box-shadow:0 5px 18px rgba(18,59,112,.13)}
+.topline{max-width:1360px}
+.logo{border:1px solid #ffffff38;background:#ffffff17;border-radius:12px;color:#fff;box-shadow:inset 0 1px #ffffff20}
+.eyebrow{color:#c3d8eb;letter-spacing:1.8px}
+.brand h1{font-size:clamp(21px,2.2vw,27px);letter-spacing:-.45px}
+.topnote{color:#d7e5f1;font-size:10px;letter-spacing:1.1px;font-weight:750}
+main{max-width:1360px;margin:27px auto;padding:0 clamp(14px,3vw,38px) 48px}
+.workspace{gap:20px;align-items:start}
+.panel{background:#fff;border:1px solid var(--vv-border);border-radius:14px;box-shadow:0 5px 18px rgba(18,59,112,.055)}
+.formpanel{padding:22px}
+.panelhead{padding:12px 14px;margin:-22px -22px 18px;background:linear-gradient(110deg,var(--vv-head-start),var(--vv-head-end));border-bottom:1px solid var(--vv-border);border-left:4px solid var(--vv-accent);border-radius:13px 13px 0 0}
+.panelhead h2{color:var(--vv-heading);font-size:17px;font-weight:800}
+.panelhead>span{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:#dcecf9;color:var(--navy);font-size:20px}
+.kicker{color:var(--blue);letter-spacing:1.15px}
+.field{margin:15px 0}
+.field label,.excel-label{color:#536b80;letter-spacing:.55px;font-size:10px}
+.field input,.field select,.search{background:#f8fbff;border:1px solid #c7d8e9;border-radius:8px;color:var(--ink)}
+.field input:focus,.field select:focus,.search:focus{border-color:#4b91c7;box-shadow:0 0 0 3px rgba(40,127,189,.13);outline:0}
+.upload{background:#f8fbff;border:1.5px dashed #a9c5dc;border-radius:10px}
+.upload:hover{border-color:var(--blue);background:#f1f7fc}
+.upload strong{color:var(--navy)}
+.primary{background:linear-gradient(105deg,#1769aa,#287fbd);border:1px solid #1769aa;border-radius:8px;box-shadow:0 3px 8px rgba(23,105,170,.14);letter-spacing:.1px;transition:background .16s,transform .16s,box-shadow .16s}
+.primary:hover{background:linear-gradient(105deg,#123b70,#1769aa);box-shadow:0 5px 12px rgba(18,59,112,.18);transform:translateY(-1px)}
+.primary:disabled{box-shadow:none}
+.secondary{border:1px solid #b9cfe1;background:#fff;color:var(--navy);border-radius:8px}
+.secondary:hover{background:#f3f8fc;border-color:#7fa9ca}
+.formhint{color:#718397;line-height:1.6}
+.excelpanel{border:1px solid var(--vv-border);border-radius:14px;box-shadow:0 5px 18px rgba(18,59,112,.055)}
+.excel-hero{background:linear-gradient(112deg,#102f57 0%,#123b70 58%,#1769aa 100%);padding:22px 24px}
+.excel-brand-icon{background:linear-gradient(145deg,#287fbd,#1769aa);border:1px solid #c7e0f2;border-radius:11px;box-shadow:0 4px 12px #082b4b38}
+.excel-brand-icon span{text-shadow:none}
+.excel-hero-kicker{color:#c3d8eb}
+.excel-content{padding:18px}
+.excel-stage{background:#fff;border:1px solid var(--vv-border);border-radius:11px;box-shadow:0 2px 8px rgba(18,59,112,.035);padding:16px}
+.stage-number,.stage-icon{background:var(--navy);color:#fff;box-shadow:none;border-radius:9px;width:36px;height:36px;flex-basis:36px}
+.stage-title{color:var(--vv-heading);font-size:14px;letter-spacing:.35px}
+.stage-heading p{color:var(--muted)}
+.excel-upload{background:#f8fbff;border:1.5px dashed #9dbbd4;border-radius:9px}
+.excel-upload:hover{background:#f0f7fc;border-color:var(--blue)}
+.excel-cloud{background:#e5f0f9;color:var(--blue);border-radius:9px}
+.excel-upload-copy strong{color:var(--navy)}
+.excel-file-badge{background:#e8f2fa;border:1px solid #c6d9e9;color:#174f7d;border-radius:6px}
+.ready-stage,.sheet-select-stage{background:linear-gradient(110deg,#f7faff,#edf4fa);border-color:#d1e0ed}
+.ready-excel-button,.show-preview-button{background:linear-gradient(105deg,#1769aa,#287fbd);box-shadow:0 3px 8px rgba(23,105,170,.14)}
+.ready-excel-button:hover,.show-preview-button:hover{background:linear-gradient(105deg,#123b70,#1769aa)}
+.preview-stage{background:#f7fbfe;border-color:#c8dceB}
+.preview-stage .stage-icon{background:#dcecf8;color:#174f7d}
+.preview-stage .stage-title{color:#174f7d}
+.excel-preview-placeholder{border-color:#cbdbe8;background:#fff}
+.preview-sheet-icon{color:#8aa9c2}
+.excel-preview-placeholder strong{color:#526d84}
+.complete-stage{background:linear-gradient(110deg,#f7faff,#edf4fa);border-color:#d1e0ed}
+.complete-button{background:linear-gradient(105deg,#1769aa,#287fbd);box-shadow:0 3px 8px rgba(23,105,170,.14)}
+.complete-button:hover{background:linear-gradient(105deg,#123b70,#1769aa)}
+.download-placeholder{background:#f8fbff;border-color:#d5e2ed}
+.excel-status{color:#62798e}
+.sheet-select-stage .excel-sheet-select{background:#f8fbff;border-color:#c7d8e9;color:var(--ink)}
+.excel-table-scroll.excel-virtual-scroll{border-color:#cbdbe8;scrollbar-color:#819bb2 #edf3f8}
+.excel-table-scroll.excel-virtual-scroll::-webkit-scrollbar-track{background:#edf3f8}
+.excel-table-scroll.excel-virtual-scroll::-webkit-scrollbar-thumb{background:#819bb2;border-color:#edf3f8}
+.excel-virtual-canvas{background-image:linear-gradient(to right,#e2eaf1 1px,transparent 1px),linear-gradient(to bottom,#e2eaf1 1px,transparent 1px)}
+.excel-virtual-colhead{background:#e7f1fb;color:#174f7d;border-color:#d5e3ef}
+.excel-virtual-rowhead{background:#f2f6fa;color:#5e7488;border-color:#dce6ef}
+.excel-virtual-corner{background:#dce8f2;border-color:#cbdbe8}
+.excel-virtual-cell{color:#263747;border-color:#e2eaf1}
+#excelPreview .excel-horizontal-nav{background:#f3f7fb!important;border-color:#d2e0eb!important}
+#excelPreview .excel-horizontal-label{color:#526d84!important}
+#excelPreview .excel-horizontal-range{accent-color:#1769aa!important}
+footer{color:#8294a5;letter-spacing:1px;font-weight:700}
+@media(max-width:900px){main{padding-left:14px;padding-right:14px}.formpanel{padding:18px}.panelhead{margin:-18px -18px 16px}}
+@media(max-width:480px){header{padding:18px}.excel-hero{padding:18px 16px}.excel-content{padding:12px}}
