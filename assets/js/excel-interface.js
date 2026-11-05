@@ -54,15 +54,11 @@ export function initExcelInterface(){
 
   function getOrCreateLanguageSheet(language){
     const targetName=LANGUAGE_SHEETS[language];
-    let sheet=workbook.getWorksheet(targetName);
-    const legacySheet=workbook.getWorksheet(language);
-    if(!sheet&&legacySheet){
-      legacySheet.name=targetName;
-      sheet=legacySheet;
-    }
-    if(!sheet)sheet=workbook.addWorksheet(targetName);
-    if(legacySheet&&legacySheet.id!==sheet.id)workbook.removeWorksheet(legacySheet.id);
-    return sheet;
+    const existing=workbook.getWorksheet(targetName);
+    const legacy=workbook.getWorksheet(language);
+    if(existing)workbook.removeWorksheet(existing.id);
+    if(legacy&&legacy.id!==existing?.id)workbook.removeWorksheet(legacy.id);
+    return workbook.addWorksheet(targetName);
   }
 
   function removeDuplicateLanguageSheets(){
@@ -341,8 +337,14 @@ export function initExcelInterface(){
     if(!workbook)return;
     try{
       syncLanguageSheets();
-      if(currentPreviewSheet)showMessage('Movie collection updated. '+currentPreviewSheet+' preview is synchronized with the latest entries.');
-    }catch(error){showMessage('Could not refresh the Excel preview: '+(error.message||'Unknown error'));}
+      if(currentPreviewSheet){
+        renderSelectedPreview();
+        showMessage('Movie collection updated. '+currentPreviewSheet+' preview is synchronized with '+getMovies().filter(movie=>movie.language===getLanguageForSheet(currentPreviewSheet)).length+' movie(s).');
+      }
+    }catch(error){
+      renderPreviewError(error);
+      showMessage('Could not refresh the Excel preview: '+(error.message||'Unknown error'));
+    }
   });
 
   confirmPreviewButton?.addEventListener('click',()=>{
