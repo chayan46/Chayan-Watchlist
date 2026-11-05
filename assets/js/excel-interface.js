@@ -5,19 +5,46 @@ export function initExcelInterface(){
   const readyButton=document.getElementById('readyExcel');
   const completeButton=document.getElementById('completeExcel');
   const status=document.getElementById('excelStatus');
+  const sheetSelectWrap=document.getElementById('sheetSelectWrap');
+  const sheetSelect=document.getElementById('excelSheetSelect');
+  const showPreviewButton=document.getElementById('showExcelPreview');
   const previewWrap=document.getElementById('excelPreviewWrap');
   const preview=document.getElementById('excelPreview');
   const downloadPanel=document.getElementById('excelDownload');
-  if(!fileInput||!readyButton||!previewWrap||!preview)return;
+  if(!fileInput||!readyButton||!sheetSelectWrap||!sheetSelect||!showPreviewButton||!previewWrap||!preview)return;
 
   let selectedFile=null;
   let workbook=null;
+  let xlsxLibraryPromise=null;
 
-  const showMessage=(message)=>{status.textContent=message;};
+  const showMessage=message=>{status.textContent=message;};
+
+  function loadXLSX(){
+    if(window.XLSX)return Promise.resolve(window.XLSX);
+    if(xlsxLibraryPromise)return xlsxLibraryPromise;
+    xlsxLibraryPromise=new Promise((resolve,reject)=>{
+      const urls=[
+        'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+        'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
+      ];
+      const tryLoad=index=>{
+        if(index>=urls.length){xlsxLibraryPromise=null;reject(new Error('Excel reader could not be loaded. Check your internet connection and try again.'));return;}
+        const script=document.createElement('script');
+        script.src=urls[index];
+        script.async=true;
+        script.onload=()=>window.XLSX?resolve(window.XLSX):tryLoad(index+1);
+        script.onerror=()=>{script.remove();tryLoad(index+1);};
+        document.head.appendChild(script);
+      };
+      tryLoad(0);
+    });
+    return xlsxLibraryPromise;
+  }
 
   fileInput.addEventListener('change',()=>{
     selectedFile=fileInput.files&&fileInput.files[0]||null;
     workbook=null;
+    sheetSelectWrap.hidden=true;
     previewWrap.hidden=true;
     downloadPanel.hidden=true;
     readyButton.disabled=true;
@@ -29,8 +56,7 @@ export function initExcelInterface(){
     }
     const ext=selectedFile.name.split('.').pop().toLowerCase();
     if(!['xlsx','xls'].includes(ext)){
-      selectedFile=null;
-      fileInput.value='';
+      selectedFile=null;fileInput.value='';
       fileName.textContent='Choose Excel workbook';
       fileHint.textContent='Please select an .xlsx or .xls file';
       showMessage('Unsupported file type. Please upload an Excel workbook.');
@@ -39,58 +65,59 @@ export function initExcelInterface(){
     fileName.textContent=selectedFile.name;
     fileHint.textContent=(selectedFile.size/1024/1024).toFixed(2)+' MB · File selected successfully';
     readyButton.disabled=false;
-    showMessage('Workbook uploaded successfully. Click “Ready to update” to load its contents below.');
+    showMessage('Workbook selected. Click “Ready to update” to read its worksheet names.');
   });
 
   readyButton.addEventListener('click',async()=>{
     if(!selectedFile)return;
     readyButton.disabled=true;
-    readyButton.textContent='Loading workbook…';
-    showMessage('Reading Excel workbook and preparing preview…');
+    readyButton.textContent='Reading workbook…';
+    sheetSelectWrap.hidden=true;previewWrap.hidden=true;
+    showMessage('Opening workbook and detecting all worksheets…');
     try{
-      const XLSX=await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm');
+      const XLSX=await loadXLSX();
       const buffer=await selectedFile.arrayBuffer();
-      workbook=XLSX.read(buffer,{type:'array'});
-      if(!workbook.SheetNames.length)throw new Error('No worksheets were found in this workbook.');
-      renderSheet(XLSX,workbook,workbook.SheetNames[0]);
-      previewWrap.hidden=false;
-      downloadPanel.hidden=true;
-      showMessage('Workbook loaded: '+workbook.SheetNames.length+' worksheet(s). Preview is ready.');
-      previewWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
+      workbook=XLSX.read(buffer,{type:'array',cellDates:true});
+      if(!workbook.SheetNames||!workbook.SheetNames.length)throw new Error('No worksheets were found in this workbook.');
+      sheetSelect.replaceChildren();
+      workbook.SheetNames.forEach((name,index)=>{
+        const option=document.createElement('option');
+        option.value=name;
+        option.textContent=(index+1)+'. '+name;
+        sheetSelect.appendChild(option);
+      });
+      sheetSelect.value=workbook.SheetNames[0];
+      sheetSelectWrap.hidden=false;
+      showMessage(workbook.SheetNames.length+' worksheet(s) detected. Choose a sheet, then click “Show selected sheet preview”.');
+      sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
-      previewWrap.hidden=false;
-      preview.innerHTML='<div class="preview-error"><strong>Could not read this workbook</strong><p></p></div>';
-      preview.querySelector('.preview-error p').textContent=error&&error.message?error.message:'Please check the file and try again.';
-      showMessage('Excel preview could not be loaded. Please try another .xlsx or .xls file.');
+      workbook=null;
+      showMessage(error&&error.message?error.message:'Unable to read this Excel workbook.');
     }finally{
       readyButton.disabled=!selectedFile;
       readyButton.innerHTML='<span aria-hidden="true">▷</span> Ready to update';
     }
   });
 
+  showPreviewButton.addEventListener('click',()=>{
+    if(!workbook||!window.XLSX)return;
+    try{
+      renderSheet(window.XLSX,workbook,sheetSelect.value);
+      previewWrap.hidden=false;
+      showMessage('Showing worksheet: '+sheetSelect.value);
+      previewWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }catch(error){
+      showMessage('Could not display this worksheet: '+(error.message||'Unknown error'));
+    }
+  });
+
   function renderSheet(XLSX,book,sheetName){
     const sheet=book.Sheets[sheetName];
+    if(!sheet)throw new Error('The selected worksheet was not found.');
     const rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false});
     const maxRows=Math.min(rows.length,100);
     const maxCols=Math.min(Math.max(0,...rows.slice(0,maxRows).map(row=>row.length)),20);
     preview.replaceChildren();
-
-    const bar=document.createElement('div');
-    bar.className='excel-preview-toolbar';
-    const label=document.createElement('strong');
-    label.textContent='Worksheet';
-    const selector=document.createElement('select');
-    selector.className='excel-sheet-select';
-    selector.setAttribute('aria-label','Select worksheet');
-    book.SheetNames.forEach(name=>{
-      const option=document.createElement('option');
-      option.value=name;option.textContent=name;selector.appendChild(option);
-    });
-    selector.value=sheetName;
-    selector.addEventListener('change',()=>renderSheet(XLSX,book,selector.value));
-    bar.append(label,selector);
-    preview.appendChild(bar);
-
     const scroll=document.createElement('div');
     scroll.className='excel-table-scroll';
     const table=document.createElement('table');
@@ -105,9 +132,11 @@ export function initExcelInterface(){
       }
       tbody.appendChild(tr);
     }
-    table.appendChild(tbody);
-    scroll.appendChild(table);
-    preview.appendChild(scroll);
+    if(!rows.length||!maxCols){
+      const tr=document.createElement('tr');const td=document.createElement('td');
+      td.textContent='This worksheet is empty.';tr.appendChild(td);tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);scroll.appendChild(table);preview.appendChild(scroll);
     const note=document.createElement('p');
     note.className='excel-preview-note';
     note.textContent='Showing '+maxRows+' of '+rows.length+' rows and up to '+maxCols+' columns from “'+sheetName+'”.';
@@ -116,6 +145,6 @@ export function initExcelInterface(){
 
   completeButton?.addEventListener('click',()=>{
     downloadPanel.hidden=false;
-    showMessage('Workbook preview is loaded. Movie-to-workbook updates and download generation are the next integration stage.');
+    showMessage('Preview stage complete. Movie-to-workbook updates and download generation are still pending integration.');
   });
 }
