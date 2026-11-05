@@ -321,6 +321,13 @@ export function initExcelInterface(){
     else sheetSelect.value=workbook.worksheets[0]?.name||'';
   }
 
+  sheetSelect.addEventListener('change',()=>{
+    if(!workbook)return;
+    const previous=currentPreviewSheet;
+    currentPreviewSheet=sheetSelect.value;
+    persistCurrentWorkbook().catch(error=>{currentPreviewSheet=previous;console.warn('Could not save worksheet selection:',error);});
+  });
+
   fileInput.addEventListener('change',async()=>{
     const attempt=++uploadAttempt;
     selectedFile=fileInput.files&&fileInput.files[0]||null;
