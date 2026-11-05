@@ -24,6 +24,33 @@ const sortMovies=movies=>[...movies].sort((a,b)=>{
   const yearA=Number(a.year)||9999,yearB=Number(b.year)||9999;
   return yearA-yearB||a.name.localeCompare(b.name,undefined,{sensitivity:'base'});
 });
+const posterCropCache=new Map();
+function cropPosterToCell(data){
+  if(posterCropCache.has(data))return posterCropCache.get(data);
+  const task=new Promise((resolve,reject)=>{
+    const image=new Image();
+    image.onload=()=>{
+      try{
+        const width=380,height=550;
+        const canvas=document.createElement('canvas');
+        canvas.width=width;canvas.height=height;
+        const context=canvas.getContext('2d');
+        const scale=Math.max(width/image.naturalWidth,height/image.naturalHeight);
+        const sourceWidth=width/scale,sourceHeight=height/scale;
+        const sourceX=(image.naturalWidth-sourceWidth)/2;
+        const sourceY=(image.naturalHeight-sourceHeight)/2;
+        context.drawImage(image,sourceX,sourceY,sourceWidth,sourceHeight,0,0,width,height);
+        resolve(canvas.toDataURL('image/png'));
+      }catch(error){reject(error);}
+    };
+    image.onerror=()=>reject(new Error('Could not prepare a movie poster for the Excel cell.'));
+    image.src=data;
+  });
+  posterCropCache.set(data,task);
+  task.catch(()=>posterCropCache.delete(data));
+  return task;
+}
+
 const getPosterExtension=data=>{
   const match=String(data||'').match(/^data:image\/(png|jpeg|jpg|gif|webp);base64,/i);
   if(!match)return null;
@@ -69,7 +96,7 @@ export function initExcelInterface(){
     });
   }
 
-  function buildLanguageSheet(language){
+  async function buildLanguageSheet(language){
     const sheet=getOrCreateLanguageSheet(language);
     sheet.getImages().forEach(image=>sheet.removeImage(image.imageId));
     [...(sheet.model.merges||[])].forEach(range=>sheet.unMergeCells(range));
@@ -122,10 +149,12 @@ export function initExcelInterface(){
         const ext=getPosterExtension(movie.poster);
         if(ext){
           try{
-            const base64=movie.poster.substring(movie.poster.indexOf(',')+1);
-            const imageId=workbook.addImage({base64,extension:ext==='jpg'?'jpeg':ext});
-            sheet.addImage(imageId,{tl:{col:col-0.96,row:row+2.96},br:{col:col-0.04,row:row+3.98},editAs:'oneCell'});
-          }catch(error){console.warn('Could not embed poster for '+movie.name,error);}
+            const fittedPoster=await cropPosterToCell(movie.poster);
+            const base64=fittedPoster.substring(fittedPoster.indexOf(',')+1);
+            const imageId=workbook.addImage({base64,extension:'png'});
+            // Anchor to the exact poster cell boundaries: move and size with cells.
+            sheet.addImage(imageId,{tl:{col:col-1,row:row+2},br:{col:col,row:row+3},editAs:'twoCell'});
+          }catch(error){console.warn('Could not embed fitted poster for '+movie.name,error);}
         }
       });
       row+=4;
@@ -271,10 +300,10 @@ export function initExcelInterface(){
     previewWrap.hidden=false;
   }
 
-  function syncLanguageSheets(){
+  async function syncLanguageSheets(){
     if(!workbook)return;
     removeDuplicateLanguageSheets();
-    LANGUAGES.forEach(language=>buildLanguageSheet(language));
+    for(const language of LANGUAGES)await buildLanguageSheet(language);
     refreshSheetOptions();
     if(currentPreviewSheet)renderSelectedPreview();
   }
@@ -307,7 +336,7 @@ export function initExcelInterface(){
       const ExcelJS=await loadExcelJS();if(attempt!==uploadAttempt)return;
       workbook=new ExcelJS.Workbook();
       await workbook.xlsx.load(await selectedFile.arrayBuffer());if(attempt!==uploadAttempt)return;
-      syncLanguageSheets();
+      await syncLanguageSheets();
       sheetSelectWrap.hidden=false;
       showMessage('Workbook loaded. Language worksheets are mapped to Bengali, Hindi and English. Select a sheet to preview.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -333,18 +362,20 @@ export function initExcelInterface(){
     }
   });
 
+  let updateQueue=Promise.resolve();
   subscribeToMovies(()=>{
     if(!workbook)return;
-    try{
-      syncLanguageSheets();
+    updateQueue=updateQueue.then(async()=>{
+      if(!workbook)return;
+      await syncLanguageSheets();
       if(currentPreviewSheet){
         renderSelectedPreview();
         showMessage('Movie collection updated. '+currentPreviewSheet+' preview is synchronized with '+getMovies().filter(movie=>movie.language===getLanguageForSheet(currentPreviewSheet)).length+' movie(s).');
       }
-    }catch(error){
+    }).catch(error=>{
       renderPreviewError(error);
       showMessage('Could not refresh the Excel preview: '+(error.message||'Unknown error'));
-    }
+    });
   });
 
   confirmPreviewButton?.addEventListener('click',()=>{
@@ -358,7 +389,8 @@ export function initExcelInterface(){
     if(!workbook||!selectedFile)return;
     try{
       exportButton.disabled=true;showMessage('Preparing formatted Excel workbook with embedded movie posters…');
-      syncLanguageSheets();
+      await updateQueue;
+      await syncLanguageSheets();
       const buffer=await workbook.xlsx.writeBuffer();
       const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
       const url=URL.createObjectURL(blob);const link=document.createElement('a');
