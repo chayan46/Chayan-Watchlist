@@ -144,6 +144,32 @@ export function initExcelInterface(){
     scroll.appendChild(canvas);
     preview.appendChild(scroll);
 
+    // Android browsers often hide native horizontal scrollbars. Provide an
+    // always-visible range control as a reliable left/right navigation aid.
+    const horizontalNav=document.createElement('div');
+    horizontalNav.className='excel-horizontal-nav';
+    const navLabel=document.createElement('span');
+    navLabel.className='excel-horizontal-label';
+    navLabel.textContent='← LEFT / RIGHT →';
+    const horizontalRange=document.createElement('input');
+    horizontalRange.type='range';
+    horizontalRange.className='excel-horizontal-range';
+    horizontalRange.min='0';
+    horizontalRange.max=String(Math.max(0,totalWidth-(scroll.clientWidth||320)));
+    horizontalRange.step='1';
+    horizontalRange.value='0';
+    horizontalRange.setAttribute('aria-label','Scroll Excel preview left and right');
+    horizontalNav.append(navLabel,horizontalRange);
+    preview.appendChild(horizontalNav);
+
+    let syncingHorizontal=false;
+    horizontalRange.addEventListener('input',()=>{
+      syncingHorizontal=true;
+      scroll.scrollLeft=Number(horizontalRange.value);
+      syncingHorizontal=false;
+      drawViewport();
+    });
+
     let populatedCells=0;
     let renderFrame=0;
     function addCell(className,text,left,top,width,height){
@@ -162,6 +188,11 @@ export function initExcelInterface(){
     }
 
     function drawViewport(){
+      if(horizontalRange&&!syncingHorizontal){
+        const maxScroll=Math.max(0,scroll.scrollWidth-scroll.clientWidth);
+        horizontalRange.max=String(maxScroll);
+        horizontalRange.value=String(Math.min(scroll.scrollLeft,maxScroll));
+      }
       if(renderFrame)cancelAnimationFrame(renderFrame);
       renderFrame=requestAnimationFrame(()=>{
         renderFrame=0;
@@ -194,6 +225,7 @@ export function initExcelInterface(){
       });
     }
     scroll.addEventListener('scroll',drawViewport,{passive:true});
+    window.addEventListener('resize',()=>{horizontalRange.max=String(Math.max(0,scroll.scrollWidth-scroll.clientWidth));drawViewport();},{passive:true});
     drawViewport();
 
     const note=document.createElement('p');
