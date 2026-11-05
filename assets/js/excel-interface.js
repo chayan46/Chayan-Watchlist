@@ -133,8 +133,14 @@ export function initExcelInterface(){
     scroll.setAttribute('aria-label','Excel worksheet preview. Scroll horizontally and vertically to view 1000 rows and 1000 columns.');
     const canvas=document.createElement('div');
     canvas.className='excel-virtual-canvas';
-    canvas.style.width=totalWidth+'px';
-    canvas.style.height=totalHeight+'px';
+    canvas.style.setProperty('display','block','important');
+    canvas.style.setProperty('position','relative','important');
+    canvas.style.setProperty('width',totalWidth+'px','important');
+    canvas.style.setProperty('height',totalHeight+'px','important');
+    canvas.style.setProperty('min-width',totalWidth+'px','important');
+    canvas.style.setProperty('min-height',totalHeight+'px','important');
+    canvas.style.setProperty('max-width','none','important');
+    canvas.style.setProperty('flex','none','important');
     scroll.appendChild(canvas);
     preview.appendChild(scroll);
 
@@ -144,10 +150,13 @@ export function initExcelInterface(){
       const el=document.createElement('div');
       el.className=className;
       el.textContent=text;
-      el.style.left=left+'px';
-      el.style.top=top+'px';
-      if(width)el.style.width=width+'px';
-      if(height)el.style.height=height+'px';
+      el.style.setProperty('position','absolute','important');
+      el.style.setProperty('display','flex','important');
+      el.style.setProperty('left',left+'px','important');
+      el.style.setProperty('top',top+'px','important');
+      if(width)el.style.setProperty('width',width+'px','important');
+      if(height)el.style.setProperty('height',height+'px','important');
+      el.style.setProperty('box-sizing','border-box','important');
       canvas.appendChild(el);
       return el;
     }
@@ -157,10 +166,12 @@ export function initExcelInterface(){
       renderFrame=requestAnimationFrame(()=>{
         renderFrame=0;
         canvas.replaceChildren();
+        const viewHeight=scroll.clientHeight||440;
+        const viewWidth=scroll.clientWidth||Math.min(window.innerWidth-80,700);
         const firstRow=Math.max(0,Math.floor(Math.max(0,scroll.scrollTop-COL_HEADER)/ROW_HEIGHT));
         const firstCol=Math.max(0,Math.floor(Math.max(0,scroll.scrollLeft-ROW_HEADER)/COL_WIDTH));
-        const visibleRows=Math.ceil(scroll.clientHeight/ROW_HEIGHT)+2;
-        const visibleCols=Math.ceil(scroll.clientWidth/COL_WIDTH)+2;
+        const visibleRows=Math.ceil(viewHeight/ROW_HEIGHT)+2;
+        const visibleCols=Math.ceil(viewWidth/COL_WIDTH)+2;
         const lastRow=Math.min(ROWS,firstRow+visibleRows);
         const lastCol=Math.min(COLS,firstCol+visibleCols);
 
