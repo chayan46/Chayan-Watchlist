@@ -114,32 +114,68 @@ export function initExcelInterface(){
   function renderSheet(XLSX,book,sheetName){
     const sheet=book.Sheets[sheetName];
     if(!sheet)throw new Error('The selected worksheet was not found.');
-    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false});
-    const maxRows=Math.min(rows.length,100);
-    const maxCols=Math.min(Math.max(0,...rows.slice(0,maxRows).map(row=>row.length)),20);
+
+    // Use the worksheet's declared Excel range, not only non-empty JSON rows.
+    // Blank formatted cells may have a valid !ref even when sheet_to_json returns [].
+    const hasRange=Boolean(sheet['!ref']);
+    const range=hasRange?XLSX.utils.decode_range(sheet['!ref']):{s:{r:0,c:0},e:{r:19,c:9}};
+    const startRow=range.s.r;
+    const startCol=range.s.c;
+    const rowCount=Math.min(Math.max(20,range.e.r-startRow+1),100);
+    const colCount=Math.min(Math.max(10,range.e.c-startCol+1),20);
+    const endRow=startRow+rowCount;
+    const endCol=startCol+colCount;
+
     preview.replaceChildren();
     const scroll=document.createElement('div');
     scroll.className='excel-table-scroll';
     const table=document.createElement('table');
-    table.className='excel-data-table';
+    table.className='excel-data-table excel-grid-table';
+    const thead=document.createElement('thead');
+    const headRow=document.createElement('tr');
+    const corner=document.createElement('th');
+    corner.className='excel-grid-corner';
+    corner.textContent='';
+    headRow.appendChild(corner);
+    for(let c=startCol;c<endCol;c++){
+      const th=document.createElement('th');
+      th.className='excel-column-heading';
+      th.textContent=XLSX.utils.encode_col(c);
+      headRow.appendChild(th);
+    }
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
     const tbody=document.createElement('tbody');
-    for(let r=0;r<maxRows;r++){
+    let populatedCells=0;
+    for(let r=startRow;r<endRow;r++){
       const tr=document.createElement('tr');
-      for(let c=0;c<maxCols;c++){
-        const cell=document.createElement(r===0?'th':'td');
-        cell.textContent=rows[r]&&rows[r][c]!==undefined?String(rows[r][c]):'';
-        tr.appendChild(cell);
+      const rowHead=document.createElement('th');
+      rowHead.className='excel-row-heading';
+      rowHead.textContent=String(r+1);
+      tr.appendChild(rowHead);
+      for(let c=startCol;c<endCol;c++){
+        const td=document.createElement('td');
+        const address=XLSX.utils.encode_cell({r,c});
+        const cell=sheet[address];
+        const value=cell&&cell.v!==undefined?String(cell.w!==undefined?cell.w:cell.v):'';
+        td.textContent=value;
+        if(value!=='')populatedCells++;
+        tr.appendChild(td);
       }
       tbody.appendChild(tr);
     }
-    if(!rows.length||!maxCols){
-      const tr=document.createElement('tr');const td=document.createElement('td');
-      td.textContent='This worksheet is empty.';tr.appendChild(td);tbody.appendChild(tr);
-    }
-    table.appendChild(tbody);scroll.appendChild(table);preview.appendChild(scroll);
+    table.appendChild(tbody);
+    scroll.appendChild(table);
+    preview.appendChild(scroll);
+
     const note=document.createElement('p');
     note.className='excel-preview-note';
-    note.textContent='Showing '+maxRows+' of '+rows.length+' rows and up to '+maxCols+' columns from “'+sheetName+'”.';
+    if(populatedCells===0){
+      note.textContent='This worksheet has no entered values. Showing an editable-style blank grid with '+rowCount+' rows and '+colCount+' columns.';
+    }else{
+      note.textContent='Showing '+rowCount+' rows and '+colCount+' columns from “'+sheetName+'” ('+populatedCells+' non-empty cells in this preview range).';
+    }
     preview.appendChild(note);
   }
 
