@@ -59,6 +59,7 @@ export function initExcelInterface(){
   function buildLanguageSheet(language){
     const sheet=getOrCreateLanguageSheet(language);
     sheet.getImages().forEach(image=>sheet.removeImage(image.imageId));
+    [...(sheet.model.merges||[])].forEach(range=>sheet.unMergeCells(range));
     if(sheet.rowCount)sheet.spliceRows(1,sheet.rowCount);
     sheet.columns=[{width:9},...Array.from({length:Math.max(1,sortMovies(getMovies().filter(m=>m.language===language)).length)},()=>({width:27}))];
     sheet.views=[{state:'frozen',xSplit:1,ySplit:0,showGridLines:false}];
