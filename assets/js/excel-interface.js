@@ -23,7 +23,7 @@ const sortMovies=movies=>[...movies].sort((a,b)=>{
   return yearA-yearB||a.name.localeCompare(b.name,undefined,{sensitivity:'base'});
 });
 const getPosterExtension=data=>{
-  const match=String(data||'').match(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,/i);
+  const match=String(data||'').match(/^data:image\/(png|jpeg|jpg|gif|webp);base64,/i);
   if(!match)return null;
   const ext=match[1].toLowerCase();
   return ext==='jpeg'?'jpeg':ext;
@@ -230,7 +230,7 @@ export function initExcelInterface(){
     workbook=null;currentPreviewSheet='';sheetSelectWrap.hidden=true;previewWrap.hidden=true;
     if(completeStage)completeStage.hidden=true;
     if(!selectedFile){fileName.textContent='Choose Excel workbook';fileHint.textContent='Click to browse · Upload required each time';showMessage('Upload a reference workbook to begin.');return;}
-    if(!/\\.xlsx$/i.test(selectedFile.name)){
+    if(!/\.xlsx$/i.test(selectedFile.name)){
       selectedFile=null;fileInput.value='';fileName.textContent='Choose Excel workbook';fileHint.textContent='Please select an .xlsx file';
       showMessage('This formatted movie-collection workflow requires an .xlsx workbook. Please save legacy .xls files as .xlsx and upload again.');return;
     }
@@ -285,7 +285,7 @@ export function initExcelInterface(){
       const buffer=await workbook.xlsx.writeBuffer();
       const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
       const url=URL.createObjectURL(blob);const link=document.createElement('a');
-      link.href=url;link.download=selectedFile.name.replace(/\\.xlsx$/i,'')+'_updated.xlsx';
+      link.href=url;link.download=selectedFile.name.replace(/\.xlsx$/i,'')+'_updated.xlsx';
       document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
       showMessage('Export started. Language worksheets include the alphabetical/yearly layout, colour bands and embedded posters.');
     }catch(error){showMessage('Could not export workbook: '+(error.message||'Unknown error'));}
