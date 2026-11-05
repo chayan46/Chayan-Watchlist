@@ -308,8 +308,12 @@ export function initExcelInterface(){
     }
     const table=document.createElement('table');
     table.className='excel-grid-table';
-    const maxRow=Math.min(Math.max(sheet.rowCount||sheet.actualRowCount||1,1),100);
-    const maxCol=Math.min(Math.max(sheet.columnCount||sheet.actualColumnCount||1,1),30);
+    // Empty workbooks/sheets still need a useful spreadsheet-style canvas.
+    // ExcelJS reports zero dimensions for a truly blank worksheet, so provide
+    // a visible grid instead of collapsing the preview to a tiny empty cell.
+    const hasCellContent=Boolean(sheet.actualRowCount||sheet.actualColumnCount);
+    const maxRow=Math.min(Math.max(sheet.rowCount||sheet.actualRowCount||20,20),100);
+    const maxCol=Math.min(Math.max(sheet.columnCount||sheet.actualColumnCount||10,10),30);
     const head=document.createElement('thead');
     const headRow=document.createElement('tr');
     const corner=document.createElement('th');
@@ -348,6 +352,12 @@ export function initExcelInterface(){
     wrap.className='movie-excel-scroll';
     wrap.appendChild(table);
     preview.appendChild(wrap);
+    if(!hasCellContent){
+      const note=document.createElement('p');
+      note.className='excel-preview-note';
+      note.textContent='Blank worksheet · Empty cells are shown in spreadsheet table view. Start entering data in Excel to populate this sheet.';
+      preview.appendChild(note);
+    }
   }
 
   function renderSelectedPreview(){
