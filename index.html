@@ -20,19 +20,35 @@
 </form><div class="formhint">Your entries are saved in this browser on this device. Poster images are stored locally; they do not automatically sync across devices.</div>
 </aside>
 <section class="panel excelpanel" aria-labelledby="excelHeading">
-<div class="panelhead"><div><div class="kicker">Workbook workspace</div><h2 id="excelHeading">Reference Excel File</h2></div><span>▤</span></div>
-<div class="excel-step">
-<label class="excel-label" for="excelFile">1. UPLOAD REFERENCE EXCEL</label>
-<label class="excel-upload" for="excelFile"><span class="excel-upload-icon">＋</span><strong id="excelFileName">Choose Excel workbook</strong><small id="excelFileHint">.xlsx or .xls · Upload required each time</small><input id="excelFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"></label>
-</div>
-<button class="primary" id="readyExcel" type="button" disabled>Ready to update</button>
-<p class="excel-status" id="excelStatus" role="status">Upload a reference workbook to begin.</p>
-<div class="excel-preview-wrap" id="excelPreviewWrap" hidden>
-<div class="preview-heading"><div><div class="excel-label">2. LIVE EXCEL PREVIEW</div><strong>Workbook preview</strong></div><span class="preview-chip">PREVIEW AREA</span></div>
-<div class="excel-preview-placeholder" id="excelPreview"><div class="preview-sheet-icon">▦</div><strong>Excel preview will appear here</strong><p>The workbook preview and live row updates will be connected in the next development stage.</p></div>
-<button class="primary complete-button" id="completeExcel" type="button">Update Complete</button>
-<div class="download-placeholder" id="excelDownload" hidden><strong>Workbook update stage</strong><p>Download will be enabled when Excel reading and writing functionality is implemented.</p><button class="secondary" type="button" disabled>Download updated Excel</button></div>
-</div>
+  <div class="excel-hero">
+    <div class="excel-brand-icon" aria-hidden="true"><span>X</span></div>
+    <div><div class="excel-hero-kicker">WORKBOOK WORKSPACE</div><h2 id="excelHeading">Reference Excel</h2><p>UPLOAD · UPDATE · PREVIEW · DOWNLOAD</p></div>
+  </div>
+  <div class="excel-content">
+    <div class="excel-stage upload-stage">
+      <div class="stage-heading"><span class="stage-number">1</span><div><div class="stage-title">Upload reference Excel</div><p>Select your movie collection workbook (.xlsx / .xls)</p></div></div>
+      <label class="excel-upload" for="excelFile">
+        <span class="excel-cloud" aria-hidden="true">↑</span>
+        <span class="excel-upload-copy"><strong id="excelFileName">Choose Excel workbook</strong><small id="excelFileHint">Click to browse · Upload required each time</small></span>
+        <span class="excel-file-badge">XLSX</span>
+        <input id="excelFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+      </label>
+    </div>
+    <div class="excel-stage ready-stage">
+      <div class="stage-heading"><span class="stage-number">2</span><div><div class="stage-title">Ready to update</div><p>Initialize the workbook and load the preview</p></div></div>
+      <button class="primary ready-excel-button" id="readyExcel" type="button" disabled><span aria-hidden="true">▷</span> Ready to update</button>
+    </div>
+    <div class="excel-stage preview-stage" id="excelPreviewWrap" hidden>
+      <div class="stage-heading"><span class="stage-icon" aria-hidden="true">◉</span><div><div class="stage-title">Live Excel preview</div><p>Your workbook will be shown here after clicking “Ready to update”.</p></div></div>
+      <div class="excel-preview-placeholder" id="excelPreview"><div class="preview-sheet-icon" aria-hidden="true">▦</div><strong>Excel preview will appear here</strong><p>The live workbook preview and row updates will be connected in the next development stage.</p></div>
+    </div>
+    <div class="excel-stage complete-stage">
+      <div class="stage-heading"><span class="stage-number">3</span><div><div class="stage-title">Update complete</div><p>Confirm once all movie entries are added</p></div></div>
+      <button class="primary complete-button" id="completeExcel" type="button"><span aria-hidden="true">✓</span> Update complete</button>
+      <div class="download-placeholder" id="excelDownload" hidden><strong>Workbook update stage</strong><p>Download will be enabled when Excel reading and writing functionality is implemented.</p><button class="secondary" type="button" disabled>↓ Download updated Excel</button></div>
+    </div>
+    <p class="excel-status" id="excelStatus" role="status">Upload a reference workbook to begin.</p>
+  </div>
 </section>
 </div><footer>CHAYAN WATCHLIST · LOCAL MOVIE COLLECTION</footer></main>
 <script type="module" src="assets/js/app.js"></script></body></html>
