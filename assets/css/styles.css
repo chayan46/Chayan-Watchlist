@@ -387,3 +387,19 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   z-index:5!important;font-size:100px!important;
 }
 .excel-upload:focus-within{outline:3px solid rgba(37,99,235,.22);outline-offset:2px}
+
+
+/* Alphabet/year movie collection preview — mirrors the reference workbook layout */
+.movie-excel-preview{display:block!important;overflow:hidden!important;background:#fff!important;padding:0!important}
+.movie-excel-scroll{display:block;width:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;border:1px solid #b8c2cc;background:#fff}
+.movie-excel-table{border-collapse:separate;border-spacing:2px;min-width:max-content;width:max-content;table-layout:fixed;font-family:Georgia,"Times New Roman",serif}
+.movie-excel-table th,.movie-excel-table td{box-sizing:border-box;text-align:center;vertical-align:middle;border:1px solid #c6c6c6}
+.movie-excel-table .movie-excel-letter{width:76px;min-width:76px;background:#ffdc68;color:#111;font:42px/1 Arial,sans-serif}
+.movie-excel-table .movie-excel-year{width:190px;min-width:190px;height:38px;background:#990000;color:#fff;font-size:20px;font-weight:800}
+.movie-excel-table .movie-excel-title{width:190px;min-width:190px;height:30px;background:#fff000;color:#292929;font-size:16px;font-weight:800;padding:4px 7px;white-space:normal}
+.movie-excel-table .movie-excel-index{height:25px;background:#00dce9;color:#124c55;font-size:14px;font-weight:800}
+.movie-excel-table .movie-excel-poster{width:190px;min-width:190px;height:285px;background:#fff;padding:5px}
+.movie-excel-table .movie-excel-poster img{display:block;width:100%;height:275px;object-fit:contain}
+.movie-excel-table .movie-excel-poster span{font:12px Arial,sans-serif;color:#748094}
+.movie-excel-table .movie-excel-gap{height:10px;border:0;background:#222}
+.movie-excel-empty{padding:20px;color:#63758a;font-size:13px}
