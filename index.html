@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101827"><title>Chayan Watchlist</title>
-<link rel="stylesheet" href="assets/css/styles.css?v=20261105-uploadfix1"></head>
+<link rel="stylesheet" href="assets/css/styles.css?v=20261105-moviegrid1"></head>
 <body>
 <header><div class="topline"><div class="brand"><div class="logo">▣</div><div><div class="eyebrow">Personal collection manager</div><h1>Chayan Watchlist</h1></div></div><div class="topnote">A SIMPLE, DEVICE-LOCAL MOVIE RECORD.</div></div></header>
 <main>
@@ -26,12 +26,12 @@
   </div>
   <div class="excel-content">
     <div class="excel-stage upload-stage">
-      <div class="stage-heading"><div><div class="stage-title">Upload Excel File to be Updated</div><p>Select your movie collection workbook (.xlsx / .xls)</p></div></div>
+      <div class="stage-heading"><div><div class="stage-title">Upload Excel File to be Updated</div><p>Select your movie collection workbook (.xlsx)</p></div></div>
       <label class="excel-upload" for="excelFile">
         <span class="excel-cloud" aria-hidden="true">↑</span>
         <span class="excel-upload-copy"><strong id="excelFileName">Choose Excel workbook</strong><small id="excelFileHint">Click to browse · Upload required each time</small></span>
         <span class="excel-file-badge">XLSX</span>
-        <input id="excelFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+        <input id="excelFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
       </label>
     </div>
     <div class="excel-stage sheet-select-stage" id="sheetSelectWrap" hidden>
@@ -46,12 +46,12 @@
       </div>
     </div>
     <div class="excel-stage complete-stage" id="completeStage" hidden>
-      <div class="stage-heading"><span class="stage-icon" aria-hidden="true">↓</span><div><div class="stage-title">Download</div><p>Export your workbook with the current watchlist added as a worksheet.</p></div></div>
+      <div class="stage-heading"><span class="stage-icon" aria-hidden="true">↓</span><div><div class="stage-title">Download</div><p>Export your workbook with language-specific movie collection sheets, sorted and formatted.</p></div></div>
       
-      <div class="download-placeholder"><strong>Your workbook is ready to export</strong><p>The exported file will retain the uploaded worksheets and include a separate Watchlist worksheet.</p><button class="primary" id="exportUpdatedExcel" type="button">↓ Export Updated Excel</button></div>
+      <div class="download-placeholder"><strong>Your workbook is ready to export</strong><p>The exported file retains your other worksheets and updates Bengali, Hindi and English sheets with the live movie collection, poster images and reference formatting.</p><button class="primary" id="exportUpdatedExcel" type="button">↓ Export Updated Excel</button></div>
     </div>
     <p class="excel-status" id="excelStatus" role="status">Upload a reference workbook to begin.</p>
   </div>
 </section>
 </div><footer>CHAYAN WATCHLIST · LOCAL MOVIE COLLECTION</footer></main>
-<script type="module" src="assets/js/app.js?v=20261105-uploadfix1"></script></body></html>
+<script type="module" src="assets/js/app.js?v=20261105-moviegrid1"></script></body></html>
