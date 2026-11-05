@@ -358,3 +358,22 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   #movieForm{padding:13px 14px 0}
   .formpanel>.formhint{padding:0 14px 15px}
 }
+
+/* Unnumbered Excel workflow subsections with distinct colour identities */
+.excel-stage .stage-heading{gap:12px}
+.upload-stage{background:linear-gradient(115deg,#f3f8ff,#eaf2fc)!important;border-color:#c9d9ee!important}
+.upload-stage .stage-title{color:#174f7d!important}
+.upload-stage .excel-cloud{background:#dceafa!important;color:#245f9b!important}
+.sheet-select-stage{background:linear-gradient(115deg,#effaf8,#e4f4f0)!important;border-color:#b9ded5!important}
+.sheet-select-stage>.stage-heading .stage-icon{background:#d3eee7!important;color:#147365!important}
+.sheet-select-stage>.stage-heading .stage-title{color:#12695e!important}
+.sheet-select-stage .show-preview-button{background:linear-gradient(105deg,#117b70,#20a18d)!important;border-color:#117b70!important}
+.preview-stage{background:rgba(255,255,255,.82)!important;border-color:#c7e2da!important;margin-top:14px}
+.preview-stage .stage-icon{background:#d3eee7!important;color:#147365!important}
+.preview-stage .stage-title{color:#12695e!important}
+.preview-stage .confirm-preview-button{background:linear-gradient(105deg,#117b70,#20a18d)!important;border-color:#117b70!important}
+.complete-stage{background:linear-gradient(115deg,#f7f3ff,#eee9fb)!important;border-color:#d4c8ee!important}
+.complete-stage .stage-icon{background:#e5dcf7!important;color:#6546a2!important}
+.complete-stage .stage-title{color:#5d438e!important}
+.download-placeholder{background:#fff!important;border-color:#d8ccef!important}
+.download-placeholder .primary{background:linear-gradient(105deg,#6848a7,#8666c4)!important;border-color:#6848a7!important}
