@@ -4,47 +4,6 @@ const LANGUAGE_SHEETS={Bengali:'Bengali Movies',Hindi:'Hindi Movies',English:'En
 const LANGUAGES=Object.keys(LANGUAGE_SHEETS);
 const getLanguageForSheet=name=>LANGUAGES.find(language=>[LANGUAGE_SHEETS[language],language].includes(name))||null;
 const EXCELJS_CDN='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';
-const WORKBOOK_DB='chayan-watchlist-workbook';
-const WORKBOOK_STORE='saved-workbook';
-const WORKBOOK_KEY='last-upload';
-function openWorkbookStore(){
-  return new Promise((resolve,reject)=>{
-    const request=indexedDB.open(WORKBOOK_DB,1);
-    request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains(WORKBOOK_STORE))request.result.createObjectStore(WORKBOOK_STORE);};
-    request.onsuccess=()=>resolve(request.result);
-    request.onerror=()=>reject(request.error||new Error('Could not open local workbook storage.'));
-  });
-}
-async function saveWorkbookLocally(file){
-  const db=await openWorkbookStore();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction(WORKBOOK_STORE,'readwrite');
-    tx.objectStore(WORKBOOK_STORE).put({name:file.name,type:file.type||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',lastModified:file.lastModified||Date.now(),data:file},WORKBOOK_KEY);
-    tx.oncomplete=()=>{db.close();resolve();};
-    tx.onerror=()=>{const error=tx.error;db.close();reject(error||new Error('Could not save the workbook locally.'));};
-    tx.onabort=()=>{const error=tx.error;db.close();reject(error||new Error('Workbook storage was interrupted.'));};
-  });
-}
-async function loadSavedWorkbook(){
-  const db=await openWorkbookStore();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction(WORKBOOK_STORE,'readonly');
-    const request=tx.objectStore(WORKBOOK_STORE).get(WORKBOOK_KEY);
-    request.onsuccess=()=>resolve(request.result||null);
-    request.onerror=()=>reject(request.error||new Error('Could not restore the saved workbook.'));
-    tx.oncomplete=()=>db.close();
-    tx.onerror=()=>db.close();
-  });
-}
-async function clearSavedWorkbook(){
-  const db=await openWorkbookStore();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction(WORKBOOK_STORE,'readwrite');
-    tx.objectStore(WORKBOOK_STORE).delete(WORKBOOK_KEY);
-    tx.oncomplete=()=>{db.close();resolve();};
-    tx.onerror=()=>{const error=tx.error;db.close();reject(error||new Error('Could not clear the saved workbook.'));};
-  });
-}
 let excelJsPromise=null;
 
 function loadExcelJS(){
@@ -103,8 +62,6 @@ export function initExcelInterface(){
   const fileInput=document.getElementById('excelFile');
   const fileName=document.getElementById('excelFileName');
   const fileHint=document.getElementById('excelFileHint');
-  const uploadNewButton=document.getElementById('uploadNewExcel');
-  const uploadLabel=document.getElementById('excelUploadLabel');
   const exportButton=document.getElementById('exportUpdatedExcel');
   const completeStage=document.getElementById('completeStage');
   const confirmPreviewButton=document.getElementById('confirmExcelPreview');
@@ -121,29 +78,6 @@ export function initExcelInterface(){
   let currentPreviewSheet='';
   let uploadAttempt=0;
   const showMessage=message=>{if(status)status.textContent=message;};
-  function setWorkbookLoaded(loaded){
-    if(uploadLabel)uploadLabel.hidden=loaded;
-    if(uploadNewButton)uploadNewButton.hidden=!loaded;
-    sheetSelectWrap.hidden=!loaded;
-  }
-  async function restoreWorkbook(record){
-    if(!record?.data)return;
-    const attempt=++uploadAttempt;
-    selectedFile=new File([record.data],record.name||'saved-workbook.xlsx',{type:record.type||record.data.type,lastModified:record.lastModified||Date.now()});
-    fileName.textContent=selectedFile.name;
-    fileHint.textContent='Restored from this device · Saved until you upload a new workbook';
-    showMessage('Restoring your last uploaded Excel workbook…');
-    const ExcelJS=await loadExcelJS();
-    if(attempt!==uploadAttempt)return;
-    workbook=new ExcelJS.Workbook();
-    await workbook.xlsx.load(await selectedFile.arrayBuffer());
-    if(attempt!==uploadAttempt)return;
-    await syncLanguageSheets();
-    setWorkbookLoaded(true);
-    currentPreviewSheet=sheetSelect.value||'';
-    if(currentPreviewSheet)renderSelectedPreview();
-    showMessage('Your last uploaded workbook has been restored. Continue editing, previewing or exporting.');
-  }
 
   function getOrCreateLanguageSheet(language){
     const targetName=LANGUAGE_SHEETS[language];
@@ -217,11 +151,10 @@ export function initExcelInterface(){
         if(ext){
           try{
             const fittedPoster=await cropPosterToCell(movie.poster);
-            // ExcelJS expects the complete data URI in its base64 field.
-            // Keeping the MIME prefix is essential for the generated XLSX media part.
-            const imageId=workbook.addImage({base64:fittedPoster,extension:'png'});
-            // Anchor to the exact poster cell boundaries. Omit editAs: ExcelJS defaults to the OOXML two-cell anchor; explicitly writing 'twoCell' can create an unsupported editAs value in some spreadsheet viewers.
-            sheet.addImage(imageId,{tl:{col:col-1,row:row+2},br:{col:col,row:row+3}});
+            const base64=fittedPoster.substring(fittedPoster.indexOf(',')+1);
+            const imageId=workbook.addImage({base64,extension:'png'});
+            // Anchor to the exact poster cell boundaries: move and size with cells.
+            sheet.addImage(imageId,{tl:{col:col-1,row:row+2},br:{col:col,row:row+3},editAs:'twoCell'});
           }catch(error){console.warn('Could not embed fitted poster for '+movie.name,error);}
         }
       }
@@ -391,7 +324,7 @@ export function initExcelInterface(){
   fileInput.addEventListener('change',async()=>{
     const attempt=++uploadAttempt;
     selectedFile=fileInput.files&&fileInput.files[0]||null;
-    workbook=null;currentPreviewSheet='';setWorkbookLoaded(false);previewWrap.hidden=true;
+    workbook=null;currentPreviewSheet='';sheetSelectWrap.hidden=true;previewWrap.hidden=true;
     if(completeStage)completeStage.hidden=true;
     if(!selectedFile){fileName.textContent='Choose Excel workbook';fileHint.textContent='Click to browse · Upload required each time';showMessage('Upload a reference workbook to begin.');return;}
     if(!/\.xlsx$/i.test(selectedFile.name)){
@@ -405,19 +338,13 @@ export function initExcelInterface(){
       workbook=new ExcelJS.Workbook();
       await workbook.xlsx.load(await selectedFile.arrayBuffer());if(attempt!==uploadAttempt)return;
       await syncLanguageSheets();
-      await saveWorkbookLocally(selectedFile);
-      setWorkbookLoaded(true);
-      showMessage('Workbook loaded and saved on this device. It will remain available after refresh until you upload a new workbook.');
+      sheetSelectWrap.hidden=false;
+      showMessage('Workbook loaded. Language worksheets are mapped to Bengali, Hindi and English. Select a sheet to preview.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
       if(attempt!==uploadAttempt)return;
-      workbook=null;setWorkbookLoaded(false);showMessage('Excel upload failed: '+(error.message||'Unable to read this workbook.'));
+      workbook=null;showMessage('Excel upload failed: '+(error.message||'Unable to read this workbook.'));
     }
-  });
-
-  uploadNewButton?.addEventListener('click',()=>{
-    // Keep the current workbook intact unless a replacement file is actually selected and loaded.
-    fileInput.click();
   });
 
   showPreviewButton.addEventListener('click',()=>{
@@ -458,8 +385,6 @@ export function initExcelInterface(){
     showMessage('Preview confirmed. Export the formatted language worksheets below.');
     completeStage?.scrollIntoView({behavior:'smooth',block:'nearest'});
   });
-
-  loadSavedWorkbook().then(record=>{if(record)restoreWorkbook(record);}).catch(error=>showMessage('Could not restore the saved workbook: '+(error.message||'Local storage error')));
 
   exportButton?.addEventListener('click',async()=>{
     if(!workbook||!selectedFile)return;
