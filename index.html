@@ -27,12 +27,13 @@
   <div class="excel-content">
     <div class="excel-stage upload-stage">
       <div class="stage-heading"><div><div class="stage-title">Upload Excel File to be Updated</div><p>Select your movie collection workbook (.xlsx)</p></div></div>
-      <label class="excel-upload" for="excelFile">
+      <label class="excel-upload" id="excelUploadLabel" for="excelFile">
         <span class="excel-cloud" aria-hidden="true">↑</span>
         <span class="excel-upload-copy"><strong id="excelFileName">Choose Excel workbook</strong><small id="excelFileHint">Click to browse · Upload required each time</small></span>
         <span class="excel-file-badge">XLSX</span>
         <input id="excelFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
       </label>
+      <button class="primary" id="uploadNewExcel" type="button" hidden>＋ Upload New Excel Workbook</button>
     </div>
     <div class="excel-stage sheet-select-stage" id="sheetSelectWrap" hidden>
       <div class="stage-heading"><span class="stage-icon" aria-hidden="true">▤</span><div><div class="stage-title">Select Sheet for Preview</div><p>Select which sheet you want to inspect before opening its preview.</p></div></div>
