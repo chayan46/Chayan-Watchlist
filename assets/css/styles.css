@@ -47,3 +47,49 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 /* Reference Excel workflow interface */
 .excelpanel{padding:20px;min-width:0}.excel-label{display:block;font-size:10px;font-weight:800;letter-spacing:1px;color:#4b5870;margin-bottom:8px}.excel-upload{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1.5px dashed #cbd4e2;border-radius:11px;padding:16px;background:#fafbfe;cursor:pointer}.excel-upload:hover{border-color:var(--blue);background:#f6f8ff}.excel-upload input{display:none}.excel-upload-icon{width:34px;height:34px;border-radius:9px;background:#eaf0ff;color:var(--blue);display:grid;place-items:center;font-size:21px}.excel-upload strong{font-size:12px;display:block;overflow-wrap:anywhere}.excel-upload small{display:block;width:100%;color:var(--muted);font-size:10px;margin-left:46px;margin-top:-9px}.excel-step{margin:18px 0 12px}.excel-status{font-size:11px;color:var(--muted);margin:10px 0 0;min-height:18px}.primary:disabled{opacity:.45;cursor:not-allowed}.excel-preview-wrap{margin-top:22px;border-top:1px solid var(--line);padding-top:18px}.preview-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.preview-heading strong{font-size:14px}.preview-chip{font-size:9px;font-weight:800;letter-spacing:.7px;color:#66758b;background:#f0f3f8;padding:5px 8px;border-radius:20px}.excel-preview-placeholder{min-height:230px;border:1px solid #dce3ed;border-radius:10px;background:repeating-linear-gradient(0deg,#fff,#fff 31px,#edf1f6 32px),repeating-linear-gradient(90deg,transparent,transparent 119px,#edf1f6 120px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}.preview-sheet-icon{font-size:30px;color:#1c9a72;margin-bottom:8px}.excel-preview-placeholder strong{font-size:13px}.excel-preview-placeholder p,.download-placeholder p{font-size:11px;color:var(--muted);max-width:330px;margin:6px 0 0}.complete-button{margin-top:14px}.download-placeholder{margin-top:14px;padding:14px;border:1px solid #dce5ee;border-radius:9px;background:#fafbfd}.download-placeholder strong{font-size:12px}
 @media(max-width:760px){.workspace{grid-template-columns:1fr}.excelpanel{padding:18px}}
+
+/* Refined workbook workspace visual design */
+.excelpanel{padding:0;overflow:hidden;border:1px solid #dce5f1;border-radius:20px;box-shadow:0 12px 34px rgba(24,48,86,.09)}
+.excel-hero{display:flex;align-items:center;gap:16px;padding:23px 24px;color:#fff;background:linear-gradient(115deg,#10294d 0%,#07518a 72%,#087b83 100%);position:relative;isolation:isolate;overflow:hidden}
+.excel-hero:after{content:"";position:absolute;z-index:-1;width:210px;height:210px;right:-58px;top:-112px;border:25px solid #ffffff12;border-radius:50%;box-shadow:0 0 0 28px #ffffff09,0 0 0 58px #ffffff06}
+.excel-brand-icon{width:54px;height:54px;flex:0 0 54px;border:2px solid #d8f4e8;border-radius:12px;background:linear-gradient(145deg,#20b779,#08764e);display:grid;place-items:center;box-shadow:0 5px 14px #001a3633}
+.excel-brand-icon span{font-size:27px;font-weight:900;color:#fff;text-shadow:1px 2px #075d43}
+.excel-hero-kicker{font-size:10px;letter-spacing:2px;font-weight:800;color:#b7d8ed}
+.excel-hero h2{font-size:clamp(19px,2.2vw,25px);letter-spacing:-.5px;margin:2px 0 1px;color:#fff}
+.excel-hero p{font-size:10px;letter-spacing:1px;color:#d3e5f3;margin:3px 0 0;font-weight:700}
+.excel-content{padding:18px;display:grid;gap:14px}
+.excel-stage{border:1px solid #dce5f5;border-radius:15px;padding:16px;background:linear-gradient(135deg,#fbfcff,#f5f7ff);box-shadow:0 3px 9px #18345b0a}
+.stage-heading{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+.stage-number,.stage-icon{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:grid;place-items:center;background:#5357a8;color:white;font-size:17px;font-weight:850;box-shadow:0 3px 8px #353a8524}
+.stage-title{font-size:15px;font-weight:850;color:#18265b;text-transform:uppercase;letter-spacing:.1px;line-height:1.3}
+.stage-heading p{font-size:11px;color:#64718a;margin:3px 0 0;line-height:1.45}
+.excel-upload{display:flex;align-items:center;gap:12px;flex-wrap:nowrap;min-height:82px;border:2px dashed #6c9ff4;border-radius:12px;padding:13px 15px;background:linear-gradient(110deg,#f1f6ff,#fff);transition:.18s}
+.excel-upload:hover{border-color:#2466d9;background:#edf4ff}
+.excel-cloud{width:42px;height:42px;flex:0 0 42px;border-radius:12px;background:#e2edff;color:#1765d7;display:grid;place-items:center;font-size:29px;font-weight:800}
+.excel-upload-copy{min-width:0;flex:1}
+.excel-upload-copy strong{display:block;font-size:13px;color:#17458f;overflow-wrap:anywhere}
+.excel-upload-copy small{display:block;color:#6c7890;font-size:10px;margin-top:3px}
+.excel-file-badge{flex:0 0 auto;border:1px solid #b6e2cf;border-radius:8px;background:#e6f7ee;color:#12804f;padding:7px 8px;font-size:10px;font-weight:900}
+.ready-stage{display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(120deg,#f8f9ff,#f0f3ff);border-color:#d8ddff}
+.ready-stage .stage-heading,.complete-stage .stage-heading{margin:0}
+.ready-excel-button{width:auto;min-width:190px;margin:0;padding:13px 18px;border-radius:10px;background:linear-gradient(105deg,#1681e5,#1748c8);box-shadow:0 4px 10px #1748c82b;text-transform:uppercase;letter-spacing:.3px}
+.ready-excel-button span{font-size:18px;margin-right:8px}
+.ready-excel-button:hover{background:linear-gradient(105deg,#086dce,#123eaf)}
+.ready-excel-button:disabled{opacity:.45;box-shadow:none}
+.preview-stage{background:linear-gradient(135deg,#eaf9f2,#f8fffb);border-color:#9bd7ba}
+.preview-stage .stage-icon{background:#b8f0d3;color:#08734c;font-size:22px}
+.preview-stage .stage-title{color:#124f3c}
+.excel-preview-placeholder{min-height:205px;border:1px solid #b7c9dc;border-radius:11px;background:repeating-linear-gradient(0deg,#fff,#fff 31px,#e9eef5 32px),repeating-linear-gradient(90deg,transparent,transparent 119px,#e9eef5 120px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.preview-sheet-icon{font-size:45px;color:#aab5c6;margin-bottom:7px}
+.excel-preview-placeholder strong{font-size:13px;color:#65728b;text-transform:uppercase}
+.excel-preview-placeholder p{font-size:10px;color:#8290a3;max-width:350px;margin:5px 0 0}
+.complete-stage{background:linear-gradient(120deg,#f5f3ff,#fbfaff);border-color:#dedbff}
+.complete-button{width:auto;min-width:190px;margin:0;padding:12px 18px;border-radius:10px;background:linear-gradient(105deg,#16a34a,#087443);box-shadow:0 4px 10px #08744324;text-transform:uppercase}
+.complete-button span{font-size:17px;margin-right:8px}
+.complete-button:hover{background:linear-gradient(105deg,#12833d,#066139)}
+.download-placeholder{margin-top:14px;padding:13px;border:1px solid #d5d9e5;border-radius:10px;background:#fff}
+.download-placeholder strong{font-size:12px;color:#33415c}
+.download-placeholder .secondary{width:100%;margin-top:12px;padding:11px;text-transform:uppercase;letter-spacing:.3px}
+.excel-status{font-size:11px;color:#66758b;margin:0;padding:2px 2px 0;min-height:18px}
+@media(max-width:900px){.excel-content{padding:14px}.excel-stage{padding:14px}.ready-stage{align-items:stretch;flex-direction:column}.ready-excel-button,.complete-button{width:100%}}
+@media(max-width:480px){.excel-hero{padding:18px 16px;gap:12px}.excel-brand-icon{width:46px;height:46px;flex-basis:46px}.excel-hero h2{font-size:19px}.excel-hero p{font-size:8px;letter-spacing:.65px}.excel-content{padding:12px}.excel-stage{padding:13px;border-radius:12px}.stage-title{font-size:13px}.stage-heading p{font-size:10px}.excel-upload{gap:9px;padding:11px}.excel-cloud{width:36px;height:36px;flex-basis:36px}.excel-upload-copy strong{font-size:11px}.excel-upload-copy small{font-size:9px}.excel-file-badge{font-size:9px;padding:6px}.excel-preview-placeholder{min-height:175px}}
