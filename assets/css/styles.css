@@ -406,3 +406,11 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 
 /* Alphabet group cell uses the white fill specified for the reference workbook. */
 .movie-excel-table .movie-excel-letter{background:#fff!important;color:#111!important}
+
+
+/* Stable, fully scrollable live movie worksheet preview on desktop and touch screens */
+#excelPreview.movie-excel-preview{display:block!important;width:100%!important;max-width:100%!important;overflow:visible!important;min-width:0!important}
+#excelPreview .movie-excel-scroll{display:block!important;position:relative!important;width:100%!important;max-width:100%!important;max-height:72vh!important;overflow:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-x pan-y!important;scrollbar-width:thin!important}
+#excelPreview .movie-excel-table{display:table!important;width:max-content!important;min-width:max-content!important;max-width:none!important;table-layout:fixed!important}
+#excelPreview .movie-excel-table th,#excelPreview .movie-excel-table td{white-space:normal}
+#excelPreview .movie-excel-table .movie-excel-letter{background:#fff!important;color:#111!important}
