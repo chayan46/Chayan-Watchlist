@@ -130,7 +130,7 @@ export function initExcelInterface(){
     const scroll=document.createElement('div');
     scroll.className='excel-table-scroll excel-virtual-scroll';
     scroll.setAttribute('role','region');
-    scroll.setAttribute('aria-label','Excel worksheet preview. Scroll horizontally and vertically to view 1000 rows and 1000 columns.');
+    scroll.setAttribute('aria-label','Excel worksheet preview. Scroll horizontally and vertically to view 100 rows and 100 columns.');
     const canvas=document.createElement('div');
     canvas.className='excel-virtual-canvas';
     canvas.style.setProperty('display','block','important');
@@ -199,7 +199,7 @@ export function initExcelInterface(){
     const note=document.createElement('p');
     note.className='excel-preview-note';
     const declared=sheet['!ref']||'No populated cell range';
-    note.textContent='1000 rows × 1000 columns available · Worksheet data range: '+declared+'. Scroll in both directions to explore the grid.';
+    note.textContent='100 rows × 100 columns available · Worksheet data range: '+declared+'. Scroll in both directions to explore the grid.';
     preview.appendChild(note);
   }
 
