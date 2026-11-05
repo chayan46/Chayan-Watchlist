@@ -18,7 +18,7 @@ export function initExcelInterface(){
   let workbook=null;
   let xlsxLibraryPromise=null;
 
-  const showMessage=message=>{status.textContent=message;};
+  const showMessage=message=>{if(status)status.textContent=message;};
 
   function loadXLSX(){
     if(window.XLSX)return Promise.resolve(window.XLSX);
@@ -42,7 +42,9 @@ export function initExcelInterface(){
     return xlsxLibraryPromise;
   }
 
+  let uploadAttempt=0;
   fileInput.addEventListener('change',async()=>{
+    const attempt=++uploadAttempt;
     selectedFile=fileInput.files&&fileInput.files[0]||null;
     workbook=null;sheetSelectWrap.hidden=true;previewWrap.hidden=true;
     if(completeStage)completeStage.hidden=true;
@@ -52,14 +54,22 @@ export function initExcelInterface(){
     fileName.textContent=selectedFile.name;fileHint.textContent=(selectedFile.size/1024/1024).toFixed(2)+' MB · File selected successfully';
     showMessage('Excel detected. Reading workbook and loading available sheets…');
     try{
-      const XLSX=await loadXLSX();const buffer=await selectedFile.arrayBuffer();workbook=XLSX.read(buffer,{type:'array',cellDates:true});
+      const XLSX=await loadXLSX();
+      if(attempt!==uploadAttempt)return;
+      const buffer=await selectedFile.arrayBuffer();
+      if(attempt!==uploadAttempt)return;
+      workbook=XLSX.read(buffer,{type:'array',cellDates:true});
       if(!workbook.SheetNames||!workbook.SheetNames.length)throw new Error('No worksheets were found in this workbook.');
       sheetSelect.replaceChildren();
       workbook.SheetNames.forEach((name,index)=>{const option=document.createElement('option');option.value=name;option.textContent=(index+1)+'. '+name;sheetSelect.appendChild(option);});
       sheetSelect.value=workbook.SheetNames[0];sheetSelectWrap.hidden=false;
       showMessage(workbook.SheetNames.length+' worksheet(s) detected. Select a sheet for preview.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
-    }catch(error){workbook=null;showMessage(error&&error.message?error.message:'Unable to read this Excel workbook.');}
+    }catch(error){
+      if(attempt!==uploadAttempt)return;
+      workbook=null;
+      showMessage(error&&error.message?'Excel upload failed: '+error.message:'Unable to read this Excel workbook. Please try another .xlsx or .xls file.');
+    }
   });
 
   showPreviewButton.addEventListener('click',()=>{
