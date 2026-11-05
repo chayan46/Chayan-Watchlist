@@ -220,8 +220,8 @@ export function initExcelInterface(){
             // ExcelJS expects the complete data URI in its base64 field.
             // Keeping the MIME prefix is essential for the generated XLSX media part.
             const imageId=workbook.addImage({base64:fittedPoster,extension:'png'});
-            // Anchor to the exact poster cell boundaries: move and size with cells.
-            sheet.addImage(imageId,{tl:{col:col-1,row:row+2},br:{col:col,row:row+3},editAs:'twoCell'});
+            // Anchor to the exact poster cell boundaries. Omit editAs: ExcelJS defaults to the OOXML two-cell anchor; explicitly writing 'twoCell' can create an unsupported editAs value in some spreadsheet viewers.
+            sheet.addImage(imageId,{tl:{col:col-1,row:row+2},br:{col:col,row:row+3}});
           }catch(error){console.warn('Could not embed fitted poster for '+movie.name,error);}
         }
       }
