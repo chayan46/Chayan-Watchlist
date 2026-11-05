@@ -3,13 +3,12 @@ const LANGUAGES=['Bengali','Hindi','English'];
 const $=id=>document.getElementById(id);
 function node(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
 function render(movies){
-  const counts=Object.fromEntries(LANGUAGES.map(l=>[l,movies.filter(m=>m.language===l).length]));
-  $('total').textContent=String(movies.length);$('bnCard').textContent=String(counts.Bengali);$('hiCard').textContent=String(counts.Hindi);$('enCard').textContent=String(counts.English);
   const query=$('search').value.trim().toLocaleLowerCase();const fragment=document.createDocumentFragment();
   LANGUAGES.forEach((language,index)=>{
     const section=node('section','section'),heading=node('div','sectionhead'),title=node('div','sectiontitle'),dot=node('span','dot');
     dot.style.background=['#168b7e','#c68a36','#536bd0'][index];
-    title.append(dot,node('h3','',language+' Movies'),node('span','count',counts[language]+' TOTAL'));heading.append(title);
+    const languageCount=movies.filter(m=>m.language===language).length;
+    title.append(dot,node('h3','',language+' Movies'),node('span','count',languageCount+' TOTAL'));heading.append(title);
     const list=node('div','movies');
     const matching=movies.filter(m=>m.language===language&&(!query||(m.name+' '+m.year+' '+m.language).toLocaleLowerCase().includes(query)));
     if(!matching.length)list.append(node('div','empty',query?'No matching '+language.toLowerCase()+' movies.':'No '+language.toLowerCase()+' movies added yet. Add one using the form.'));
