@@ -148,3 +148,15 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
 .excel-table-scroll.excel-virtual-scroll .excel-virtual-rowhead{position:absolute!important;display:flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;box-sizing:border-box!important}
 .excel-table-scroll.excel-virtual-scroll .excel-virtual-cell{position:absolute!important;display:flex!important;align-items:center!important;white-space:nowrap!important;box-sizing:border-box!important}
 .excel-table-scroll.excel-virtual-scroll .excel-virtual-corner{position:absolute!important;display:block!important;box-sizing:border-box!important}
+
+/* Final isolation fix: prevent site-wide/mobile layout rules from affecting grid cells */
+#excelPreview .excel-table-scroll.excel-virtual-scroll{box-sizing:border-box!important;display:block!important;contain:layout paint!important;isolation:isolate!important}
+#excelPreview .excel-virtual-canvas{box-sizing:border-box!important;display:block!important;position:relative!important;flex:0 0 auto!important;float:none!important;writing-mode:horizontal-tb!important;direction:ltr!important}
+#excelPreview .excel-virtual-canvas>.excel-virtual-colhead,
+#excelPreview .excel-virtual-canvas>.excel-virtual-rowhead,
+#excelPreview .excel-virtual-canvas>.excel-virtual-cell,
+#excelPreview .excel-virtual-canvas>.excel-virtual-corner{margin:0!important;float:none!important;writing-mode:horizontal-tb!important;line-height:normal!important;min-height:0!important;max-height:none!important;transform:none!important}
+#excelPreview .excel-virtual-canvas>.excel-virtual-colhead{height:34px!important;min-width:92px!important;max-width:92px!important}
+#excelPreview .excel-virtual-canvas>.excel-virtual-rowhead{height:35px!important;min-width:42px!important;max-width:42px!important}
+#excelPreview .excel-virtual-canvas>.excel-virtual-cell{height:35px!important;min-width:92px!important;max-width:92px!important}
+#excelPreview .excel-virtual-canvas>.excel-virtual-corner{width:42px!important;height:34px!important}
