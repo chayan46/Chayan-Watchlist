@@ -192,3 +192,9 @@ footer{text-align:center;color:#99a3b2;font-size:10px;padding:25px}
   #excelPreview .excel-virtual-scroll{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;overflow:auto!important}
   #excelPreview .excel-virtual-canvas{width:9242px!important;height:3534px!important;min-width:9242px!important;min-height:3534px!important;max-width:none!important}
 }
+
+/* Mobile-friendly, always-visible left/right navigation for Excel preview */
+#excelPreview .excel-horizontal-nav{display:flex!important;align-items:center!important;gap:10px!important;width:100%!important;max-width:100%!important;min-width:0!important;margin:10px 0 2px!important;padding:8px 10px!important;border:1px solid #d6e0eb!important;border-radius:9px!important;background:#f4f7fb!important;box-sizing:border-box!important}
+#excelPreview .excel-horizontal-label{flex:0 0 auto!important;color:#52647b!important;font-size:10px!important;font-weight:800!important;letter-spacing:.4px!important;white-space:nowrap!important}
+#excelPreview .excel-horizontal-range{display:block!important;flex:1 1 auto!important;width:100%!important;min-width:30px!important;height:30px!important;margin:0!important;padding:0!important;accent-color:#1769c2!important;cursor:ew-resize!important;touch-action:pan-y!important}
+#excelPreview .excel-table-scroll.excel-virtual-scroll{overscroll-behavior-x:contain!important;touch-action:pan-x pan-y!important;scrollbar-width:thin!important}
