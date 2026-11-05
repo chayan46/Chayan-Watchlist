@@ -19,6 +19,20 @@
 <button class="primary" type="submit">＋ Add movie to collection</button>
 </form><div class="formhint">Your entries are saved in this browser on this device. Poster images are stored locally; they do not automatically sync across devices.</div>
 </aside>
-
+<section class="panel excelpanel" aria-labelledby="excelHeading">
+<div class="panelhead"><div><div class="kicker">Workbook workspace</div><h2 id="excelHeading">Reference Excel File</h2></div><span>▤</span></div>
+<div class="excel-step">
+<label class="excel-label" for="excelFile">1. UPLOAD REFERENCE EXCEL</label>
+<label class="excel-upload" for="excelFile"><span class="excel-upload-icon">＋</span><strong id="excelFileName">Choose Excel workbook</strong><small id="excelFileHint">.xlsx or .xls · Upload required each time</small><input id="excelFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"></label>
+</div>
+<button class="primary" id="readyExcel" type="button" disabled>Ready to update</button>
+<p class="excel-status" id="excelStatus" role="status">Upload a reference workbook to begin.</p>
+<div class="excel-preview-wrap" id="excelPreviewWrap" hidden>
+<div class="preview-heading"><div><div class="excel-label">2. LIVE EXCEL PREVIEW</div><strong>Workbook preview</strong></div><span class="preview-chip">PREVIEW AREA</span></div>
+<div class="excel-preview-placeholder" id="excelPreview"><div class="preview-sheet-icon">▦</div><strong>Excel preview will appear here</strong><p>The workbook preview and live row updates will be connected in the next development stage.</p></div>
+<button class="primary complete-button" id="completeExcel" type="button">Update Complete</button>
+<div class="download-placeholder" id="excelDownload" hidden><strong>Workbook update stage</strong><p>Download will be enabled when Excel reading and writing functionality is implemented.</p><button class="secondary" type="button" disabled>Download updated Excel</button></div>
+</div>
+</section>
 </div><footer>CHAYAN WATCHLIST · LOCAL MOVIE COLLECTION</footer></main>
 <script type="module" src="assets/js/app.js"></script></body></html>
