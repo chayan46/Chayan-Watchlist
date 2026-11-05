@@ -457,3 +457,10 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 #excelPreview .excel-preview-note{
   color:#52647B!important;font-family:"Aptos","Segoe UI",Arial,sans-serif!important;
 }
+
+
+/* Alphabet marker: Soft Steel Blue, paired with Midnight Navy lettering */
+#excelPreview .movie-excel-table .movie-excel-letter{
+  background:#DCE5F0!important;
+  color:#172B4D!important;
+}
