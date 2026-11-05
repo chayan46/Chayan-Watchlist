@@ -2,6 +2,13 @@ import {getMovies,subscribeToMovies} from './data-management.js';
 
 const LANGUAGE_SHEETS={Bengali:'Bengali Movies',Hindi:'Hindi Movies',English:'English Movies'};
 const LANGUAGES=Object.keys(LANGUAGE_SHEETS);
+const WORKBOOK_DB='chayan-watchlist-excel-state';
+const WORKBOOK_STORE='excel-workspace';
+function openWorkbookDB(){return new Promise((resolve,reject)=>{const request=indexedDB.open(WORKBOOK_DB,1);request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains(WORKBOOK_STORE))request.result.createObjectStore(WORKBOOK_STORE);};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
+async function saveWorkbookState(state){const db=await openWorkbookDB();await new Promise((resolve,reject)=>{const tx=db.transaction(WORKBOOK_STORE,'readwrite');tx.objectStore(WORKBOOK_STORE).put(state,'last-workbook');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();}
+async function readWorkbookState(){const db=await openWorkbookDB();const value=await new Promise((resolve,reject)=>{const request=db.transaction(WORKBOOK_STORE,'readonly').objectStore(WORKBOOK_STORE).get('last-workbook');request.onsuccess=()=>resolve(request.result||null);request.onerror=()=>reject(request.error);});db.close();return value;}
+async function clearWorkbookState(){const db=await openWorkbookDB();await new Promise((resolve,reject)=>{const tx=db.transaction(WORKBOOK_STORE,'readwrite');tx.objectStore(WORKBOOK_STORE).delete('last-workbook');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();}
+
 const getLanguageForSheet=name=>LANGUAGES.find(language=>[LANGUAGE_SHEETS[language],language].includes(name))||null;
 const EXCELJS_CDN='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';
 let excelJsPromise=null;
@@ -60,6 +67,7 @@ const getPosterExtension=data=>{
 
 export function initExcelInterface(){
   const fileInput=document.getElementById('excelFile');
+  const resetButton=document.getElementById('resetAndUploadNewFile');
   const fileName=document.getElementById('excelFileName');
   const fileHint=document.getElementById('excelFileHint');
   const exportButton=document.getElementById('exportUpdatedExcel');
@@ -78,6 +86,8 @@ export function initExcelInterface(){
   let currentPreviewSheet='';
   let uploadAttempt=0;
   const showMessage=message=>{if(status)status.textContent=message;};
+  async function persistCurrentWorkbook(){if(!workbook||!selectedFile)return;const buffer=await workbook.xlsx.writeBuffer();await saveWorkbookState({buffer,fileName:selectedFile.name,sheetName:currentPreviewSheet,previewVisible:!!(previewWrap&&!previewWrap.hidden)});}
+  resetButton?.addEventListener('click',async()=>{resetButton.disabled=true;try{await clearWorkbookState();fileInput.value='';window.location.reload();}catch(error){resetButton.disabled=false;showMessage('Could not clear the saved Excel workbook: '+(error.message||'Unknown error'));}});
 
   function getOrCreateLanguageSheet(language){
     const targetName=LANGUAGE_SHEETS[language];
@@ -328,6 +338,8 @@ export function initExcelInterface(){
     persistCurrentWorkbook().catch(error=>{currentPreviewSheet=previous;console.warn('Could not save worksheet selection:',error);});
   });
 
+  sheetSelect.addEventListener('change',()=>{if(!workbook)return;currentPreviewSheet=sheetSelect.value;persistCurrentWorkbook().catch(error=>console.warn('Could not save worksheet selection:',error));});
+
   fileInput.addEventListener('change',async()=>{
     const attempt=++uploadAttempt;
     selectedFile=fileInput.files&&fileInput.files[0]||null;
@@ -346,6 +358,7 @@ export function initExcelInterface(){
       await workbook.xlsx.load(await selectedFile.arrayBuffer());if(attempt!==uploadAttempt)return;
       await syncLanguageSheets();
       sheetSelectWrap.hidden=false;
+      await persistCurrentWorkbook();
       showMessage('Workbook loaded. Language worksheets are mapped to Bengali, Hindi and English. Select a sheet to preview.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
@@ -361,6 +374,7 @@ export function initExcelInterface(){
     try{
       if(completeStage)completeStage.hidden=true;
       renderSelectedPreview();
+      persistCurrentWorkbook().catch(error=>console.warn('Could not save Excel preview selection:',error));
       showMessage('Showing worksheet: '+currentPreviewSheet+'. Add movies to see this preview update live.');
       previewWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
@@ -376,6 +390,7 @@ export function initExcelInterface(){
     updateQueue=updateQueue.then(async()=>{
       if(!workbook)return;
       await syncLanguageSheets();
+      await persistCurrentWorkbook();
       if(currentPreviewSheet){
         renderSelectedPreview();
         showMessage('Movie collection updated. '+currentPreviewSheet+' preview is synchronized with '+getMovies().filter(movie=>movie.language===getLanguageForSheet(currentPreviewSheet)).length+' movie(s).');
@@ -408,4 +423,24 @@ export function initExcelInterface(){
     }catch(error){showMessage('Could not export workbook: '+(error.message||'Unknown error'));}
     finally{exportButton.disabled=false;}
   });
+  // Restore only the Excel workbook and its preview controls after a normal refresh.
+  (async()=>{
+    try{
+      const saved=await readWorkbookState();
+      if(!saved||!saved.buffer)return;
+      const ExcelJS=await loadExcelJS();
+      workbook=new ExcelJS.Workbook();
+      await workbook.xlsx.load(saved.buffer);
+      selectedFile={name:saved.fileName||'Saved workbook.xlsx'};
+      fileName.textContent=selectedFile.name;
+      fileHint.textContent='Restored from this device · Ready to preview';
+      refreshSheetOptions();
+      sheetSelectWrap.hidden=false;
+      currentPreviewSheet=workbook.getWorksheet(saved.sheetName)?.name||sheetSelect.value;
+      if(currentPreviewSheet)sheetSelect.value=currentPreviewSheet;
+      if(saved.previewVisible&&currentPreviewSheet){renderSelectedPreview();showMessage('Restored your Excel workbook and preview from this device.');}
+      else showMessage('Restored your Excel workbook. Select a worksheet to preview.');
+    }catch(error){console.warn('Could not restore saved Excel workspace:',error);showMessage('Saved Excel workbook could not be restored. Please upload it again.');}
+  })();
+
 }
