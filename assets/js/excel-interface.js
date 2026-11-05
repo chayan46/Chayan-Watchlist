@@ -256,10 +256,23 @@ export function initExcelInterface(){
   }
 
   function renderSelectedPreview(){
-    if(!workbook||!currentPreviewSheet)return;
-    const language=getLanguageForSheet(currentPreviewSheet);
+    if(!workbook||!currentPreviewSheet)throw new Error('Select a worksheet to preview.');
+    const sheet=workbook.getWorksheet(currentPreviewSheet);
+    if(!sheet)throw new Error('The selected worksheet is no longer available. Please select it again.');
+    const language=getLanguageForSheet(sheet.name);
     if(language)renderLanguagePreview(language);
-    else renderGenericSheet(workbook.getWorksheet(currentPreviewSheet));
+    else renderGenericSheet(sheet);
+    if(previewWrap)previewWrap.hidden=false;
+  }
+
+  function renderPreviewError(error){
+    preview.replaceChildren();
+    preview.classList.remove('movie-excel-preview');
+    const message=document.createElement('p');
+    message.className='movie-excel-empty';
+    message.textContent='Preview could not be rendered: '+(error?.message||'Unknown worksheet error');
+    preview.appendChild(message);
+    previewWrap.hidden=false;
   }
 
   function syncLanguageSheets(){
@@ -313,11 +326,15 @@ export function initExcelInterface(){
     currentPreviewSheet=sheetSelect.value;
     if(!currentPreviewSheet)return;
     try{
-      renderSelectedPreview();previewWrap.hidden=false;
       if(completeStage)completeStage.hidden=true;
+      renderSelectedPreview();
       showMessage('Showing worksheet: '+currentPreviewSheet+'. Add movies to see this preview update live.');
       previewWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
-    }catch(error){showMessage('Could not display this worksheet: '+(error.message||'Unknown error'));}
+    }catch(error){
+      renderPreviewError(error);
+      showMessage('Could not display this worksheet: '+(error.message||'Unknown error'));
+      previewWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
   });
 
   subscribeToMovies(()=>{
