@@ -308,12 +308,28 @@ export function initExcelInterface(){
     }
     const table=document.createElement('table');
     table.className='excel-grid-table';
-    // Empty workbooks/sheets still need a useful spreadsheet-style canvas.
-    // ExcelJS reports zero dimensions for a truly blank worksheet, so provide
-    // a visible grid instead of collapsing the preview to a tiny empty cell.
     const hasCellContent=Boolean(sheet.actualRowCount||sheet.actualColumnCount);
     const maxRow=Math.min(Math.max(sheet.rowCount||sheet.actualRowCount||20,20),100);
     const maxCol=Math.min(Math.max(sheet.columnCount||sheet.actualColumnCount||10,10),30);
+    const columnNumber=letters=>[...letters].reduce((n,ch)=>n*26+ch.charCodeAt(0)-64,0);
+    const mergedMasters=new Map();
+    const mergedCovered=new Set();
+    // Preserve Excel's merged-cell geometry. ExcelJS returns the master value
+    // from every cell in a merge; rendering each cell independently duplicates
+    // labels (for example A in all four rows of A1:A4).
+    (sheet.model.merges||[]).forEach(range=>{
+      const match=String(range).match(/^([A-Z]+)(\\d+):([A-Z]+)(\\d+)$/i);
+      if(!match)return;
+      const r1=Number(match[2]),c1=columnNumber(match[1].toUpperCase());
+      const r2=Number(match[4]),c2=columnNumber(match[3].toUpperCase());
+      if(r1>maxRow||c1>maxCol)return;
+      mergedMasters.set(r1+':'+c1,{rowSpan:Math.min(r2,maxRow)-r1+1,colSpan:Math.min(c2,maxCol)-c1+1});
+      for(let rr=r1;rr<=Math.min(r2,maxRow);rr++){
+        for(let cc=c1;cc<=Math.min(c2,maxCol);cc++){
+          if(rr!==r1||cc!==c1)mergedCovered.add(rr+':'+cc);
+        }
+      }
+    });
     const head=document.createElement('thead');
     const headRow=document.createElement('tr');
     const corner=document.createElement('th');
@@ -334,7 +350,15 @@ export function initExcelInterface(){
       rowHeading.textContent=String(rowIndex);
       row.appendChild(rowHeading);
       for(let col=1;col<=maxCol;col++){
+        const key=rowIndex+':'+col;
+        if(mergedCovered.has(key))continue;
         const cell=document.createElement('td');
+        const merge=mergedMasters.get(key);
+        if(merge){
+          if(merge.rowSpan>1)cell.rowSpan=merge.rowSpan;
+          if(merge.colSpan>1)cell.colSpan=merge.colSpan;
+          cell.classList.add('excel-grid-merged-cell');
+        }
         const value=sheet.getCell(rowIndex,col).value;
         if(value&&typeof value==='object'){
           if(value.text)cell.textContent=value.text;
