@@ -117,8 +117,8 @@ export function initExcelInterface(){
       sheet.mergeCells(row,1,row+3,1);
       const groupCell=sheet.getCell(row,1);
       groupCell.value=letter;
-      groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFFFFF'}};
-      groupCell.font={name:'Aptos Display',size:24,bold:true,color:{argb:'FF202A35'}};
+      groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDCE5F0'}};
+      groupCell.font={name:'Aptos Display',size:24,bold:true,color:{argb:'FF172B4D'}};
       groupCell.alignment={vertical:'middle',horizontal:'center'};
       groupCell.border={top:{style:'medium',color:{argb:'FFB8C6D8'}},bottom:{style:'medium',color:{argb:'FFB8C6D8'}},left:{style:'medium',color:{argb:'FFB8C6D8'}},right:{style:'medium',color:{argb:'FFB8C6D8'}}};
       sheet.getRow(row).height=25;
