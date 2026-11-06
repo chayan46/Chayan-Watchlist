@@ -186,7 +186,7 @@ export function initExcelInterface(){
       const row=range.tl&&range.tl.row;
       const col=range.tl&&range.tl.col;
       if(!Number.isInteger(row)||!Number.isInteger(col))continue;
-      const item=media[Number(image.imageId)-1];
+      const item=media[Number(image.imageId)];
       if(!item)continue;
       let poster='';
       try{
@@ -682,7 +682,7 @@ export function initExcelInterface(){
     for(const image of sheet.getImages()){
       const range=image.range||{},tl=range.tl||{};
       if(!Number.isInteger(tl.row)||!Number.isInteger(tl.col))continue;
-      const media=mediaItems[Number(image.imageId)-1];
+      const media=mediaItems[Number(image.imageId)];
       if(!media)continue;
       let src='';
       try{
