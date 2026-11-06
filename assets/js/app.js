@@ -14,3 +14,15 @@ sidebarToggle?.addEventListener('click',()=>{
   const icon=sidebarToggle.querySelector('.toggle-icon');
   if(icon)icon.textContent=collapsed?'›':'‹';
 });
+
+const movieEntryPanel=document.getElementById('movieDetailsPanel');
+function setMovieEntryAvailability(enabled){
+  if(!movieEntryPanel)return;
+  movieEntryPanel.inert=!enabled;
+  movieEntryPanel.classList.toggle('movie-entry-locked',!enabled);
+  movieEntryPanel.setAttribute('aria-disabled',String(!enabled));
+}
+setMovieEntryAvailability(false);
+document.addEventListener('movie-entry-availability',event=>{
+  setMovieEntryAvailability(Boolean(event.detail&&event.detail.enabled));
+});
