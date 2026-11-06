@@ -571,3 +571,64 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   border-color:#D6A36A!important;
   color:#FFFFFF!important;
 }
+
+
+/* Adaptive spreadsheet sizing: readable data grid and balanced movie worksheet columns. */
+#excelPreview .excel-grid-100{
+  width:11046px!important;
+  min-width:11046px!important;
+}
+#excelPreview .excel-grid-100 th,
+#excelPreview .excel-grid-100 td{
+  width:110px!important;
+  min-width:110px!important;
+  max-width:110px!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  padding:6px 8px!important;
+  font-size:12px!important;
+}
+#excelPreview .excel-grid-100 .excel-grid-corner,
+#excelPreview .excel-grid-100 .excel-grid-row-heading{
+  width:46px!important;
+  min-width:46px!important;
+  max-width:46px!important;
+}
+#excelPreview .excel-grid-100 thead th{height:36px!important;min-height:36px!important;max-height:36px!important}
+
+/* Movie sheets use one consistent column per movie, so the poster width sets
+   the shared movie-column width; title cells wrap within that width. */
+#excelPreview .movie-excel-table{
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+#excelPreview .movie-excel-table .movie-excel-letter{
+  width:76px!important;min-width:76px!important;max-width:76px!important;
+  font-size:38px!important;
+}
+#excelPreview .movie-excel-table .movie-excel-year,
+#excelPreview .movie-excel-table .movie-excel-title,
+#excelPreview .movie-excel-table .movie-excel-index,
+#excelPreview .movie-excel-table .movie-excel-poster{
+  width:150px!important;min-width:150px!important;max-width:150px!important;
+  box-sizing:border-box!important;
+}
+#excelPreview .movie-excel-table .movie-excel-year{
+  height:38px!important;font-size:15px!important;
+}
+#excelPreview .movie-excel-table .movie-excel-title{
+  height:46px!important;padding:5px 7px!important;
+  font-size:12px!important;line-height:1.25!important;
+  white-space:normal!important;overflow-wrap:anywhere!important;
+}
+#excelPreview .movie-excel-table .movie-excel-index{
+  height:34px!important;font-size:12px!important;
+}
+#excelPreview .movie-excel-table .movie-excel-poster{
+  height:225px!important;padding:5px!important;
+}
+#excelPreview .movie-excel-table .movie-excel-poster img{
+  display:block!important;width:100%!important;height:215px!important;
+  object-fit:cover!important;object-position:center!important;
+}
