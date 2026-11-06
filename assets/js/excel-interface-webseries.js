@@ -104,7 +104,7 @@ export function initExcelInterface(){
         for(let row=1;row<=sheet.rowCount;row++){
           const value=sheet.getCell(row,1).value;
           const label=value&&typeof value==='object'&&Array.isArray(value.richText)?value.richText.map(run=>run.text||'').join(''):String(value??'');
-          for(const match of label.matchAll(/\\((\\d+)\\)/g))count+=Number(match[1])||0;
+          for(const match of label.matchAll(/\((\d+)\)/g))count+=Number(match[1])||0;
         }
       }
       overall+=count;
