@@ -102,7 +102,11 @@ export function initExcelInterface(){
       let count=0;
       if(sheet){
         for(let row=1;row<=sheet.rowCount;row++){
-          const value=sheet.getCell(row,1).value;
+          const countCell=sheet.getCell(row,1);
+          // ExcelJS exposes the master value through merged continuation cells too.
+          // Count only the top-left master cell so each merged alphabet block is read once.
+          if(countCell.isMerged&&countCell.master&&countCell.master.address!==countCell.address)continue;
+          const value=countCell.value;
           const label=value&&typeof value==='object'&&Array.isArray(value.richText)?value.richText.map(run=>run.text||'').join(''):String(value??'');
           for(const match of label.matchAll(/\((\d+)\)/g))count+=Number(match[1])||0;
         }
