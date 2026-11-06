@@ -1006,6 +1006,9 @@ export function initExcelInterface(){
       sheetSelectWrap.hidden=false;
       currentPreviewSheet=workbook.getWorksheet(saved.sheetName)?.name||sheetSelect.value;
       if(currentPreviewSheet)sheetSelect.value=currentPreviewSheet;
+      publishSelectedWorksheet(currentPreviewSheet);
+      // A workbook successfully restored from IndexedDB is still present; unlock the Movie Details panel.
+      setMovieEntryAvailability(true);
       previewConfirmed=!!saved.previewConfirmed;
       removedWorkbookMovieKeys=new Set(Array.isArray(saved.removedWorkbookMovieKeys)?saved.removedWorkbookMovieKeys:[]);
       if(saved.previewVisible&&currentPreviewSheet){renderSelectedPreview();if(previewConfirmed&&completeStage)completeStage.hidden=false;showMessage(previewConfirmed?'Restored your confirmed Excel preview. Live workbook updates are active.':'Restored your Excel workbook and preview from this device. Confirm the preview to enable live updates.');}
