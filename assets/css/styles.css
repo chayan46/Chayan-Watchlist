@@ -842,5 +842,5 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 
 /* Sequential movie subgroup counters in the Excel preview. */
 #excelPreview .movie-excel-table .movie-excel-franchise{white-space:normal!important;}
-#excelPreview .movie-excel-franchise-label{display:block!important;font-size:32px!important;line-height:1.05!important;font-weight:800!important;color:#fff!important;}
-#excelPreview .movie-excel-franchise-count{display:block!important;margin-top:5px!important;font-family:"Aptos","Segoe UI",Arial,sans-serif!important;font-size:18px!important;line-height:1.1!important;font-weight:700!important;font-style:italic!important;color:#fff!important;}
+#excelPreview .movie-excel-franchise-label{display:block!important;font-family:"Aptos Display","Segoe UI",Arial,sans-serif!important;font-size:32px!important;line-height:1.05!important;font-weight:700!important;color:#263445!important;}
+#excelPreview .movie-excel-franchise-count{display:block!important;margin-top:5px!important;font-family:"Aptos","Segoe UI",Arial,sans-serif!important;font-size:18px!important;line-height:1.1!important;font-weight:700!important;font-style:italic!important;color:#147D75!important;}
