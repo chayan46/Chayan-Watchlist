@@ -203,9 +203,8 @@ export function initExcelInterface(){
   function getOrCreateLanguageSheet(language){
     const targetName=LANGUAGE_SHEETS[language];
     const existing=workbook.getWorksheet(targetName);
-    const legacy=workbook.getWorksheet(language);
     if(existing)workbook.removeWorksheet(existing.id);
-    if(legacy&&legacy.id!==existing?.id)workbook.removeWorksheet(legacy.id);
+    // Keep any uploaded legacy-named worksheet (for example, "Bengali") intact.
     return workbook.addWorksheet(targetName);
   }
 
@@ -213,7 +212,7 @@ export function initExcelInterface(){
     LANGUAGES.forEach(language=>{
       const preferred=workbook.getWorksheet(LANGUAGE_SHEETS[language]);
       const duplicate=workbook.getWorksheet(language);
-      if(preferred&&duplicate&&preferred.id!==duplicate.id)workbook.removeWorksheet(duplicate.id);
+      if(preferred&&duplicate&&preferred.id!==duplicate.id&&!originalWorksheetNames.includes(language))workbook.removeWorksheet(duplicate.id);
     });
   }
 
