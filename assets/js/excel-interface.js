@@ -823,8 +823,8 @@ export function initExcelInterface(){
       ...originalWorksheetNames.filter(name=>workbook.getWorksheet(name)),
       ...LANGUAGES.map(language=>LANGUAGE_SHEETS[language]).filter(name=>workbook.getWorksheet(name))
     ];
-    orderedNames.forEach((name,index)=>{
-      const option=document.createElement('option');option.value=name;option.textContent=(index+1)+'. '+name;sheetSelect.appendChild(option);
+    orderedNames.forEach(name=>{
+      const option=document.createElement('option');option.value=name;option.textContent=name;sheetSelect.appendChild(option);
     });
     if(workbook.getWorksheet(previous))sheetSelect.value=previous;
     else if(workbook.getWorksheet(LANGUAGE_SHEETS.Bengali))sheetSelect.value=LANGUAGE_SHEETS.Bengali;
