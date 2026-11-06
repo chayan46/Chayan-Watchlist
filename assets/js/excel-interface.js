@@ -679,9 +679,9 @@ export function initExcelInterface(){
         renderExcelCellContent(td,cell);
         // Add a preview-only remove control to each movie title cell in generated language worksheets.
         const previewLanguage=getLanguageForSheet(sheet.name);
-        if(previewLanguage&&r%3===2&&c>=2){
-          const movieName=excelCellText(cell.value).trim();
-          const movieYear=Number(excelCellText(sheet.getCell(r-1,c).value).trim());
+        if(previewLanguage&&r%3===0&&c>=2){
+          const movieName=excelCellText(sheet.getCell(r-1,c).value).trim();
+          const movieYear=Number(excelCellText(sheet.getCell(r-2,c).value).trim());
           if(movieName&&Number.isInteger(movieYear)&&movieYear>=1888&&movieYear<=2100){
             const removeButton=document.createElement('button');
             removeButton.type='button';
