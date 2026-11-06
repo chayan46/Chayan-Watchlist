@@ -1,7 +1,7 @@
 import {initInputSection} from './input-section.js?v=20261106-paste-only-v1';
 import {initExcelInterface} from './excel-interface.js?v=20261106-workbook-restore-gate-v1';
 import {initInputSection as initWebseriesInputSection} from './input-section-webseries.js?v=20261106-independent-webseries-v1';
-import {initExcelInterface as initWebseriesExcelInterface} from './excel-interface-webseries.js?v=20261106-independent-webseries-v1';
+import {initExcelInterface as initWebseriesExcelInterface} from './excel-interface-webseries.js?v=20261106-section-counter-v1';
 initInputSection();
 initExcelInterface();
 initWebseriesInputSection();
