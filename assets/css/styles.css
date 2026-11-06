@@ -2281,3 +2281,25 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 .poster-paste-status{margin-top:7px;color:#718096;font-size:10px;line-height:1.45}
 .poster-preview-wrap{margin-top:10px}
 #webseriesPosterPreview{max-width:100%;max-height:260px;object-fit:contain}
+
+
+/* Live overall worksheet entry counters beside the worksheet selector. */
+.sheet-select-stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.92fr);column-gap:24px;align-items:start}
+.sheet-select-stage>.stage-heading,.sheet-select-stage>.preview-stage{grid-column:1/-1}
+.sheet-select-stage>.sheet-select-label,.sheet-select-stage>.excel-sheet-select,.sheet-select-stage>.show-preview-button{grid-column:1;}
+.sheet-select-stage>.worksheet-counter-panel{grid-column:2;grid-row:2/5;}
+.worksheet-counter-panel{width:100%;box-sizing:border-box;padding:17px;border:1px solid #cbd9e8;border-radius:14px;background:linear-gradient(145deg,#f7fbff,#edf5fb);box-shadow:0 5px 16px rgba(28,55,82,.06)}
+.worksheet-counter-panel[hidden]{display:none!important}
+.worksheet-counter-heading{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;color:#52647b}
+.worksheet-counter-heading span{font-size:9px;font-weight:850;letter-spacing:1px}
+.worksheet-counter-heading strong{font-size:16px;color:#173e66}
+.worksheet-counter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.worksheet-counter-card{display:flex;flex-direction:column;gap:6px;min-width:0;padding:11px 9px;border:1px solid #d9e4ef;border-radius:10px;background:#fff}
+.worksheet-counter-card span{min-height:28px;color:#52647b;font-size:10px;font-weight:700;line-height:1.35}
+.worksheet-counter-card strong{color:#173e66;font-size:25px;font-weight:850;line-height:1.1;font-variant-numeric:tabular-nums}
+.worksheet-counter-card small{color:#8291a3;font-size:8px;font-weight:800;letter-spacing:.8px}
+.worksheet-counter-total{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px;padding:12px 13px;border-radius:10px;background:#173e66;color:#fff}
+.worksheet-counter-total span{font-size:9px;font-weight:800;letter-spacing:.55px;line-height:1.35}
+.worksheet-counter-total strong{font-size:27px;font-weight:850;font-variant-numeric:tabular-nums}
+@media(max-width:720px){.sheet-select-stage{grid-template-columns:minmax(0,1fr);row-gap:12px}.sheet-select-stage>.stage-heading,.sheet-select-stage>.preview-stage,.sheet-select-stage>.sheet-select-label,.sheet-select-stage>.excel-sheet-select,.sheet-select-stage>.show-preview-button,.sheet-select-stage>.worksheet-counter-panel{grid-column:1;grid-row:auto}.worksheet-counter-panel{margin:4px 0 8px}}
+@media(max-width:420px){.worksheet-counter-panel{padding:13px}.worksheet-counter-grid{gap:6px}.worksheet-counter-card{padding:9px 7px}.worksheet-counter-card strong{font-size:21px}.worksheet-counter-card span{font-size:9px}}
