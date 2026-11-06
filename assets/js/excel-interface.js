@@ -95,7 +95,7 @@ export function initExcelInterface(){
     if(resetInProgress||localStorage.getItem('chayan-watchlist-reset-in-progress')==='1'||!workbook||!selectedFile)return;
     const buffer=await workbook.xlsx.writeBuffer();
     if(resetInProgress||localStorage.getItem('chayan-watchlist-reset-in-progress')==='1')return;
-    await saveWorkbookState({buffer,fileName:selectedFile.name,sheetName:currentPreviewSheet,previewVisible:!!(previewWrap&&!previewWrap.hidden)});
+    await saveWorkbookState({buffer,fileName:selectedFile.name,sheetName:currentPreviewSheet,previewVisible:!!(previewWrap&&!previewWrap.hidden),previewConfirmed});
   }
   // A reset invalidates in-flight uploads/restores before clearing every app-owned cache.
   if(resetButton&&!resetButton.dataset.resetHandlerBound){
@@ -809,7 +809,8 @@ export function initExcelInterface(){
       sheetSelectWrap.hidden=false;
       currentPreviewSheet=workbook.getWorksheet(saved.sheetName)?.name||sheetSelect.value;
       if(currentPreviewSheet)sheetSelect.value=currentPreviewSheet;
-      if(saved.previewVisible&&currentPreviewSheet){renderSelectedPreview();showMessage('Restored your Excel workbook and preview from this device.');}
+      previewConfirmed=!!saved.previewConfirmed;
+      if(saved.previewVisible&&currentPreviewSheet){renderSelectedPreview();if(previewConfirmed&&completeStage)completeStage.hidden=false;showMessage(previewConfirmed?'Restored your confirmed Excel preview. Live workbook updates are active.':'Restored your Excel workbook and preview from this device. Confirm the preview to enable live updates.');}
       else showMessage('Restored your Excel workbook. Select a worksheet to preview.');
       }catch(error){console.warn('Could not restore saved Excel workspace:',error);showMessage('Saved Excel workbook could not be restored. Please upload it again.');}
     })();
