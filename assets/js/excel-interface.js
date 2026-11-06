@@ -388,80 +388,51 @@ export function initExcelInterface(){
   if(previewHeading)previewHeading.appendChild(previewSearch);
   previewSearchInput.addEventListener('input',()=>{
     previewSearchQuery=previewSearchInput.value;
-    if(workbook&&currentPreviewSheet&&getLanguageForSheet(currentPreviewSheet)){
-      renderLanguagePreview(getLanguageForSheet(currentPreviewSheet));
-    }
+    // Source workbook previews are not filtered by the movie collection search.
   });
 
+  function excelCellText(value){
+    if(value===null||value===undefined)return '';
+    if(value instanceof Date)return value.toLocaleString();
+    if(typeof value==='object'){
+      if(Array.isArray(value.richText))return value.richText.map(part=>part.text||'').join('');
+      if(value.text!==undefined)return String(value.text);
+      if(value.result!==undefined)return excelCellText(value.result);
+      if(value.hyperlink)return String(value.text||value.hyperlink);
+      if(value.formula)return value.result!==undefined?excelCellText(value.result):'='+value.formula;
+      if(value.error)return String(value.error);return '';
+    }return String(value);
+  }
+  function colorCss(color){if(!color)return '';if(color.argb)return '#'+String(color.argb).slice(-6);if(color.rgb)return '#'+String(color.rgb).slice(-6);return '';}
   function renderGenericSheet(sheet){
-    preview.replaceChildren();
-    preview.classList.remove('movie-excel-preview');
-    previewSearch.hidden=true;
-    if(!sheet){
-      const message=document.createElement('p');
-      message.className='movie-excel-empty';
-      message.textContent='The selected worksheet could not be found. Please choose a worksheet again.';
-      preview.appendChild(message);
-      return;
-    }
-
-    // Always render a predictable 100 × 100 spreadsheet window, even when
-    // the source worksheet is mostly blank or has a small used range.
-    const maxRow=100;
-    const maxCol=100;
-    const columnLabel=number=>{
-      let label='';
-      while(number>0){const remainder=(number-1)%26;label=String.fromCharCode(65+remainder)+label;number=Math.floor((number-1)/26);}
-      return label;
-    };
-    const table=document.createElement('table');
-    table.className='excel-grid-table excel-grid-100';
-    const head=document.createElement('thead');
-    const headRow=document.createElement('tr');
-    const corner=document.createElement('th');
-    corner.className='excel-grid-corner';
-    corner.textContent='';
-    headRow.appendChild(corner);
-    for(let col=1;col<=maxCol;col++){
-      const th=document.createElement('th');
-      th.className='excel-column-heading';
-      th.textContent=columnLabel(col);
-      headRow.appendChild(th);
-    }
-    head.appendChild(headRow);
-    table.appendChild(head);
-
+    preview.replaceChildren();preview.classList.remove('movie-excel-preview');previewSearch.hidden=true;
+    if(!sheet){const p=document.createElement('p');p.className='movie-excel-empty';p.textContent='The selected worksheet could not be found.';preview.appendChild(p);return;}
+    const maxRow=Math.max(1,sheet.rowCount||1),maxCol=Math.max(1,sheet.columnCount||1);
+    const colLabel=n=>{let x='';while(n){const k=(n-1)%26;x=String.fromCharCode(65+k)+x;n=Math.floor((n-1)/26);}return x;};
+    const table=document.createElement('table');table.className='excel-source-grid';table.style.width='max-content';table.style.minWidth='100%';
+    const cg=document.createElement('colgroup'),rowCol=document.createElement('col');rowCol.style.width='44px';cg.appendChild(rowCol);
+    for(let c=1;c<=maxCol;c++){const col=document.createElement('col'),w=sheet.getColumn(c).width;col.style.width=(w?Math.max(32,Math.round(w*7+5)):92)+'px';cg.appendChild(col);}table.appendChild(cg);
+    const thead=document.createElement('thead'),hr=document.createElement('tr'),corner=document.createElement('th');corner.className='excel-source-corner';hr.appendChild(corner);
+    for(let c=1;c<=maxCol;c++){const th=document.createElement('th');th.textContent=colLabel(c);hr.appendChild(th);}thead.appendChild(hr);table.appendChild(thead);
+    const merges=new Map(),covered=new Set();
+    (sheet.model.merges||[]).forEach(range=>{const m=String(range).match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/i);if(!m)return;
+      const num=x=>{let n=0;for(const ch of x.toUpperCase())n=n*26+ch.charCodeAt(0)-64;return n;};
+      const r1=+m[2],c1=num(m[1]),r2=+m[4],c2=num(m[3]);merges.set(r1+':'+c1,{rowSpan:r2-r1+1,colSpan:c2-c1+1});
+      for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)if(r!==r1||c!==c1)covered.add(r+':'+c);
+    });
     const body=document.createElement('tbody');
-    for(let rowIndex=1;rowIndex<=maxRow;rowIndex++){
-      const row=document.createElement('tr');
-      const rowHeading=document.createElement('th');
-      rowHeading.className='excel-grid-row-heading';
-      rowHeading.textContent=String(rowIndex);
-      row.appendChild(rowHeading);
-      for(let col=1;col<=maxCol;col++){
-        const cell=document.createElement('td');
-        const sourceCell=sheet.getCell(rowIndex,col);
-        const value=sourceCell.value;
-        if(value&&typeof value==='object'){
-          if(value.text)cell.textContent=value.text;
-          else if(Array.isArray(value.richText))cell.textContent=value.richText.map(part=>part.text||'').join('');
-          else if(value.result!==undefined)cell.textContent=String(value.result);
-          else if(value.hyperlink)cell.textContent=value.text||value.hyperlink;
-          else cell.textContent='';
-        }else cell.textContent=String(value??'');
-        row.appendChild(cell);
-      }
-      body.appendChild(row);
+    for(let r=1;r<=maxRow;r++){const row=sheet.getRow(r),tr=document.createElement('tr'),rh=document.createElement('th');rh.className='excel-source-row-heading';rh.textContent=String(r);tr.appendChild(rh);
+      for(let c=1;c<=maxCol;c++){if(covered.has(r+':'+c))continue;const cell=row.getCell(c),td=document.createElement('td'),merge=merges.get(r+':'+c),style=cell.style||{};
+        if(merge){td.rowSpan=merge.rowSpan;td.colSpan=merge.colSpan;}td.textContent=excelCellText(cell.value);
+        if(style.font){if(style.font.bold)td.style.fontWeight='700';if(style.font.italic)td.style.fontStyle='italic';if(style.font.size)td.style.fontSize=Math.min(28,Math.max(8,style.font.size))+'px';if(style.font.name)td.style.fontFamily='"'+String(style.font.name).replace(/"/g,'')+'",Arial,sans-serif';const fc=colorCss(style.font.color);if(fc)td.style.color=fc;}
+        if(style.fill&&style.fill.type==='pattern'){const fc=colorCss(style.fill.fgColor);if(fc)td.style.backgroundColor=fc;}
+        if(style.alignment){td.style.textAlign=style.alignment.horizontal||'left';td.style.verticalAlign=style.alignment.vertical==='middle'?'middle':style.alignment.vertical||'middle';if(style.alignment.wrapText)td.style.whiteSpace='normal';if(style.alignment.indent)td.style.paddingLeft=(8+style.alignment.indent*8)+'px';}
+        if(style.border)for(const side of ['top','right','bottom','left']){const b=style.border[side];if(b&&b.style)td.style['border'+side[0].toUpperCase()+side.slice(1)]='1px solid '+(colorCss(b.color)||'#aeb9c7');}
+        tr.appendChild(td);
+      }if(row.height)tr.style.height=Math.max(16,Math.round(row.height*4/3))+'px';body.appendChild(tr);
     }
-    table.appendChild(body);
-    const wrap=document.createElement('div');
-    wrap.className='movie-excel-scroll excel-grid-scroll';
-    wrap.appendChild(table);
-    preview.appendChild(wrap);
-    const note=document.createElement('p');
-    note.className='excel-preview-note';
-    note.textContent='Showing rows 1–100 and columns A–CV. Scroll horizontally and vertically to explore the full 100 × 100 preview.';
-    preview.appendChild(note);
+    table.appendChild(body);const wrap=document.createElement('div');wrap.className='movie-excel-scroll excel-source-scroll';wrap.appendChild(table);preview.appendChild(wrap);
+    const note=document.createElement('p');note.className='excel-preview-note';note.textContent='Original worksheet preview · '+sheet.name+' · '+maxRow+' row(s) × '+maxCol+' column(s). Source values, used range, merged cells, dimensions and supported cell formatting are rendered from the uploaded workbook.';preview.appendChild(note);
   }
 
   // Delete controls are delegated because the preview table is rebuilt after every change.
@@ -485,9 +456,7 @@ export function initExcelInterface(){
     if(!workbook||!currentPreviewSheet)throw new Error('Select a worksheet to preview.');
     const sheet=workbook.getWorksheet(currentPreviewSheet);
     if(!sheet)throw new Error('The selected worksheet is no longer available. Please select it again.');
-    const language=getLanguageForSheet(sheet.name);
-    if(language){previewSearch.hidden=false;renderLanguagePreview(language);}
-    else renderGenericSheet(sheet);
+    renderGenericSheet(sheet);
     if(previewWrap)previewWrap.hidden=false;
   }
 
@@ -528,33 +497,64 @@ export function initExcelInterface(){
     persistCurrentWorkbook().catch(error=>{currentPreviewSheet=previous;console.warn('Could not save worksheet selection:',error);});
   });
 
-  sheetSelect.addEventListener('change',()=>{if(!workbook)return;currentPreviewSheet=sheetSelect.value;persistCurrentWorkbook().catch(error=>console.warn('Could not save worksheet selection:',error));});
 
-  fileInput.addEventListener('change',async()=>{
-    const attempt=++uploadAttempt;
-    selectedFile=fileInput.files&&fileInput.files[0]||null;
+
+  const readButton=document.getElementById('readUploadedFile');
+  const progressWrap=document.getElementById('readingProgressWrap');
+  const progressBar=document.getElementById('readingProgressBar');
+  const progressText=document.getElementById('readingProgressText');
+  const progressTrack=document.getElementById('readingProgressTrack');
+  const progressDetail=document.getElementById('readingProgressDetail');
+  let reading=false;
+  const nextPaint=()=>new Promise(resolve=>requestAnimationFrame(resolve));
+  async function setReadingProgress(percent,detail){
+    const value=Math.max(0,Math.min(100,Math.round(percent)));
+    if(progressBar)progressBar.style.width=value+'%';
+    if(progressText)progressText.textContent=value+'%';
+    if(progressTrack)progressTrack.setAttribute('aria-valuenow',String(value));
+    if(progressDetail&&detail)progressDetail.textContent=detail;
+    await nextPaint();
+  }
+  fileInput.addEventListener('change',()=>{
+    uploadAttempt++;selectedFile=fileInput.files&&fileInput.files[0]||null;
     workbook=null;currentPreviewSheet='';sheetSelectWrap.hidden=true;previewWrap.hidden=true;
-    if(completeStage)completeStage.hidden=true;
+    if(completeStage)completeStage.hidden=true;if(progressWrap)progressWrap.hidden=true;
+    if(readButton)readButton.disabled=!selectedFile;
     if(!selectedFile){fileName.textContent='Choose Excel workbook';fileHint.textContent='Click to browse · Upload required each time';showMessage('Upload a reference workbook to begin.');return;}
-    if(!/\.xlsx$/i.test(selectedFile.name)){
-      selectedFile=null;fileInput.value='';fileName.textContent='Choose Excel workbook';fileHint.textContent='Please select an .xlsx file';
-      showMessage('This formatted movie-collection workflow requires an .xlsx workbook. Please save legacy .xls files as .xlsx and upload again.');return;
-    }
-    fileName.textContent=selectedFile.name;fileHint.textContent=(selectedFile.size/1024/1024).toFixed(2)+' MB · File selected successfully';
-    showMessage('Excel detected. Loading workbook…');
+    if(!/\.xlsx$/i.test(selectedFile.name)){selectedFile=null;fileInput.value='';fileName.textContent='Choose Excel workbook';fileHint.textContent='Please select an .xlsx file';if(readButton)readButton.disabled=true;showMessage('This workflow requires an .xlsx workbook. Save legacy .xls files as .xlsx and upload again.');return;}
+    fileName.textContent=selectedFile.name;fileHint.textContent=(selectedFile.size/1024/1024).toFixed(2)+' MB · Ready to read';
+    showMessage('File selected. Click “Read the Uploaded File” to process every worksheet.');
+  });
+  readButton?.addEventListener('click',async()=>{
+    if(!selectedFile||reading)return;const attempt=uploadAttempt;
+    reading=true;readButton.disabled=true;readButton.textContent='Reading Workbook…';
+    sheetSelectWrap.hidden=true;previewWrap.hidden=true;if(completeStage)completeStage.hidden=true;
+    if(progressWrap)progressWrap.hidden=false;await setReadingProgress(0,'Preparing Excel workbook reader…');
     try{
       const ExcelJS=await loadExcelJS();if(attempt!==uploadAttempt)return;
-      workbook=new ExcelJS.Workbook();
-      await workbook.xlsx.load(await selectedFile.arrayBuffer());if(attempt!==uploadAttempt)return;
-      await syncLanguageSheets();
-      sheetSelectWrap.hidden=false;
-      await persistCurrentWorkbook();
-      showMessage('Workbook loaded. Language worksheets are mapped to Bengali, Hindi and English. Select a sheet to preview.');
+      await setReadingProgress(5,'Loading the uploaded .xlsx file…');
+      const parsed=new ExcelJS.Workbook();await parsed.xlsx.load(await selectedFile.arrayBuffer());
+      if(attempt!==uploadAttempt)return;await setReadingProgress(15,'Workbook opened. Reading worksheet contents…');
+      const sheets=parsed.worksheets||[];if(!sheets.length)throw new Error('The uploaded workbook contains no readable worksheets.');
+      const totalRows=sheets.reduce((n,sh)=>n+Math.max(1,sh.rowCount||1),0);let done=0;
+      for(let si=0;si<sheets.length;si++){
+        const sh=sheets[si],rows=Math.max(1,sh.rowCount||1),cols=Math.max(1,sh.columnCount||1);
+        for(let rowIndex=1;rowIndex<=rows;rowIndex++){
+          const row=sh.getRow(rowIndex);for(let colIndex=1;colIndex<=cols;colIndex++)void row.getCell(colIndex).value;
+          done++;if(rowIndex===rows||rowIndex%10===0)await setReadingProgress(15+done/totalRows*80,'Reading worksheet '+(si+1)+' of '+sheets.length+': '+sh.name);
+          if(attempt!==uploadAttempt)return;
+        }
+      }
+      workbook=parsed;currentPreviewSheet='';refreshSheetOptions();sheetSelectWrap.hidden=false;
+      await setReadingProgress(100,'Reading completed successfully. '+sheets.length+' worksheet(s) are ready to preview.');
+      await persistCurrentWorkbook();fileHint.textContent=(selectedFile.size/1024/1024).toFixed(2)+' MB · Reading completed';
+      showMessage('Reading completed successfully. Choose a worksheet in Proceed to Preview.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
-      if(attempt!==uploadAttempt)return;
-      workbook=null;showMessage('Excel upload failed: '+(error.message||'Unable to read this workbook.'));
-    }
+      if(attempt!==uploadAttempt)return;workbook=null;sheetSelectWrap.hidden=true;
+      await setReadingProgress(0,'Reading failed. '+(error.message||'Unable to read this workbook.'));
+      showMessage('Excel reading failed: '+(error.message||'Unable to read this workbook.'));
+    }finally{if(attempt===uploadAttempt){reading=false;readButton.disabled=!selectedFile;readButton.textContent='Read the Uploaded File';}}
   });
 
   showPreviewButton.addEventListener('click',()=>{
@@ -575,21 +575,7 @@ export function initExcelInterface(){
   });
 
   let updateQueue=Promise.resolve();
-  subscribeToMovies(()=>{
-    if(!workbook)return;
-    updateQueue=updateQueue.then(async()=>{
-      if(!workbook)return;
-      await syncLanguageSheets();
-      await persistCurrentWorkbook();
-      if(currentPreviewSheet){
-        renderSelectedPreview();
-        showMessage('Movie collection updated. '+currentPreviewSheet+' preview is synchronized with '+getMovies().filter(movie=>movie.language===getLanguageForSheet(currentPreviewSheet)).length+' movie(s).');
-      }
-    }).catch(error=>{
-      renderPreviewError(error);
-      showMessage('Could not refresh the Excel preview: '+(error.message||'Unknown error'));
-    });
-  });
+  subscribeToMovies(()=>{ /* Keep the uploaded source workbook unchanged until export. */ });
 
   confirmPreviewButton?.addEventListener('click',()=>{
     if(previewWrap.hidden)return;
