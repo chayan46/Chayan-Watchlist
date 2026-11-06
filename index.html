@@ -22,7 +22,7 @@
 <div class="field"><label for="movieName">MOVIE NAME</label><input id="movieName" placeholder="Enter movie title" required maxlength="120"></div>
 <div class="field"><label for="movieYear">MOVIE YEAR</label><input id="movieYear" type="number" min="1888" max="2100" placeholder="e.g. 2024" required></div>
 <div class="field"><label>MOVIE POSTER</label><label class="upload" for="posterFile"><strong id="uploadTitle">＋ Upload movie poster</strong><span id="uploadHint">JPG, PNG, WEBP, GIF · Max 8 MB</span><img id="posterPreview" class="poster-preview" alt="Selected poster preview"><input id="posterFile" type="file" accept="image/*"></label></div>
-<button class="primary" type="submit">＋ Add movie to collection</button>
+<button class="primary" id="addMovieButton" type="submit" disabled>＋ Add movie to collection</button>
 </form><div class="formhint">Your entries are saved in this browser on this device. Poster images are stored locally; they do not automatically sync across devices.</div>
 </aside>
 </div>
