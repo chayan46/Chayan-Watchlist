@@ -24,6 +24,6 @@ function persist(next){
 function publish(){const snapshot=getWebseries();subscribers.forEach(fn=>fn(snapshot));}
 export function getWebseries(){return webseries.map(m=>({...m}));}
 export function subscribeToWebseries(fn){subscribers.add(fn);return()=>subscribers.delete(fn);}
-export function addWebseries(webseries){const next=[{...webseries},...webseries];if(!persist(next))return false;webseries=next;publish();return true;}
+export function addWebseries(item){const next=[{...item},...webseries];if(!persist(next))return false;webseries=next;publish();return true;}
 export function deleteWebseries(id){const next=webseries.filter(m=>m.id!==id);if(next.length===webseries.length||!persist(next))return false;webseries=next;publish();return true;}
 window.addEventListener('storage',event=>{if(event.key===STORAGE_KEY){webseries=loadWebseries();publish();}});
