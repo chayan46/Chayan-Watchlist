@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101827"><title>Chayan Watchlist</title>
-<link rel="stylesheet" href="assets/css/styles.css?v=20261106-alphabetsteelblue1"></head>
+<link rel="stylesheet" href="assets/css/styles.css?v=20261106-sidebarlayout1"></head>
 <body>
 <header><div class="topline"><div class="brand"><div class="logo">▣</div><div><div class="eyebrow">Personal collection manager</div><h1>Chayan Watchlist</h1></div></div><div class="topnote">A SIMPLE, DEVICE-LOCAL MOVIE RECORD.</div></div></header>
 <main>
 
-<div class="workspace">
-<aside class="panel formpanel">
+<div class="workspace" id="mainWorkspace">
+<button class="workspace-sidebar-toggle" id="toggleMovieSidebar" type="button" aria-controls="movieDetailsPanel" aria-expanded="true"><span class="toggle-icon" aria-hidden="true">‹</span><span class="toggle-label">Hide movie details</span></button>
+<aside class="panel formpanel" id="movieDetailsPanel">
 <div class="panelhead"><div><div class="kicker">Add to collection</div><h2>Movie details</h2></div><span>＋</span></div>
 <form id="movieForm">
 <div class="field"><label for="language">MOVIE LANGUAGE</label><select id="language" required><option value="">Select language</option><option value="Bengali">Bengali Movie</option><option value="Hindi">Hindi Movie</option><option value="English">English Movie</option></select></div>
