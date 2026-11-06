@@ -758,7 +758,7 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 
 
 /* Structural fix: isolate the entry sidebar so workbook growth cannot push it down. */
-.workspace{display:grid!important;grid-template-columns:minmax(285px,.68fr) minmax(0,1.32fr)!important;grid-template-rows:auto!important;align-items:start!important;column-gap:20px!important;row-gap:0!important}
+.workspace{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,3fr)!important;grid-template-rows:auto!important;align-items:start!important;column-gap:20px!important;row-gap:0!important}
 .workspace>.movie-sidebar-stack{grid-column:1!important;grid-row:1!important;align-self:start!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;min-width:0!important;height:max-content!important}
 .workspace>.movie-sidebar-stack>.workspace-sidebar-toggle{align-self:flex-start!important;margin:0!important}
 .workspace>.movie-sidebar-stack>.formpanel{display:block!important;width:100%!important;min-width:0!important;margin:0!important}
