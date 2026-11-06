@@ -740,3 +740,18 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   .workspace.sidebar-collapsed>.formpanel{display:none!important}
   .workspace.sidebar-collapsed>.excelpanel{order:1!important;margin-top:16px!important}
 }
+
+
+/* Live movie worksheet: mirror the downloaded Excel workbook's typography,
+   palette, and row/column proportions exactly. */
+#excelPreview .movie-excel-table{border-collapse:separate!important;border-spacing:0!important;table-layout:fixed!important;font-family:"Aptos","Segoe UI",Arial,sans-serif!important;color:#202A35!important}
+#excelPreview .movie-excel-table th,#excelPreview .movie-excel-table td{box-sizing:border-box!important;border:1px solid #B8C6D8!important;text-align:center!important;vertical-align:middle!important}
+#excelPreview .movie-excel-table .movie-excel-letter{width:112px!important;min-width:112px!important;max-width:112px!important;background:#DCE5F0!important;color:#172B4D!important;border:2px solid #B8C6D8!important;padding:5px 3px!important;font-family:"Aptos Display","Segoe UI",Arial,sans-serif!important}
+#excelPreview .movie-excel-letter-label{display:block!important;font-family:"Aptos Display","Segoe UI",Arial,sans-serif!important;font-size:50px!important;line-height:1!important;font-weight:700!important;color:#172B4D!important}
+#excelPreview .movie-excel-poster-count{display:block!important;margin-top:5px!important;font-family:"Aptos","Segoe UI",Arial,sans-serif!important;font-size:25px!important;line-height:1.1!important;font-weight:700!important;font-style:italic!important;color:#147D75!important}
+#excelPreview .movie-excel-table .movie-excel-year{width:190px!important;min-width:190px!important;max-width:190px!important;height:25px!important;padding:2px 5px!important;background:#172B4D!important;color:#FFFFFF!important;font-family:"Aptos Display","Segoe UI",Arial,sans-serif!important;font-size:15px!important;line-height:1.15!important;font-weight:700!important}
+#excelPreview .movie-excel-table .movie-excel-title{width:190px!important;min-width:190px!important;max-width:190px!important;height:21px!important;padding:2px 5px!important;background:#E8D7A5!important;color:#202A35!important;font-family:"Aptos","Segoe UI",Arial,sans-serif!important;font-size:12px!important;line-height:1.15!important;font-weight:700!important;white-space:nowrap!important}
+#excelPreview .movie-excel-table .movie-excel-poster{width:190px!important;min-width:190px!important;max-width:190px!important;height:253px!important;padding:0!important;background:#FFFFFF!important;border-color:#B8C6D8!important}
+#excelPreview .movie-excel-table .movie-excel-poster img{display:block!important;width:100%!important;height:253px!important;object-fit:cover!important;object-position:center!important}
+#excelPreview .movie-excel-table .movie-excel-poster span{font-family:"Aptos","Segoe UI",Arial,sans-serif!important;font-size:11px!important;color:#52647B!important}
+#excelPreview .movie-excel-table .movie-excel-gap{height:8px!important;background:#FFFFFF!important;border:0!important}
