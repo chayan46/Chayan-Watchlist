@@ -400,39 +400,161 @@ export function initExcelInterface(){
       if(value.result!==undefined)return excelCellText(value.result);
       if(value.hyperlink)return String(value.text||value.hyperlink);
       if(value.formula)return value.result!==undefined?excelCellText(value.result):'='+value.formula;
-      if(value.error)return String(value.error);return '';
-    }return String(value);
+      if(value.error)return String(value.error);
+      return '';
+    }
+    return String(value);
   }
-  function colorCss(color){if(!color)return '';if(color.argb)return '#'+String(color.argb).slice(-6);if(color.rgb)return '#'+String(color.rgb).slice(-6);return '';}
+  const EXCEL_THEME_COLORS=['FFFFFF','000000','E7E6E6','44546A','4472C4','ED7D31','A5A5A5','FFC000','5B9BD5','70AD47','0563C1','954F72'];
+  const EXCEL_INDEXED_COLORS=['000000','FFFFFF','FF0000','00FF00','0000FF','FFFF00','FF00FF','00FFFF','000000','FFFFFF','FF0000','00FF00','0000FF','FFFF00','FF00FF','00FFFF','800000','008000','000080','808000','800080','008080','C0C0C0','808080','9999FF','993366','FFFFCC','CCFFFF','660066','FF8080','0066CC','CCCCFF','000080','FF00FF','FFFF00','00FFFF','800080','800000','008080','0000FF','00CCFF','CCFFFF','CCFFCC','FFFF99','99CCFF','FF99CC','CC99FF','FFCC99','3366FF','33CCCC','99CC00','FFCC00','FF9900','FF6600','666699','969696','003366','339966','003300','333300','993300','993366','333399','333333'];
+  function excelColor(color){
+    if(!color)return '';
+    let hex='';
+    if(color.argb)hex=String(color.argb).slice(-6);
+    else if(color.rgb)hex=String(color.rgb).slice(-6);
+    else if(Number.isInteger(color.indexed))hex=EXCEL_INDEXED_COLORS[color.indexed]||'';
+    else if(Number.isInteger(color.theme))hex=EXCEL_THEME_COLORS[color.theme]||'';
+    if(!hex)return '';
+    hex=hex.replace(/[^0-9a-f]/ig,'').padStart(6,'0').slice(-6);
+    const tint=Number(color.tint||0);
+    if(tint!==0){
+      const channels=[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16));
+      const adjusted=channels.map(v=>Math.max(0,Math.min(255,Math.round(tint<0?v*(1+tint):v*(1-tint)+255*tint))));
+      hex=adjusted.map(v=>v.toString(16).padStart(2,'0')).join('');
+    }
+    return '#'+hex;
+  }
+  function excelBorderStyle(style){
+    const map={hair:'1px solid',thin:'1px solid',dotted:'1px dotted',dashDot:'1px dashed',dashDotDot:'1px dashed',dashed:'1px dashed',medium:'2px solid',mediumDashed:'2px dashed',mediumDashDot:'2px dashed',mediumDashDotDot:'2px dashed',slantDashDot:'2px dashed',thick:'3px solid',double:'3px double'};
+    return map[style]||'1px solid';
+  }
+  function applyExcelFont(element,font){
+    if(!font)return;
+    if(font.name)element.style.fontFamily='"'+String(font.name).replace(/["\\]/g,'')+'",Arial,sans-serif';
+    if(Number(font.size)>0)element.style.fontSize=font.size+'pt';
+    if(font.bold)element.style.fontWeight='bold';
+    if(font.italic)element.style.fontStyle='italic';
+    const decorations=[];if(font.underline)decorations.push('underline');if(font.strike)decorations.push('line-through');if(decorations.length)element.style.textDecoration=decorations.join(' ');
+    if(font.color){const color=excelColor(font.color);if(color)element.style.color=color;}
+    if(font.vertAlign==='superscript')element.style.verticalAlign='super';
+    if(font.vertAlign==='subscript')element.style.verticalAlign='sub';
+    if(font.outline)element.style.webkitTextStroke='0.35px currentColor';
+  }
+  function applyExcelFill(element,fill){
+    if(!fill)return;
+    if(fill.type==='pattern'){
+      const foreground=excelColor(fill.fgColor),background=excelColor(fill.bgColor);
+      const patterns={solid:foreground,none:'transparent',gray125:'repeating-linear-gradient(45deg, '+(foreground||'#999')+' 0 1px, '+(background||'#fff')+' 1px 4px)',gray0625:'repeating-linear-gradient(45deg, '+(foreground||'#999')+' 0 1px, '+(background||'#fff')+' 1px 7px)'};
+      if(patterns[fill.pattern])element.style.background=patterns[fill.pattern];
+      else if(foreground)element.style.backgroundColor=foreground;
+    }else if(fill.type==='gradient'){
+      const stops=(fill.stops||[]).map(stop=>({position:Number(stop.position)||0,color:excelColor(stop.color)})).filter(stop=>stop.color).sort((x,y)=>x.position-y.position);
+      if(stops.length){const css=stops.map(stop=>stop.color+' '+Math.round(stop.position*100)+'%').join(', ');element.style.background=fill.gradient==='path'?'radial-gradient('+css+')':'linear-gradient('+(fill.degree||0)+'deg, '+css+')';}
+    }
+  }
+  function applyExcelBorder(element,border){
+    if(!border)return;
+    for(const side of ['top','right','bottom','left']){
+      const item=border[side];if(!item||!item.style)continue;
+      const color=excelColor(item.color)||'#8b95a5';
+      element.style['border'+side[0].toUpperCase()+side.slice(1)]=excelBorderStyle(item.style)+' '+color;
+    }
+    if(border.diagonal&&border.diagonal.style){
+      const color=excelColor(border.diagonal.color)||'#8b95a5';
+      element.style.backgroundImage='linear-gradient(135deg, transparent calc(50% - .5px), '+color+' 50%, transparent calc(50% + .5px))';
+    }
+  }
+  function applyExcelAlignment(element,alignment){
+    if(!alignment)return;
+    const horizontal=alignment.horizontal;
+    const vertical=alignment.vertical;
+    if(horizontal)element.style.textAlign=horizontal==='distributed'?'justify':horizontal;
+    if(vertical)element.style.verticalAlign=vertical==='center'?'middle':vertical;
+    if(alignment.wrapText)element.style.whiteSpace='pre-wrap';
+    else element.style.whiteSpace='pre';
+    if(alignment.shrinkToFit){element.style.whiteSpace='nowrap';element.style.overflow='hidden';element.style.textOverflow='clip';}
+    if(alignment.indent)element.style.paddingLeft=(7+Number(alignment.indent)*10)+'px';
+    if(alignment.textRotation!==undefined&&alignment.textRotation!==0){
+      const rotation=Number(alignment.textRotation);
+      if(rotation===255){element.style.writingMode='vertical-rl';}
+      else element.style.transform='rotate('+Math.max(-90,Math.min(90,rotation))+'deg)';
+    }
+    if(alignment.readingOrder===2)element.style.direction='rtl';
+  }
+  function excelFormattedValue(cell){
+    const value=cell.value;
+    if(value===null||value===undefined)return '';
+    if(value instanceof Date)return value.toLocaleDateString();
+    if(typeof value==='number'&&cell.numFmt){
+      const fmt=String(cell.numFmt);
+      if(/%/.test(fmt))return (value*100).toFixed((fmt.match(/\.([0#]+)/)||['',''])[1].length)+'%';
+      if(/[ymd]/i.test(fmt)&&value>0&&value<1)return value.toString();
+      const decimals=(fmt.match(/\.([0#]+)/)||['',''])[1].length;
+      if(/#,##0|0,000/.test(fmt))return value.toLocaleString(undefined,{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
+      if(decimals)return value.toFixed(decimals);
+    }
+    return excelCellText(value);
+  }
   function renderGenericSheet(sheet){
     preview.replaceChildren();preview.classList.remove('movie-excel-preview');previewSearch.hidden=true;
     if(!sheet){const p=document.createElement('p');p.className='movie-excel-empty';p.textContent='The selected worksheet could not be found.';preview.appendChild(p);return;}
     const maxRow=Math.max(1,sheet.rowCount||1),maxCol=Math.max(1,sheet.columnCount||1);
+    const view=sheet.views&&sheet.views[0]||{};
     const colLabel=n=>{let x='';while(n){const k=(n-1)%26;x=String.fromCharCode(65+k)+x;n=Math.floor((n-1)/26);}return x;};
     const table=document.createElement('table');table.className='excel-source-grid';table.style.width='max-content';table.style.minWidth='100%';
+    table.style.fontFamily=(sheet.properties&&sheet.properties.defaultColWidth?'inherit':'Arial,sans-serif');
+    if(sheet.properties&&sheet.properties.defaultRowHeight)table.style.setProperty('--excel-default-row-height',(sheet.properties.defaultRowHeight*4/3)+'px');
     const cg=document.createElement('colgroup'),rowCol=document.createElement('col');rowCol.style.width='44px';cg.appendChild(rowCol);
-    for(let c=1;c<=maxCol;c++){const col=document.createElement('col'),w=sheet.getColumn(c).width;col.style.width=(w?Math.max(32,Math.round(w*7+5)):92)+'px';cg.appendChild(col);}table.appendChild(cg);
+    for(let c=1;c<=maxCol;c++){
+      const sourceCol=sheet.getColumn(c),col=document.createElement('col');
+      const w=sourceCol.width||sheet.properties&&sheet.properties.defaultColWidth;
+      col.style.width=(w?Math.max(1,Math.round(w*7+5)):92)+'px';
+      if(sourceCol.hidden)col.style.display='none';
+      cg.appendChild(col);
+    }table.appendChild(cg);
     const thead=document.createElement('thead'),hr=document.createElement('tr'),corner=document.createElement('th');corner.className='excel-source-corner';hr.appendChild(corner);
-    for(let c=1;c<=maxCol;c++){const th=document.createElement('th');th.textContent=colLabel(c);hr.appendChild(th);}thead.appendChild(hr);table.appendChild(thead);
+    for(let c=1;c<=maxCol;c++){const sourceCol=sheet.getColumn(c),th=document.createElement('th');th.textContent=colLabel(c);if(sourceCol.hidden)th.style.display='none';thead.appendChild(hr);hr.appendChild(th);}
+    if(view.showGridLines===false)table.classList.add('excel-hide-gridlines');
+    if(view.showRowColHeaders===false){corner.style.display='none';hr.querySelectorAll('th').forEach(th=>th.style.display='none');}
+    thead.replaceChildren(hr);table.appendChild(thead);
     const merges=new Map(),covered=new Set();
-    (sheet.model.merges||[]).forEach(range=>{const m=String(range).match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/i);if(!m)return;
+    (sheet.model.merges||[]).forEach(range=>{
+      const m=String(range).match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/i);if(!m)return;
       const num=x=>{let n=0;for(const ch of x.toUpperCase())n=n*26+ch.charCodeAt(0)-64;return n;};
-      const r1=+m[2],c1=num(m[1]),r2=+m[4],c2=num(m[3]);merges.set(r1+':'+c1,{rowSpan:r2-r1+1,colSpan:c2-c1+1});
+      const r1=+m[2],c1=num(m[1]),r2=+m[4],c2=num(m[3]);
+      merges.set(r1+':'+c1,{rowSpan:r2-r1+1,colSpan:c2-c1+1});
       for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)if(r!==r1||c!==c1)covered.add(r+':'+c);
     });
     const body=document.createElement('tbody');
-    for(let r=1;r<=maxRow;r++){const row=sheet.getRow(r),tr=document.createElement('tr'),rh=document.createElement('th');rh.className='excel-source-row-heading';rh.textContent=String(r);tr.appendChild(rh);
-      for(let c=1;c<=maxCol;c++){if(covered.has(r+':'+c))continue;const cell=row.getCell(c),td=document.createElement('td'),merge=merges.get(r+':'+c),style=cell.style||{};
-        if(merge){td.rowSpan=merge.rowSpan;td.colSpan=merge.colSpan;}td.textContent=excelCellText(cell.value);
-        if(style.font){if(style.font.bold)td.style.fontWeight='700';if(style.font.italic)td.style.fontStyle='italic';if(style.font.size)td.style.fontSize=Math.min(28,Math.max(8,style.font.size))+'px';if(style.font.name)td.style.fontFamily='"'+String(style.font.name).replace(/"/g,'')+'",Arial,sans-serif';const fc=colorCss(style.font.color);if(fc)td.style.color=fc;}
-        if(style.fill&&style.fill.type==='pattern'){const fc=colorCss(style.fill.fgColor);if(fc)td.style.backgroundColor=fc;}
-        if(style.alignment){td.style.textAlign=style.alignment.horizontal||'left';td.style.verticalAlign=style.alignment.vertical==='middle'?'middle':style.alignment.vertical||'middle';if(style.alignment.wrapText)td.style.whiteSpace='normal';if(style.alignment.indent)td.style.paddingLeft=(8+style.alignment.indent*8)+'px';}
-        if(style.border)for(const side of ['top','right','bottom','left']){const b=style.border[side];if(b&&b.style)td.style['border'+side[0].toUpperCase()+side.slice(1)]='1px solid '+(colorCss(b.color)||'#aeb9c7');}
+    for(let r=1;r<=maxRow;r++){
+      const row=sheet.getRow(r),tr=document.createElement('tr'),rh=document.createElement('th');
+      rh.className='excel-source-row-heading';rh.textContent=String(r);
+      if(row.hidden)tr.style.display='none';
+      const rowHeight=row.height||sheet.properties&&sheet.properties.defaultRowHeight;
+      if(rowHeight)tr.style.height=(rowHeight*4/3)+'px';
+      if(view.showRowColHeaders===false)rh.style.display='none';
+      tr.appendChild(rh);
+      for(let c=1;c<=maxCol;c++){
+        if(covered.has(r+':'+c))continue;
+        const cell=row.getCell(c),td=document.createElement('td'),merge=merges.get(r+':'+c),style=cell.style||{};
+        const sourceCol=sheet.getColumn(c);
+        if(sourceCol.hidden)td.style.display='none';
+        if(merge){td.rowSpan=merge.rowSpan;td.colSpan=merge.colSpan;}
+        td.textContent=excelFormattedValue(cell);
+        applyExcelFont(td,style.font);applyExcelFill(td,style.fill);applyExcelBorder(td,style.border);applyExcelAlignment(td,style.alignment);
+        if(style.numFmt)td.dataset.numberFormat=style.numFmt;
+        if(style.protection){if(style.protection.locked===false)td.classList.add('excel-cell-unlocked');if(style.protection.hidden)td.title='Formula hidden in worksheet protection settings';}
+        if(cell.note)td.title=typeof cell.note==='string'?cell.note:(cell.note.texts||[]).map(note=>note.text||'').join('');
         tr.appendChild(td);
-      }if(row.height)tr.style.height=Math.max(16,Math.round(row.height*4/3))+'px';body.appendChild(tr);
+      }
+      body.appendChild(tr);
     }
-    table.appendChild(body);const wrap=document.createElement('div');wrap.className='movie-excel-scroll excel-source-scroll';wrap.appendChild(table);preview.appendChild(wrap);
-    const note=document.createElement('p');note.className='excel-preview-note';note.textContent='Original worksheet preview · '+sheet.name+' · '+maxRow+' row(s) × '+maxCol+' column(s). Source values, used range, merged cells, dimensions and supported cell formatting are rendered from the uploaded workbook.';preview.appendChild(note);
+    table.appendChild(body);
+    const wrap=document.createElement('div');wrap.className='movie-excel-scroll excel-source-scroll';wrap.appendChild(table);preview.appendChild(wrap);
+    if(sheet.autoFilter&&sheet.autoFilter.from){const filter=document.createElement('p');filter.className='excel-preview-note';filter.textContent='Worksheet auto-filter range: '+JSON.stringify(sheet.autoFilter);preview.appendChild(filter);}
+    const note=document.createElement('p');note.className='excel-preview-note';
+    note.textContent='Original worksheet · '+sheet.name+' · '+maxRow+' row(s) × '+maxCol+' column(s). The preview reproduces the source cell typography, fills, borders, alignment, dimensions, merged ranges and number formats supported by the workbook reader.';
+    preview.appendChild(note);
   }
 
   // Delete controls are delegated because the preview table is rebuilt after every change.
