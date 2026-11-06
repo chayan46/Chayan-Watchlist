@@ -16,9 +16,9 @@
 <form id="movieForm">
 <div class="field"><label for="language">MOVIE LANGUAGE</label><select id="language" required><option value="">Select language</option><option value="Bengali">Bengali Movie</option><option value="Hindi">Hindi Movie</option><option value="English">English Movie</option></select></div>
 <div class="field"><label for="movieType">MOVIE CLASSIFICATION</label><select id="movieType" required><option value="non-franchise" selected>Non-Franchise Based Movie</option><option value="franchise">Franchise Based Movie</option></select></div>
+<div class="field"><label for="movieName">MOVIE NAME</label><input id="movieName" placeholder="Enter movie title" required maxlength="120"></div>
 <div class="field" id="franchiseAlphabetField" hidden><label for="franchiseAlphabet">SELECT ALPHABET-BASED FRANCHISE</label><select id="franchiseAlphabet"><option value="">Enter movie name first</option></select><small class="franchise-field-hint" id="franchiseAlphabetHint">Choose an existing franchise subgroup or create the next one.</small></div>
 <div class="field" id="newFranchiseNameField" hidden><label for="newFranchiseName">NEW FRANCHISE NAME</label><input id="newFranchiseName" placeholder="e.g. Avatar Franchise" maxlength="100"></div>
-<div class="field"><label for="movieName">MOVIE NAME</label><input id="movieName" placeholder="Enter movie title" required maxlength="120"></div>
 <div class="field"><label for="movieYear">MOVIE YEAR</label><input id="movieYear" type="number" min="1888" max="2100" placeholder="e.g. 2024" required></div>
 <div class="field"><label>MOVIE POSTER</label><label class="upload" for="posterFile"><strong id="uploadTitle">＋ Upload movie poster</strong><span id="uploadHint">JPG, PNG, WEBP, GIF · Max 8 MB</span><img id="posterPreview" class="poster-preview" alt="Selected poster preview"><input id="posterFile" type="file" accept="image/*"></label></div>
 <button class="primary" type="submit">＋ Add movie to collection</button>
