@@ -874,8 +874,17 @@ export function initExcelInterface(){
       exportButton.disabled=true;showMessage('Preparing formatted Excel workbook with embedded movie posters…');
       await updateQueue;
       await syncLanguageSheets();
+      if(previewUpdatePending){
+        const latestMovie=pendingPreviewSnapshot&&pendingPreviewSnapshot[0];
+        if(latestMovie&&LANGUAGE_SHEETS[latestMovie.language]){
+          currentPreviewSheet=LANGUAGE_SHEETS[latestMovie.language];
+          refreshSheetOptions();
+          sheetSelect.value=currentPreviewSheet;
+          renderSelectedPreview();
+        }
+        clearPreviewUpdatePending();
+      }
       const buffer=await workbook.xlsx.writeBuffer();
-      if(previewUpdatePending)clearPreviewUpdatePending();
       const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
       const url=URL.createObjectURL(blob);const link=document.createElement('a');
       link.href=url;
