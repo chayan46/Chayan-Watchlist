@@ -1008,3 +1008,19 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   position:relative!important;
   z-index:2!important;
 }
+
+
+/* Embedded Excel pictures are rendered inside their anchored preview cells. */
+#excelPreview .excel-source-poster{
+  display:block!important;
+  width:100%!important;
+  max-width:180px!important;
+  height:218px!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  margin:0 auto!important;
+  position:relative!important;
+  z-index:1!important;
+}
+#excelPreview .excel-source-grid td{vertical-align:middle}
+#excelPreview .excel-source-grid tr:has(.excel-source-poster){height:220px!important}
