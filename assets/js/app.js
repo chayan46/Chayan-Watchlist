@@ -1,5 +1,5 @@
 import {initInputSection} from './input-section.js';
-import {initExcelInterface} from './excel-interface.js?v=20261106-franchise-picker';
+import {initExcelInterface} from './excel-interface.js?v=20261106-franchise-letter';
 initInputSection();
 initExcelInterface();
 
