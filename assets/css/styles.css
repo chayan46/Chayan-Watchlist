@@ -902,3 +902,12 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   width:44px!important;
   min-width:44px!important;
 }
+
+
+/* User-controlled refresh for the merged Excel worksheet preview. */
+.excel-preview-update-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:12px 0 14px;padding:12px 14px;border:1px solid #b8d8d2;border-radius:12px;background:linear-gradient(110deg,#f0faf8,#f7fbff)}
+.excel-preview-update-bar[hidden]{display:none!important}
+.excel-preview-update-status{color:#315b59;font-size:12px;line-height:1.45}
+.excel-preview-update-button{flex:0 0 auto;min-width:190px;white-space:nowrap}
+.excel-preview-update-button:disabled{opacity:.65;cursor:wait}
+@media(max-width:640px){.excel-preview-update-bar{align-items:stretch;flex-direction:column}.excel-preview-update-button{width:100%;min-width:0}}
