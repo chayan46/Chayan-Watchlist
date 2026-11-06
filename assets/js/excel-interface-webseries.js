@@ -477,30 +477,6 @@ export function initExcelInterface(){
       }
     }
     table.appendChild(body);
-    // Workbook actions belong to the preview UI, never to the worksheet grid.
-    const controls=document.createElement('div');
-    controls.className='excel-preview-actions';
-    controls.setAttribute('aria-label','Workbook entry actions');
-    const previewLanguage=getLanguageForSheet(sheet.name);
-    if(previewLanguage){
-      for(let recordRow=1;recordRow+2<=maxRow;recordRow+=3){
-        for(let controlCol=2;controlCol<=maxCol;controlCol++){
-          const webseriesName=excelCellText(sheet.getCell(recordRow+1,controlCol).value).trim();
-          const webseriesYear=Number(excelCellText(sheet.getCell(recordRow,controlCol).value).trim());
-          if(!webseriesName||!Number.isInteger(webseriesYear)||webseriesYear<1888||webseriesYear>2100)continue;
-          const removeButton=document.createElement('button');
-          removeButton.type='button';
-          removeButton.className='excel-preview-remove-webseries';
-          removeButton.setAttribute('data-remove-webseries-language',previewLanguage);
-          removeButton.setAttribute('data-remove-webseries-name',webseriesName);
-          removeButton.setAttribute('data-remove-webseries-year',String(webseriesYear));
-          removeButton.textContent='Remove '+webseriesName+' ('+webseriesYear+')';
-          removeButton.setAttribute('aria-label','Remove '+webseriesName+' from this Excel workbook');
-          controls.appendChild(removeButton);
-        }
-      }
-    }
-    if(controls.childElementCount)preview.appendChild(controls);
     const wrap=document.createElement('div');wrap.className='webseries-excel-scroll';wrap.appendChild(table);preview.appendChild(wrap);
     const note=document.createElement('p');note.className='excel-preview-note';note.textContent=language+' worksheet · '+webseries.length+' of '+allWebseries.length+' webseries(s) shown'+(query?' · Filter: '+(/^[a-z]$/i.test(query)?'first alphabet':/^\d{4}$/.test(query)?'release year':'webseries name'):'')+' · Alphabetical groups A–Z · Release year oldest to newest.';preview.appendChild(note);
   }
@@ -795,6 +771,31 @@ export function initExcelInterface(){
 
     }
     table.appendChild(body);
+    // Render workbook-only Remove actions beside the actual uploaded worksheet preview.
+    // Detect each title/year pair from worksheet cell content, independent of poster presence.
+    const controls=document.createElement('div');
+    controls.className='excel-preview-actions';
+    controls.setAttribute('aria-label','Workbook entry actions');
+    const previewLanguage=getLanguageForSheet(sheet.name);
+    if(previewLanguage){
+      for(let rowIndex=1;rowIndex<maxRow;rowIndex++){
+        for(let colIndex=2;colIndex<=maxCol;colIndex++){
+          const webseriesYear=Number(excelCellText(sheet.getCell(rowIndex,colIndex).value).trim());
+          const webseriesName=excelCellText(sheet.getCell(rowIndex+1,colIndex).value).trim();
+          if(!Number.isInteger(webseriesYear)||webseriesYear<1888||webseriesYear>2100||!webseriesName)continue;
+          const removeButton=document.createElement('button');
+          removeButton.type='button';
+          removeButton.className='excel-preview-remove-webseries';
+          removeButton.setAttribute('data-remove-webseries-language',previewLanguage);
+          removeButton.setAttribute('data-remove-webseries-name',webseriesName);
+          removeButton.setAttribute('data-remove-webseries-year',String(webseriesYear));
+          removeButton.textContent='Remove '+webseriesName+' ('+webseriesYear+')';
+          removeButton.setAttribute('aria-label','Remove '+webseriesName+' from this Excel workbook');
+          controls.appendChild(removeButton);
+        }
+      }
+    }
+    if(controls.childElementCount)preview.appendChild(controls);
     const wrap=document.createElement('div');wrap.className='webseries-excel-scroll excel-source-scroll';wrap.appendChild(table);preview.appendChild(wrap);
     if(sheet.autoFilter&&sheet.autoFilter.from){const filter=document.createElement('p');filter.className='excel-preview-note';filter.textContent='Worksheet auto-filter range: '+JSON.stringify(sheet.autoFilter);preview.appendChild(filter);}
     const note=document.createElement('p');note.className='excel-preview-note';
