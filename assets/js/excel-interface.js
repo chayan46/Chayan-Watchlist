@@ -1,4 +1,4 @@
-import {getMovies,subscribeToMovies,deleteMovie} from './data-management.js';
+import {getMovies,subscribeToMovies} from './data-management.js';
 
 const LANGUAGE_SHEETS={Bengali:'Bengali Movies',Hindi:'Hindi Movies',English:'English Movies'};
 const LANGUAGES=Object.keys(LANGUAGE_SHEETS);
@@ -730,23 +730,6 @@ export function initExcelInterface(){
       showMessage('Could not remove this Excel entry: '+(error.message||'Unknown error'));
       console.error('Workbook-only movie removal failed:',error);
     }
-  });
-
-  // Delete controls are delegated because the preview table is rebuilt after every change.
-  preview.addEventListener('click',event=>{
-    const button=event.target.closest('button[data-delete-movie-id]');
-    if(!button||!preview.contains(button))return;
-    const movieId=button.dataset.deleteMovieId;
-    const movie=getMovies().find(item=>item.id===movieId);
-    if(!movie)return;
-    if(!window.confirm('Delete "'+movie.name+'" from the '+movie.language+' movie collection? This will also update the Excel worksheet and poster counter.'))return;
-    button.disabled=true;
-    if(!deleteMovie(movieId)){
-      button.disabled=false;
-      showMessage('The movie could not be deleted. Please try again.');
-      return;
-    }
-    showMessage('"'+movie.name+'" deleted. The alphabet group, poster counter and following worksheet sections are being updated.');
   });
 
   function renderSelectedPreview(){
