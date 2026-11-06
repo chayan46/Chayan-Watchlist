@@ -91,11 +91,13 @@ export function initExcelInterface(){
   let previewSearchQuery='';
   const resetLanding=new URLSearchParams(window.location.search).has('reset');
   const showMessage=message=>{if(status)status.textContent=message;};
+  let removedWorkbookMovieKeys=new Set();
+  const workbookMovieKey=movie=>movie.language+'|'+String(movie.name||'').trim().toLocaleLowerCase()+'|'+movie.year;
   async function persistCurrentWorkbook(){
     if(resetInProgress||localStorage.getItem('chayan-watchlist-reset-in-progress')==='1'||!workbook||!selectedFile)return;
     const buffer=await workbook.xlsx.writeBuffer();
     if(resetInProgress||localStorage.getItem('chayan-watchlist-reset-in-progress')==='1')return;
-    await saveWorkbookState({buffer,fileName:selectedFile.name,sheetName:currentPreviewSheet,previewVisible:!!(previewWrap&&!previewWrap.hidden),previewConfirmed});
+    await saveWorkbookState({buffer,fileName:selectedFile.name,sheetName:currentPreviewSheet,previewVisible:!!(previewWrap&&!previewWrap.hidden),previewConfirmed,removedWorkbookMovieKeys:[...removedWorkbookMovieKeys]});
   }
   // A reset invalidates in-flight uploads/restores before clearing every app-owned cache.
   if(resetButton&&!resetButton.dataset.resetHandlerBound){
@@ -675,6 +677,23 @@ export function initExcelInterface(){
         if(merge){td.rowSpan=merge.rowSpan;td.colSpan=merge.colSpan;td.style.height=Array.from({length:merge.rowSpan},(_,offset)=>{const mergedRow=sheet.getRow(r+offset);return excelRowPixels(mergedRow.height??(sheet.properties&&sheet.properties.defaultRowHeight)??15);}).reduce((sum,height)=>sum+height,0)+'px';}
         else td.style.height=rowPixels+'px';
         renderExcelCellContent(td,cell);
+        // Add a preview-only remove control to each movie title cell in generated language worksheets.
+        const previewLanguage=getLanguageForSheet(sheet.name);
+        if(previewLanguage&&r%3===2&&c>=2){
+          const movieName=excelCellText(cell.value).trim();
+          const movieYear=Number(excelCellText(sheet.getCell(r-1,c).value).trim());
+          if(movieName&&Number.isInteger(movieYear)&&movieYear>=1888&&movieYear<=2100){
+            const removeButton=document.createElement('button');
+            removeButton.type='button';
+            removeButton.className='excel-preview-remove-movie';
+            removeButton.dataset.removeMovieLanguage=previewLanguage;
+            removeButton.dataset.removeMovieName=movieName;
+            removeButton.dataset.removeMovieYear=String(movieYear);
+            removeButton.textContent='Remove';
+            removeButton.setAttribute('aria-label','Remove '+movieName+' from this Excel workbook');
+            td.appendChild(removeButton);
+          }
+        }
         applyExcelFont(td,style.font);applyExcelFill(td,style.fill);applyExcelBorder(td,style.border);applyExcelAlignment(td,style.alignment);
         if(style.numFmt)td.dataset.numberFormat=style.numFmt;
         if(style.protection){if(style.protection.locked===false)td.classList.add('excel-cell-unlocked');if(style.protection.hidden)td.title='Formula hidden in worksheet protection settings';}
@@ -690,6 +709,28 @@ export function initExcelInterface(){
     note.textContent='Original worksheet · '+sheet.name+' · '+maxRow+' row(s) × '+maxCol+' column(s). Source typography, fills, borders, alignment, dimensions, merged ranges and supported number formats are reproduced. Some Excel-only features (such as conditional-format evaluation, charts, and print layout) may differ in a browser preview.';
     preview.appendChild(note);
   }
+
+  // Workbook-only removals affect this Excel workspace and its exports, not the main watchlist.
+  preview.addEventListener('click',async event=>{
+    const button=event.target.closest('button[data-remove-movie-language]');
+    if(!button||!preview.contains(button))return;
+    const movie={language:button.dataset.removeMovieLanguage,name:button.dataset.removeMovieName,year:Number(button.dataset.removeMovieYear)};
+    if(!window.confirm('Remove "'+movie.name+'" ('+movie.year+') from this Excel workbook and future exports? It will remain in your main Chayan Watchlist collection.'))return;
+    const key=workbookMovieKey(movie);
+    removedWorkbookMovieKeys.add(key);
+    button.disabled=true;
+    try{
+      await syncLanguageSheets();
+      renderSelectedPreview();
+      await persistCurrentWorkbook();
+      showMessage('"'+movie.name+'" removed from the Excel workbook. Section counts have been recalculated; the main watchlist is unchanged.');
+    }catch(error){
+      removedWorkbookMovieKeys.delete(key);
+      button.disabled=false;
+      showMessage('Could not remove this Excel entry: '+(error.message||'Unknown error'));
+      console.error('Workbook-only movie removal failed:',error);
+    }
+  });
 
   // Delete controls are delegated because the preview table is rebuilt after every change.
   preview.addEventListener('click',event=>{
@@ -738,8 +779,9 @@ export function initExcelInterface(){
         if(!known.has(key)){known.add(key);mergedMovies.push(movie);}
       }
     }
+    const retainedMovies=mergedMovies.filter(movie=>!removedWorkbookMovieKeys.has(workbookMovieKey(movie)));
     removeDuplicateLanguageSheets();
-    for(const language of LANGUAGES)await buildLanguageSheet(language,mergedMovies);
+    for(const language of LANGUAGES)await buildLanguageSheet(language,retainedMovies);
     refreshSheetOptions();
     if(currentPreviewSheet)renderSelectedPreview();
   }
@@ -923,6 +965,7 @@ export function initExcelInterface(){
       currentPreviewSheet=workbook.getWorksheet(saved.sheetName)?.name||sheetSelect.value;
       if(currentPreviewSheet)sheetSelect.value=currentPreviewSheet;
       previewConfirmed=!!saved.previewConfirmed;
+      removedWorkbookMovieKeys=new Set(Array.isArray(saved.removedWorkbookMovieKeys)?saved.removedWorkbookMovieKeys:[]);
       if(saved.previewVisible&&currentPreviewSheet){renderSelectedPreview();if(previewConfirmed&&completeStage)completeStage.hidden=false;showMessage(previewConfirmed?'Restored your confirmed Excel preview. Live workbook updates are active.':'Restored your Excel workbook and preview from this device. Confirm the preview to enable live updates.');}
       else showMessage('Restored your Excel workbook. Select a worksheet to preview.');
       }catch(error){console.warn('Could not restore saved Excel workspace:',error);showMessage('Saved Excel workbook could not be restored. Please upload it again.');}
