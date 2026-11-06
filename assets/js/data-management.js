@@ -12,7 +12,8 @@ function loadMovies(){
       year:Number(m.year||m.releaseYear||m.movieYear||'')||'Not specified',
       poster:typeof m.poster==='string'?m.poster:(typeof m.image==='string'?m.image:''),
       movieType:m.movieType==='franchise'?'franchise':'non-franchise',
-      franchiseName:typeof m.franchiseName==='string'?m.franchiseName.trim():''
+      franchiseName:typeof m.franchiseName==='string'?m.franchiseName.trim():'',
+      franchiseCode:typeof m.franchiseCode==='string'?m.franchiseCode.trim().toLocaleUpperCase():''
     })): [];
   }catch(error){console.error('Could not read saved watchlist:',error);return [];}
 }
