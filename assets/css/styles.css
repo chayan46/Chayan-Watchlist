@@ -539,3 +539,7 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   font-weight:750!important;
 }
 #excelPreview .excel-grid-100 tbody tr:nth-child(even) td{background:#fbfcfe!important}
+
+/* Keep reset action above the upload overlay and reliably clickable on touch devices. */
+.reset-excel-button{position:relative!important;z-index:8!important;display:block!important;pointer-events:auto!important;cursor:pointer!important;touch-action:manipulation!important}
+.excel-stage.upload-stage{position:relative}
