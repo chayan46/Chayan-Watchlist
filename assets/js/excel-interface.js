@@ -283,9 +283,8 @@ export function initExcelInterface(){
           }catch(error){console.warn('Could not embed fitted poster for '+movie.name,error);}
         }
       }
+      // Keep alphabet/franchise sections contiguous: no spacer row between groups.
       row+=3;
-      sheet.getRow(row).height=8;
-      row++;
     }
     for(const [letter,items] of [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0]))){
       const standardMovies=sortMovies(items.filter(movie=>movie.movieType!=='franchise'));
