@@ -844,3 +844,18 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 #excelPreview .movie-excel-table .movie-excel-franchise{white-space:normal!important;}
 #excelPreview .movie-excel-franchise-label{display:block!important;font-family:"Aptos Display","Segoe UI",Arial,sans-serif!important;font-size:32px!important;line-height:1.05!important;font-weight:700!important;color:#263445!important;}
 #excelPreview .movie-excel-franchise-count{display:block!important;margin-top:5px!important;font-family:"Aptos","Segoe UI",Arial,sans-serif!important;font-size:18px!important;line-height:1.1!important;font-weight:700!important;font-style:italic!important;color:#147D75!important;}
+
+/* Explicit workbook-read stage and operation-driven progress. */
+.read-uploaded-file-button{width:100%;margin-top:12px}.read-uploaded-file-button:disabled{opacity:.55;cursor:not-allowed}
+.excel-reading-progress{margin-top:14px;padding:15px 16px;border:1px solid #b7dfc2;border-radius:12px;background:#f2fbf4}
+.excel-reading-progress[hidden]{display:none!important}.excel-reading-progress-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#14532d;font-size:13px}
+#readingProgressText{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.excel-reading-progress-track{height:12px;margin-top:10px;overflow:hidden;border-radius:999px;background:#dcefe1}
+.excel-reading-progress-track span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#16a34a,#22c55e);transition:width .12s ease}
+#readingProgressDetail{margin:8px 0 0;color:#39734a;font-size:11px;line-height:1.45}
+#excelPreview .excel-source-scroll{display:block!important;width:100%!important;max-width:100%!important;max-height:min(70vh,680px)!important;overflow:auto!important;overscroll-behavior:contain!important;background:#fff!important;border:1px solid #dce5ee!important;border-radius:9px!important}
+#excelPreview .excel-source-grid{border-collapse:collapse!important;table-layout:fixed!important;background:#fff!important;color:#202a35!important;font:12px Aptos,Arial,sans-serif!important}
+#excelPreview .excel-source-grid th,#excelPreview .excel-source-grid td{box-sizing:border-box!important;min-width:32px!important;min-height:22px!important;height:24px;padding:4px 7px;border:1px solid #dce5ee;text-align:left;vertical-align:middle;white-space:pre-wrap;overflow-wrap:anywhere}
+#excelPreview .excel-source-grid thead th{position:sticky;top:0;z-index:3;background:#edf3f8;color:#52647b;text-align:center;font-weight:700}
+#excelPreview .excel-source-grid .excel-source-corner{left:0;z-index:5;background:#e2eaf2}
+#excelPreview .excel-source-grid .excel-source-row-heading{position:sticky;left:0;z-index:2;width:44px;min-width:44px;background:#f3f6f9;color:#64748b;text-align:center;font-weight:600}
