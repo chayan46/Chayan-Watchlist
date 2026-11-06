@@ -12,8 +12,6 @@ export function initInputSection(){
   const franchiseSelectField=document.getElementById('franchiseSelectField');
   const franchiseAlphabet=document.getElementById('franchiseAlphabet');
   const franchiseAlphabetHint=document.getElementById('franchiseAlphabetHint');
-  const newFranchiseNameField=document.getElementById('newFranchiseNameField');
-  const newFranchiseName=document.getElementById('newFranchiseName');
   let posterData='';
   const normalizedLetter=()=>franchiseLetterInput.value.trim().toLocaleUpperCase().charAt(0);
   function franchiseGroups(letter){
@@ -39,20 +37,12 @@ export function initInputSection(){
     const maxNumber=groups.reduce((max,group)=>Math.max(max,Number(group.code.slice(1))||0),0);
     return {groups,next:maxNumber+1};
   }
-  function syncNewFranchiseName(){
-    const creating=franchiseAlphabet.value.startsWith('new|');
-    newFranchiseNameField.hidden=!creating;
-    newFranchiseName.required=creating;
-    if(!creating)newFranchiseName.value='';
-  }
   function refreshFranchiseOptions(){
     if(movieType.value!=='franchise')return;
     const letter=normalizedLetter();
     franchiseAlphabet.replaceChildren();
     franchiseAlphabet.disabled=true;
     franchiseSelectField.hidden=true;
-    newFranchiseNameField.hidden=true;
-    newFranchiseName.required=false;
     if(!/^[A-Z]$/.test(letter)){
       franchiseAlphabet.add(new Option('Enter first letter first',''));
       franchiseAlphabetHint.textContent='Enter a single alphabet from A to Z to load its existing franchise sections.';
@@ -74,15 +64,12 @@ export function initInputSection(){
     const isFranchise=movieType.value==='franchise';
     franchiseAlphabetField.hidden=!isFranchise;
     franchiseSelectField.hidden=true;
-    newFranchiseNameField.hidden=true;
     franchiseLetterInput.required=isFranchise;
     franchiseAlphabet.required=isFranchise;
-    newFranchiseName.required=false;
     if(!isFranchise){
       franchiseLetterInput.value='';
       franchiseAlphabet.replaceChildren(new Option('Enter first letter first',''));
       franchiseAlphabet.value='';
-      newFranchiseName.value='';
       return;
     }
     refreshFranchiseOptions();
@@ -93,7 +80,6 @@ export function initInputSection(){
     franchiseLetterInput.value=value;
     refreshFranchiseOptions();
   });
-  franchiseAlphabet.addEventListener('change',syncNewFranchiseName);
   syncFranchiseFields();
   function resetPoster(){posterData='';preview.removeAttribute('src');preview.style.display='none';uploadTitle.textContent='＋ Upload movie poster';uploadHint.textContent='JPG, PNG, WEBP, GIF · Max 8 MB';}
   fileInput.addEventListener('change',event=>{
@@ -124,7 +110,7 @@ export function initInputSection(){
         franchiseName=match?.name||'';
       }else if(selection.startsWith('new|')){
         franchiseCode=selection.split('|')[1];
-        franchiseName=newFranchiseName.value.trim();
+        franchiseName=franchiseCode;
         const latestNext=franchiseGroups(letter).next;
         if(franchiseCode!==letter+latestNext){
           refreshFranchiseOptions();
