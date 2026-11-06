@@ -842,11 +842,22 @@ export function initExcelInterface(){
     // Merge workbook-only entries with the local collection in memory before rebuilding.
     // This preserves the uploaded workbook as the source of truth without bloating localStorage.
     const mergedWebseries=[...getWebseries()];
-    const known=new Set(mergedWebseries.map(webseries=>webseries.language+'|'+webseries.name.trim().toLocaleLowerCase()+'|'+webseries.year));
+    const webseriesIndex=new Map(mergedWebseries.map((webseries,index)=>[
+      webseries.language+'|'+webseries.name.trim().toLocaleLowerCase()+'|'+webseries.year,index
+    ]));
     for(const language of LANGUAGES){
       for(const webseries of extractExistingLanguageWebseries(language)){
         const key=webseries.language+'|'+webseries.name.trim().toLocaleLowerCase()+'|'+webseries.year;
-        if(!known.has(key)){known.add(key);mergedWebseries.push(webseries);}
+        const existingIndex=webseriesIndex.get(key);
+        if(existingIndex===undefined){
+          webseriesIndex.set(key,mergedWebseries.length);
+          mergedWebseries.push(webseries);
+        }else{
+          // Keep the local collection record, but never discard a poster embedded
+          // in the uploaded workbook just because the title already exists locally.
+          const existing=mergedWebseries[existingIndex];
+          if(!existing.poster&&webseries.poster)mergedWebseries[existingIndex]={...existing,poster:webseries.poster};
+        }
       }
     }
     const retainedWebseries=mergedWebseries.filter(webseries=>!removedWorkbookWebseriesKeys.has(workbookWebseriesKey(webseries)));
