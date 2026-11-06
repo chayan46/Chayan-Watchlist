@@ -183,7 +183,10 @@ export function initExcelInterface(){
       sheet.mergeCells(row,1,row+2,1);
       const groupCell=sheet.getCell(row,1);
       if(isFranchise){
-        groupCell.value=label;
+        groupCell.value={richText:[
+          {text:label,font:{name:'Aptos Display',size:32,bold:true,color:{argb:'FFFFFFFF'}}},
+          {text:'\\n('+items.length+')',font:{name:'Aptos',size:18,bold:true,italic:true,color:{argb:'FFFFFFFF'}}}
+        ]};
         groupCell.font={name:'Aptos Display',size:32,bold:true,color:{argb:'FFFFFFFF'}};
         groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE600D9'}};
       }else{
@@ -296,7 +299,13 @@ export function initExcelInterface(){
       alphabet.className=isFranchise?'movie-excel-letter movie-excel-franchise':'movie-excel-letter';
       alphabet.rowSpan=3;
       if(isFranchise){
-        alphabet.textContent=label;
+        const subgroupLabel=document.createElement('span');
+        subgroupLabel.className='movie-excel-franchise-label';
+        subgroupLabel.textContent=label;
+        const subgroupCount=document.createElement('span');
+        subgroupCount.className='movie-excel-franchise-count';
+        subgroupCount.textContent='('+items.length+')';
+        alphabet.append(subgroupLabel,subgroupCount);
       }else{
         const movieCount=items.length;
         const letterLabel=document.createElement('span');
