@@ -828,7 +828,7 @@ export function initExcelInterface(){
     publishSelectedWorksheet(sheetSelect.value);
   }
 
-  const publishSelectedWorksheet=sheetName=>document.dispatchEvent(new CustomEvent('selected-worksheet-change',{detail:{sheetName:sheetName||''}}));
+  const publishSelectedWorksheet=sheetName=>document.dispatchEvent(new CustomEvent('webseries-selected-worksheet-change',{detail:{sheetName:sheetName||''}}));
   publishSelectedWorksheet('');
   sheetSelect.addEventListener('change',()=>{
     if(!workbook)return;
