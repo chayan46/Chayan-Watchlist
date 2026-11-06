@@ -1,6 +1,7 @@
 import {getMovies,subscribeToMovies} from './data-management.js';
 
-const LANGUAGE_SHEETS={Bengali:'Bengali Movies',Hindi:'Hindi Movies',English:'English Movies'};
+const SOURCE_LANGUAGE_SHEETS={Bengali:'Bengali Movies',Hindi:'Hindi Movies',English:'English Movies'};
+const LANGUAGE_SHEETS={Bengali:'_CW_Bengali_Movies',Hindi:'_CW_Hindi_Movies',English:'_CW_English_Movies'};
 const LANGUAGES=Object.keys(LANGUAGE_SHEETS);
 const ALPHABET_COLORS=["F4CCCC","FCE5CD","FFF2CC","D9EAD3","D0E0E3","CFE2F3","D9D2E9","EAD1DC","F4B6B6","F9CB9C","FFE599","B6D7A8","A2C4C9","9FC5E8","B4A7D6","D5A6BD","E6B8AF","F6D7B0","DDEBF7","D9EAD3","EADCF8","FCE4D6","C9DAF8","D0E0E3","E2F0D9","F4CCCC"];
 const getAlphabetColor=letter=>{const index=String(letter||'').toUpperCase().charCodeAt(0)-65;return index>=0&&index<26?ALPHABET_COLORS[index]:'E8EDF3';};
@@ -176,7 +177,7 @@ export function initExcelInterface(){
   }
 
   function extractExistingLanguageMovies(language){
-    const sheet=workbook.getWorksheet(LANGUAGE_SHEETS[language])||workbook.getWorksheet(language);
+    const sheet=workbook.getWorksheet(SOURCE_LANGUAGE_SHEETS[language])||workbook.getWorksheet(language);
     if(!sheet)return [];
     const extracted=[];
     const imageByCell=new Map();
@@ -919,7 +920,7 @@ export function initExcelInterface(){
           if(attempt!==uploadAttempt)return;
         }
       }
-      originalWorksheetNames=parsed.worksheets.map(sheet=>sheet.name).filter(name=>!["Bengali Movies","Hindi Movies","English Movies","Bengali Webseries","Hindi Webseries","English Webseries"].includes(name));
+      originalWorksheetNames=parsed.worksheets.map(sheet=>sheet.name);
       workbook=parsed;currentPreviewSheet='';publishSelectedWorksheet('');
       // Prepare the app-managed language worksheets immediately after a successful read.
       // Preview-only controls are injected while rendering these sheets; they are never
@@ -1032,7 +1033,7 @@ export function initExcelInterface(){
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
         workbook=new ExcelJS.Workbook();
         await workbook.xlsx.load(saved.buffer);
-        originalWorksheetNames=Array.isArray(saved.originalWorksheetNames)?saved.originalWorksheetNames.filter(name=>workbook.getWorksheet(name)&&!["Bengali Movies","Hindi Movies","English Movies","Bengali Webseries","Hindi Webseries","English Webseries"].includes(name)):workbook.worksheets.map(sheet=>sheet.name).filter(name=>!["Bengali Movies","Hindi Movies","English Movies","Bengali Webseries","Hindi Webseries","English Webseries"].includes(name));
+        originalWorksheetNames=Array.isArray(saved.originalWorksheetNames)?saved.originalWorksheetNames.filter(name=>workbook.getWorksheet(name)):workbook.worksheets.map(sheet=>sheet.name);
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
       selectedFile={name:saved.fileName||'Saved workbook.xlsx'};
       fileName.textContent=selectedFile.name;
