@@ -310,7 +310,7 @@ export function initExcelInterface(){
     }
     table.appendChild(body);
     const wrap=document.createElement('div');wrap.className='movie-excel-scroll';wrap.appendChild(table);preview.appendChild(wrap);
-    const note=document.createElement('p');note.className='excel-preview-note';note.textContent=language+' worksheet · '+movies.length+' of '+allMovies.length+' movie(s) shown'+(query?' · Filter: '+(/^[a-z]$/i.test(query)?'first alphabet':/^\\d{4}$/.test(query)?'release year':'movie name'):'')+' · Alphabetical groups A–Z · Release year oldest to newest.';preview.appendChild(note);
+    const note=document.createElement('p');note.className='excel-preview-note';note.textContent=language+' worksheet · '+movies.length+' of '+allMovies.length+' movie(s) shown'+(query?' · Filter: '+(/^[a-z]$/i.test(query)?'first alphabet':/^\d{4}$/.test(query)?'release year':'movie name'):'')+' · Alphabetical groups A–Z · Release year oldest to newest.';preview.appendChild(note);
   }
 
   // One compact search field filters the selected movie worksheet by title, first letter, or year.
