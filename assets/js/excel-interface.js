@@ -137,7 +137,7 @@ export function initExcelInterface(){
         // Clear all persistent and temporary app state, retaining only the reset lock until reload.
         localStorage.removeItem('chayan-watchlist-v1');
         localStorage.setItem('chayan-watchlist-movie-reset-in-progress','1');
-        window.location.replace(window.location.pathname+'?resetMovie='+Date.now());
+        window.location.replace(window.location.pathname+'?resetMovie='+Date.now()+'&activeCollection=movie');
       }catch(error){
         localStorage.removeItem('chayan-watchlist-movie-reset-in-progress');
         resetInProgress=false;
@@ -983,7 +983,7 @@ export function initExcelInterface(){
   // A reset landing must never restore a workbook from an earlier page lifecycle.
   if(resetLanding){
     localStorage.removeItem('chayan-watchlist-movie-reset-in-progress');
-    window.history.replaceState({},'',window.location.pathname);
+    window.history.replaceState({},'',window.location.pathname+'?activeCollection=movie');
     fileInput.value='';
     fileName.textContent='Choose Excel workbook';
     fileHint.textContent='Click to browse · Upload required each time';
