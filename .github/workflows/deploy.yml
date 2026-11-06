@@ -9,9 +9,11 @@ permissions:
   pages: write
   id-token: write
 
+# Serialize Pages deployments. Do not cancel a deployment that has already
+# entered GitHub's deployment queue when a newer push arrives.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -39,3 +41,6 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+          timeout: 600000
+          error_count: 30
+          reporting_interval: 10000
