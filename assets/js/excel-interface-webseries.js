@@ -1,7 +1,7 @@
 import {getWebseries,subscribeToWebseries} from './data-management-webseries.js';
 
 const SOURCE_LANGUAGE_SHEETS={Bengali:'Bengali Webseries',Hindi:'Hindi Webseries',English:'English Webseries'};
-const LANGUAGE_SHEETS={Bengali:'_CW_Bengali_Webseries',Hindi:'_CW_Hindi_Webseries',English:'_CW_English_Webseries'};
+const LANGUAGE_SHEETS={Bengali:'Bengali Webseries',Hindi:'Hindi Webseries',English:'English Webseries'};
 const LANGUAGES=Object.keys(LANGUAGE_SHEETS);
 const ALPHABET_COLORS=["F4CCCC","FCE5CD","FFF2CC","D9EAD3","D0E0E3","CFE2F3","D9D2E9","EAD1DC","F4B6B6","F9CB9C","FFE599","B6D7A8","A2C4C9","9FC5E8","B4A7D6","D5A6BD","E6B8AF","F6D7B0","DDEBF7","D9EAD3","EADCF8","FCE4D6","C9DAF8","D0E0E3","E2F0D9","F4CCCC"];
 const getAlphabetColor=letter=>{const index=String(letter||'').toUpperCase().charCodeAt(0)-65;return index>=0&&index<26?ALPHABET_COLORS[index]:'E8EDF3';};
@@ -229,13 +229,18 @@ export function initExcelInterface(){
 
   function getOrCreateLanguageSheet(language){
     const targetName=LANGUAGE_SHEETS[language];
-    const existing=workbook.getWorksheet(targetName);
-    if(existing)workbook.removeWorksheet(existing.id);
-    // Keep any uploaded legacy-named worksheet (for example, "Bengali") intact.
-    return workbook.addWorksheet(targetName);
+    // Update the uploaded language worksheet in place; never create a parallel _CW_ sheet.
+    return workbook.getWorksheet(targetName)||workbook.addWorksheet(targetName);
   }
 
   function removeDuplicateLanguageSheets(){
+    // Remove only legacy app-generated parallel tabs from older workbook sessions.
+    // Uploaded source worksheets remain the sole language worksheets.
+    for(const language of LANGUAGES){
+      const legacyName='_CW_'+language+'_'+(path.endsWith("webseries.js")?'Webseries':'Movies');
+      const legacySheet=workbook.getWorksheet(legacyName);
+      if(legacySheet&&legacyName!==LANGUAGE_SHEETS[language])workbook.removeWorksheet(legacySheet.id);
+    }
     LANGUAGES.forEach(language=>{
       const preferred=workbook.getWorksheet(LANGUAGE_SHEETS[language]);
       const duplicate=workbook.getWorksheet(language);
