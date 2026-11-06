@@ -543,3 +543,31 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 /* Keep reset action above the upload overlay and reliably clickable on touch devices. */
 .reset-excel-button{position:relative!important;z-index:8!important;display:block!important;pointer-events:auto!important;cursor:pointer!important;touch-action:manipulation!important}
 .excel-stage.upload-stage{position:relative}
+
+
+/* Primary visual treatment for the reset-and-new-upload action. */
+.reset-excel-button{
+  background:#D97706!important;
+  border:1px solid #B85C00!important;
+  color:#FFFFFF!important;
+  font-weight:700!important;
+  box-shadow:0 2px 5px rgba(146,64,14,.18)!important;
+}
+.reset-excel-button:hover{
+  background:#B85C00!important;
+  border-color:#92400E!important;
+  color:#FFFFFF!important;
+}
+.reset-excel-button:active{
+  background:#92400E!important;
+  transform:translateY(1px);
+}
+.reset-excel-button:focus-visible{
+  outline:3px solid rgba(217,119,6,.28)!important;
+  outline-offset:2px!important;
+}
+.reset-excel-button:disabled{
+  background:#D6A36A!important;
+  border-color:#D6A36A!important;
+  color:#FFFFFF!important;
+}
