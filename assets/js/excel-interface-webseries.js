@@ -183,9 +183,13 @@ export function initExcelInterface(){
     const imageByCell=new Map();
     for(const image of sheet.getImages()){
       const range=image.range||{};
-      const row=range.tl&&range.tl.row;
-      const col=range.tl&&range.tl.col;
-      if(!Number.isInteger(row)||!Number.isInteger(col))continue;
+      // ExcelJS image anchors are zero-based and may be fractional.
+      // Convert the anchor to the 1-based worksheet cell containing the poster.
+      const anchorRow=range.tl&&range.tl.row;
+      const anchorCol=range.tl&&range.tl.col;
+      if(!Number.isFinite(anchorRow)||!Number.isFinite(anchorCol))continue;
+      const row=Math.floor(anchorRow)+1;
+      const col=Math.floor(anchorCol)+1;
       // ExcelJS imageId is the zero-based index in workbook.media.
       // workbook.getImage() is the supported API and returns the original image bytes.
       const item=workbook.getImage(image.imageId)||workbook.media?.[Number(image.imageId)]||null;
@@ -214,7 +218,9 @@ export function initExcelInterface(){
         const name=excelCellText(titleRow.getCell(col).value).trim();
         const yearValue=Number(excelCellText(yearRow.getCell(col).value).trim());
         if(!name||!Number.isInteger(yearValue)||yearValue<1888||yearValue>2100)continue;
-        const poster=imageByCell.get((row+1)+':'+(col-1))||'';
+        // Poster row is two worksheet rows below the alphabet/franchise header.
+        // Image anchor keys are now 1-based worksheet coordinates.
+        const poster=imageByCell.get((row+2)+':'+col)||'';
         extracted.push({
           id:'workbook-'+language.toLowerCase()+'-'+yearValue+'-'+name.toLocaleLowerCase().replace(/[^a-z0-9]+/g,'-'),
           language,name,year:yearValue,poster,
