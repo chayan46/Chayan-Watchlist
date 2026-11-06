@@ -317,8 +317,9 @@ export function initExcelInterface(){
         if(ext){
           try{
             const fittedPoster=await cropPosterToCell(movie.poster);
-            const base64=fittedPoster.substring(fittedPoster.indexOf(',')+1);
-            const imageId=workbook.addImage({base64,extension:'png'});
+            // ExcelJS 4.4.0 expects a complete data URI in its `base64` field,
+            // not the stripped raw payload. Keep the MIME prefix for XLSX media encoding.
+            const imageId=workbook.addImage({base64:fittedPoster,extension:'png'});
             sheet.addImage(imageId,{tl:{col:col-1,row:row+1},br:{col:col,row:row+2},editAs:'twoCell'});
           }catch(error){console.warn('Could not embed fitted poster for '+movie.name,error);}
         }
