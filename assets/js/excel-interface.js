@@ -247,22 +247,33 @@ export function initExcelInterface(){
       preview.appendChild(message);
       return;
     }
+
+    // Always render a predictable 100 × 100 spreadsheet window, even when
+    // the source worksheet is mostly blank or has a small used range.
+    const maxRow=100;
+    const maxCol=100;
+    const columnLabel=number=>{
+      let label='';
+      while(number>0){const remainder=(number-1)%26;label=String.fromCharCode(65+remainder)+label;number=Math.floor((number-1)/26);}
+      return label;
+    };
     const table=document.createElement('table');
-    table.className='excel-grid-table';
-    const maxRow=Math.min(Math.max(sheet.rowCount||sheet.actualRowCount||1,1),100);
-    const maxCol=Math.min(Math.max(sheet.columnCount||sheet.actualColumnCount||1,1),30);
+    table.className='excel-grid-table excel-grid-100';
     const head=document.createElement('thead');
     const headRow=document.createElement('tr');
     const corner=document.createElement('th');
+    corner.className='excel-grid-corner';
     corner.textContent='';
     headRow.appendChild(corner);
     for(let col=1;col<=maxCol;col++){
       const th=document.createElement('th');
-      th.textContent=col<=26?String.fromCharCode(64+col):'C'+col;
+      th.className='excel-column-heading';
+      th.textContent=columnLabel(col);
       headRow.appendChild(th);
     }
     head.appendChild(headRow);
     table.appendChild(head);
+
     const body=document.createElement('tbody');
     for(let rowIndex=1;rowIndex<=maxRow;rowIndex++){
       const row=document.createElement('tr');
@@ -272,7 +283,8 @@ export function initExcelInterface(){
       row.appendChild(rowHeading);
       for(let col=1;col<=maxCol;col++){
         const cell=document.createElement('td');
-        const value=sheet.getCell(rowIndex,col).value;
+        const sourceCell=sheet.getCell(rowIndex,col);
+        const value=sourceCell.value;
         if(value&&typeof value==='object'){
           if(value.text)cell.textContent=value.text;
           else if(Array.isArray(value.richText))cell.textContent=value.richText.map(part=>part.text||'').join('');
@@ -286,9 +298,13 @@ export function initExcelInterface(){
     }
     table.appendChild(body);
     const wrap=document.createElement('div');
-    wrap.className='movie-excel-scroll';
+    wrap.className='movie-excel-scroll excel-grid-scroll';
     wrap.appendChild(table);
     preview.appendChild(wrap);
+    const note=document.createElement('p');
+    note.className='excel-preview-note';
+    note.textContent='Showing rows 1–100 and columns A–CV. Scroll horizontally and vertically to explore the full 100 × 100 preview.';
+    preview.appendChild(note);
   }
 
   function renderSelectedPreview(){
