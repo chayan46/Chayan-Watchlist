@@ -341,8 +341,13 @@ export function initExcelInterface(){
       });
       if(standardMovies.length)appendPreviewGroup(letter,standardMovies,false);
       const franchises=[...franchiseMap.values()].sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'}));
-      for(let index=0;index<franchises.length;index++){
-        appendPreviewGroup(letter+(index+1),sortMovies(franchises[index].movies),true);
+      const allFranchiseNames=[...new Set(allMovies
+        .filter(movie=>(movie.name.trim().charAt(0)||'#').toLocaleUpperCase()===letter&&movie.movieType==='franchise'&&movie.franchiseName)
+        .map(movie=>movie.franchiseName.trim()))]
+        .sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
+      for(const franchise of franchises){
+        const subgroupNumber=allFranchiseNames.findIndex(name=>name.toLocaleLowerCase()===franchise.name.toLocaleLowerCase())+1;
+        appendPreviewGroup(letter+subgroupNumber,sortMovies(franchise.movies),true);
       }
     }
     table.appendChild(body);
