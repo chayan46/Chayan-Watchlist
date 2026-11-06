@@ -38,7 +38,7 @@ function cropPosterToCell(data){
     const image=new Image();
     image.onload=()=>{
       try{
-        const width=400,height=600;
+        const width=380,height=550;
         const canvas=document.createElement('canvas');
         canvas.width=width;canvas.height=height;
         const context=canvas.getContext('2d');
@@ -166,10 +166,10 @@ export function initExcelInterface(){
     sheet.getImages().forEach(image=>sheet.removeImage(image.imageId));
     [...(sheet.model.merges||[])].forEach(range=>sheet.unMergeCells(range));
     if(sheet.rowCount)sheet.spliceRows(1,sheet.rowCount);
-    sheet.columns=[{width:9},...Array.from({length:Math.max(1,sortMovies(getMovies().filter(m=>m.language===language)).length)},()=>({width:20}))];
+    sheet.columns=[{width:9},...Array.from({length:Math.max(1,sortMovies(getMovies().filter(m=>m.language===language)).length)},()=>({width:27}))];
     sheet.views=[{state:'frozen',xSplit:1,ySplit:0,showGridLines:false}];
-    sheet.properties.defaultRowHeight=28;
-    sheet.properties.defaultColWidth=20;
+    sheet.properties.defaultRowHeight=20;
+    sheet.properties.defaultColWidth=27;
     const languageMovies=sortMovies(getMovies().filter(movie=>movie.language===language));
     const groups=new Map();
     languageMovies.forEach(movie=>{
@@ -186,10 +186,10 @@ export function initExcelInterface(){
       groupCell.font={name:'Aptos Display',size:24,bold:true,color:{argb:'FF172B4D'}};
       groupCell.alignment={vertical:'middle',horizontal:'center'};
       groupCell.border={top:{style:'medium',color:{argb:'FFB8C6D8'}},bottom:{style:'medium',color:{argb:'FFB8C6D8'}},left:{style:'medium',color:{argb:'FFB8C6D8'}},right:{style:'medium',color:{argb:'FFB8C6D8'}}};
-      sheet.getRow(row).height=28;
-      sheet.getRow(row+1).height=36;
-      sheet.getRow(row+2).height=28;
-      sheet.getRow(row+3).height=150;
+      sheet.getRow(row).height=25;
+      sheet.getRow(row+1).height=25;
+      sheet.getRow(row+2).height=22;
+      sheet.getRow(row+3).height=190;
       for(const [index,movie] of items.entries()){
         const col=index+2;
         const year=sheet.getCell(row,col);
