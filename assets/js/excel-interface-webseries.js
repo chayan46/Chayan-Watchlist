@@ -68,19 +68,19 @@ const getPosterExtension=data=>{
 };
 
 export function initExcelInterface(){
-  const fileInput=document.getElementById('excelFile');
-  const resetButton=document.getElementById('resetAndUploadNewFile');
-  const fileName=document.getElementById('excelFileName');
-  const fileHint=document.getElementById('excelFileHint');
-  const exportButton=document.getElementById('exportUpdatedExcel');
-  const completeStage=document.getElementById('completeStage');
-  const confirmPreviewButton=document.getElementById('confirmExcelPreview');
-  const status=document.getElementById('excelStatus');
-  const sheetSelectWrap=document.getElementById('sheetSelectWrap');
-  const sheetSelect=document.getElementById('excelSheetSelect');
-  const showPreviewButton=document.getElementById('showExcelPreview');
-  const previewWrap=document.getElementById('excelPreviewWrap');
-  const preview=document.getElementById('excelPreview');
+  const fileInput=document.getElementById('webseriesExcelFile');
+  const resetButton=document.getElementById('webseriesResetAndUploadNewFile');
+  const fileName=document.getElementById('webseriesExcelFileName');
+  const fileHint=document.getElementById('webseriesExcelFileHint');
+  const exportButton=document.getElementById('webseriesExportUpdatedExcel');
+  const completeStage=document.getElementById('webseriesCompleteStage');
+  const confirmPreviewButton=document.getElementById('webseriesConfirmExcelPreview');
+  const status=document.getElementById('webseriesExcelStatus');
+  const sheetSelectWrap=document.getElementById('webseriesSheetSelectWrap');
+  const sheetSelect=document.getElementById('webseriesExcelSheetSelect');
+  const showPreviewButton=document.getElementById('webseriesShowExcelPreview');
+  const previewWrap=document.getElementById('webseriesExcelPreviewWrap');
+  const preview=document.getElementById('webseriesExcelPreview');
   if(!fileInput||!sheetSelectWrap||!sheetSelect||!showPreviewButton||!previewWrap||!preview)return;
 
   let selectedFile=null;
@@ -96,7 +96,7 @@ export function initExcelInterface(){
   async function persistCurrentWorkbook(){
     if(resetInProgress||localStorage.getItem('chayan-watchlist-webseries-reset-in-progress')==='1'||!workbook||!selectedFile)return;
     const buffer=await workbook.xlsx.writeBuffer();
-    if(resetInProgress||localStorage.getItem('chayan-watchlist-reset-in-progress')==='1')return;
+    if(resetInProgress||localStorage.getItem('chayan-watchlist-webseries-reset-in-progress')==='1')return;
     await saveWorkbookState({buffer,fileName:selectedFile.name,sheetName:currentPreviewSheet,previewVisible:!!(previewWrap&&!previewWrap.hidden),previewConfirmed,removedWorkbookWebseriesKeys:[...removedWorkbookWebseriesKeys]});
   }
   // A reset invalidates in-flight uploads/restores before clearing every app-owned cache.
@@ -119,7 +119,7 @@ export function initExcelInterface(){
       if(completeStage)completeStage.hidden=true;
       showMessage('Clearing previous workbook and saved application data…');
       try{
-        localStorage.setItem('chayan-watchlist-reset-in-progress','1');
+        localStorage.setItem('chayan-watchlist-webseries-reset-in-progress','1');
         // Remove every IndexedDB database owned by this application, including legacy versions.
         if(typeof indexedDB.databases==='function'){
           const databases=await indexedDB.databases();
@@ -135,10 +135,10 @@ export function initExcelInterface(){
         }
         // Clear all persistent and temporary app state, retaining only the reset lock until reload.
         localStorage.removeItem('chayan-watchlist-webseries-v1');
-        localStorage.setItem('chayan-watchlist-reset-in-progress','1');
+        localStorage.setItem('chayan-watchlist-webseries-reset-in-progress','1');
         window.location.replace(window.location.pathname+'?resetWebseries='+Date.now());
       }catch(error){
-        localStorage.removeItem('chayan-watchlist-reset-in-progress');
+        localStorage.removeItem('chayan-watchlist-webseries-reset-in-progress');
         resetInProgress=false;
         resetButton.disabled=false;
         resetButton.textContent='↻ Reset and Ready for New Upload';
@@ -842,12 +842,12 @@ export function initExcelInterface(){
 
   const setWebseriesEntryAvailability=enabled=>document.dispatchEvent(new CustomEvent('webseries-entry-availability',{detail:{enabled}}));
   setWebseriesEntryAvailability(false);
-  const readButton=document.getElementById('readUploadedFile');
-  const progressWrap=document.getElementById('readingProgressWrap');
-  const progressBar=document.getElementById('readingProgressBar');
-  const progressText=document.getElementById('readingProgressText');
-  const progressTrack=document.getElementById('readingProgressTrack');
-  const progressDetail=document.getElementById('readingProgressDetail');
+  const readButton=document.getElementById('webseriesReadUploadedFile');
+  const progressWrap=document.getElementById('webseriesReadingProgressWrap');
+  const progressBar=document.getElementById('webseriesReadingProgressBar');
+  const progressText=document.getElementById('webseriesReadingProgressText');
+  const progressTrack=document.getElementById('webseriesReadingProgressTrack');
+  const progressDetail=document.getElementById('webseriesReadingProgressDetail');
   let reading=false;
   const nextPaint=()=>new Promise(resolve=>requestAnimationFrame(resolve));
   async function setReadingProgress(percent,detail){
@@ -977,7 +977,7 @@ export function initExcelInterface(){
   });
   // A reset landing must never restore a workbook from an earlier page lifecycle.
   if(resetLanding){
-    localStorage.removeItem('chayan-watchlist-reset-in-progress');
+    localStorage.removeItem('chayan-watchlist-webseries-reset-in-progress');
     window.history.replaceState({},'',window.location.pathname);
     fileInput.value='';
     fileName.textContent='Choose Excel workbook';
@@ -989,9 +989,9 @@ export function initExcelInterface(){
     (async()=>{
       const restoreAttempt=uploadAttempt;
       try{
-        if(localStorage.getItem('chayan-watchlist-reset-in-progress')==='1')return;
+        if(localStorage.getItem('chayan-watchlist-webseries-reset-in-progress')==='1')return;
         const saved=await readWorkbookState();
-        if(restoreAttempt!==uploadAttempt||resetInProgress||localStorage.getItem('chayan-watchlist-reset-in-progress')==='1')return;
+        if(restoreAttempt!==uploadAttempt||resetInProgress||localStorage.getItem('chayan-watchlist-webseries-reset-in-progress')==='1')return;
         if(!saved||!saved.buffer)return;
         const ExcelJS=await loadExcelJS();
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
