@@ -1,4 +1,4 @@
-import {getMovies,subscribeToMovies,deleteMovie} from './data-management.js';
+import {getMovies,subscribeToMovies,deleteMovie,addMovie} from './data-management.js';
 
 const LANGUAGE_SHEETS={Bengali:'Bengali Movies',Hindi:'Hindi Movies',English:'English Movies'};
 const LANGUAGES=Object.keys(LANGUAGE_SHEETS);
@@ -145,6 +145,70 @@ export function initExcelInterface(){
         console.error('Full application reset failed:',error);
       }
     },true);
+  }
+
+  function extractExistingLanguageMovies(language){
+    const sheet=workbook.getWorksheet(LANGUAGE_SHEETS[language])||workbook.getWorksheet(language);
+    if(!sheet)return [];
+    const extracted=[];
+    const imageByCell=new Map();
+    const media=workbook.model&&Array.isArray(workbook.model.media)?workbook.model.media:[];
+    for(const image of sheet.getImages()){
+      const range=image.range||{};
+      const row=range.tl&&range.tl.row;
+      const col=range.tl&&range.tl.col;
+      if(!Number.isInteger(row)||!Number.isInteger(col))continue;
+      const item=media[Number(image.imageId)-1];
+      if(!item)continue;
+      let poster='';
+      try{
+        const raw=item.buffer||item.base64;
+        if(typeof raw==='string')poster=raw.startsWith('data:')?raw:'data:image/'+(item.extension||'png')+';base64,'+raw;
+        else if(raw&&raw.byteLength){
+          let binary='';const bytes=new Uint8Array(raw);
+          for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+          poster='data:image/'+(item.extension||'png')+';base64,'+btoa(binary);
+        }
+      }catch(error){console.warn('Could not retain an existing poster:',error);}
+      if(poster)imageByCell.set(row+':'+col,poster);
+    }
+    for(let row=1;row<=sheet.rowCount;row++){
+      const label=excelCellText(sheet.getCell(row,1).value).trim();
+      const isFranchise=/^[A-Z]\\d+$/.test(label);
+      const firstLetter=isFranchise?label.charAt(0):label.toLocaleUpperCase();
+      if(!/^[A-Z]$/.test(firstLetter))continue;
+      const yearRow=sheet.getRow(row);
+      const titleRow=sheet.getRow(row+1);
+      const posterRow=sheet.getRow(row+2);
+      for(let col=2;col<=sheet.columnCount;col++){
+        const name=excelCellText(titleRow.getCell(col).value).trim();
+        const yearValue=Number(excelCellText(yearRow.getCell(col).value).trim());
+        if(!name||!Number.isInteger(yearValue)||yearValue<1888||yearValue>2100)continue;
+        const poster=imageByCell.get((row+1)+':'+(col-1))||'';
+        extracted.push({
+          id:'workbook-'+language.toLowerCase()+'-'+yearValue+'-'+name.toLocaleLowerCase().replace(/[^a-z0-9]+/g,'-'),
+          language,name,year:yearValue,poster,
+          movieType:isFranchise?'franchise':'non-franchise',
+          franchiseName:isFranchise?label:'',
+          franchiseCode:isFranchise?label:''
+        });
+      }
+    }
+    return extracted;
+  }
+
+  function mergeWorkbookMoviesIntoCollection(){
+    const existing=getMovies();
+    const known=new Set(existing.map(movie=>movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year));
+    let added=0;
+    for(const language of LANGUAGES){
+      for(const movie of extractExistingLanguageMovies(language)){
+        const key=movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year;
+        if(known.has(key))continue;
+        if(addMovie(movie)){known.add(key);added++;}
+      }
+    }
+    return added;
   }
 
   function getOrCreateLanguageSheet(language){
@@ -617,6 +681,9 @@ export function initExcelInterface(){
 
   async function syncLanguageSheets(){
     if(!workbook)return;
+    // Import recognizable existing records before rebuilding the three generated sheets.
+    // This prevents the previous destructive rebuild from replacing workbook-only entries.
+    mergeWorkbookMoviesIntoCollection();
     removeDuplicateLanguageSheets();
     for(const language of LANGUAGES)await buildLanguageSheet(language);
     refreshSheetOptions();
