@@ -607,7 +607,11 @@ export function initExcelInterface(){
       const buffer=await workbook.xlsx.writeBuffer();
       const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
       const url=URL.createObjectURL(blob);const link=document.createElement('a');
-      link.href=url;link.download=selectedFile.name.replace(/\.xlsx$/i,'')+'_updated.xlsx';
+      link.href=url;
+       const exportNow=new Date();
+       const dateStamp=[exportNow.getFullYear(),String(exportNow.getMonth()+1).padStart(2,'0'),String(exportNow.getDate()).padStart(2,'0')].join('-');
+       const timeStamp=[String(exportNow.getHours()).padStart(2,'0'),String(exportNow.getMinutes()).padStart(2,'0'),String(exportNow.getSeconds()).padStart(2,'0')].join('-');
+       link.download='Chayan Watchlist_('+dateStamp+')_('+timeStamp+').xlsx';
       document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
       showMessage('Export started. Language worksheets include the alphabetical/yearly layout, colour bands and embedded posters.');
     }catch(error){showMessage('Could not export workbook: '+(error.message||'Unknown error'));}
