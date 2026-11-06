@@ -836,3 +836,6 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 
 /* Franchise subgroup creation no longer asks for a separate franchise name. */
 #movieForm #newFranchiseNameField{display:none!important}
+
+/* Movie input-only reset control */
+.reset-input-button{width:100%;display:flex;align-items:center;justify-content:center;margin:0 0 13px;padding:10px 12px;border-color:#cbd6e5;background:#f7f9fc;color:#34445d;font-size:12px;letter-spacing:.2px}.reset-input-button:hover{border-color:#9aadd0;background:#eef3fb;color:#203b67}
