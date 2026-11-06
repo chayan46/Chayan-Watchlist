@@ -166,7 +166,7 @@ export function initExcelInterface(){
     sheet.getImages().forEach(image=>sheet.removeImage(image.imageId));
     [...(sheet.model.merges||[])].forEach(range=>sheet.unMergeCells(range));
     if(sheet.rowCount)sheet.spliceRows(1,sheet.rowCount);
-    sheet.columns=[{width:21.5},...Array.from({length:Math.max(1,sortMovies(getMovies().filter(m=>m.language===language)).length)},()=>({width:27}))];
+    sheet.columns=[{width:15.5},...Array.from({length:Math.max(1,sortMovies(getMovies().filter(m=>m.language===language)).length)},()=>({width:27}))];
     sheet.views=[{state:'frozen',xSplit:1,ySplit:0,showGridLines:false}];
     sheet.properties.defaultRowHeight=20;
     sheet.properties.defaultColWidth=27;
@@ -181,10 +181,13 @@ export function initExcelInterface(){
     for(const [letter,items] of [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0]))){
       sheet.mergeCells(row,1,row+3,1);
       const groupCell=sheet.getCell(row,1);
-      groupCell.value=letter;
+      const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
+      groupCell.value={richText:[
+        {text:letter,font:{name:'Aptos Display',size:50,bold:true,color:{argb:'FF172B4D'}}},
+        {text:'\\n('+posterCount+')',font:{name:'Aptos',size:13,bold:true,italic:true,color:{argb:'FF147D75'}}}
+      ]};
       groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDCE5F0'}};
-      groupCell.font={name:'Aptos Display',size:22,bold:true,color:{argb:'FF172B4D'}};
-      groupCell.alignment={vertical:'middle',horizontal:'center'};
+      groupCell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
       groupCell.border={top:{style:'medium',color:{argb:'FFB8C6D8'}},bottom:{style:'medium',color:{argb:'FFB8C6D8'}},left:{style:'medium',color:{argb:'FFB8C6D8'}},right:{style:'medium',color:{argb:'FFB8C6D8'}}};
       sheet.getRow(row).height=19;
       sheet.getRow(row+1).height=16;
@@ -232,7 +235,7 @@ export function initExcelInterface(){
       sheet.getCell('A1').font={bold:true,size:16,color:{argb:'FF174F7D'}};
       sheet.getCell('A2').value='Movies added in this language will appear here, grouped alphabetically and sorted by release year.';
     }
-    sheet.getColumn(1).width=21.5;
+    sheet.getColumn(1).width=15.5;
     sheet.autoFilter=null;
     return sheet;
   }
