@@ -184,7 +184,7 @@ export function initExcelInterface(){
       const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
       groupCell.value={richText:[
         {text:letter,font:{name:'Aptos Display',size:50,bold:true,color:{argb:'FF172B4D'}}},
-        {text:'\\n('+posterCount+')',font:{name:'Aptos',size:13,bold:true,italic:true,color:{argb:'FF147D75'}}}
+        {text:'\n('+posterCount+')',font:{name:'Aptos',size:13,bold:true,italic:true,color:{argb:'FF147D75'}}}
       ]};
       groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDCE5F0'}};
       groupCell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
