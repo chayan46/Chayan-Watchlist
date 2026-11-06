@@ -1,4 +1,4 @@
-import {initInputSection} from './input-section.js?v=20261106-workbook-restore-gate-v1';
+import {initInputSection} from './input-section.js?v=20261106-poster-methods-v1';
 import {initExcelInterface} from './excel-interface.js?v=20261106-workbook-restore-gate-v1';
 initInputSection();
 initExcelInterface();
