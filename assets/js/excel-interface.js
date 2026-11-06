@@ -722,10 +722,17 @@ export function initExcelInterface(){
   let updateQueue=Promise.resolve();
   let previewConfirmed=false;
   let liveUpdateError=null;
-  subscribeToMovies(()=>{
+  subscribeToMovies(snapshot=>{
     if(!workbook||!previewConfirmed)return;
     updateQueue=updateQueue.then(async()=>{
       await syncLanguageSheets();
+      const latestMovie=snapshot&&snapshot[0];
+      if(latestMovie&&LANGUAGE_SHEETS[latestMovie.language]){
+        currentPreviewSheet=LANGUAGE_SHEETS[latestMovie.language];
+        refreshSheetOptions();
+        sheetSelect.value=currentPreviewSheet;
+        renderSelectedPreview();
+      }
       await persistCurrentWorkbook();
       showMessage('Movie collection updated. The active Excel workbook and preview are synchronized.');
     }).catch(error=>{
