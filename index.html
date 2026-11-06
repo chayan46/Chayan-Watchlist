@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101827"><title>Chayan Watchlist</title>
-<link rel="stylesheet" href="assets/css/styles.css?v=20261106-franchise-groups"></head>
+<link rel="stylesheet" href="assets/css/styles.css?v=20261106-franchise-picker"></head>
 <body>
 <header><div class="topline"><div class="brand"><div class="logo">▣</div><div><div class="eyebrow">Personal collection manager</div><h1>Chayan Watchlist</h1></div></div><div class="topnote">A SIMPLE, DEVICE-LOCAL MOVIE RECORD.</div></div></header>
 <main>
@@ -15,10 +15,11 @@
 <div class="panelhead"><div><div class="kicker">Add to collection</div><h2>Movie details</h2></div><span>＋</span></div>
 <form id="movieForm">
 <div class="field"><label for="language">MOVIE LANGUAGE</label><select id="language" required><option value="">Select language</option><option value="Bengali">Bengali Movie</option><option value="Hindi">Hindi Movie</option><option value="English">English Movie</option></select></div>
+<div class="field"><label for="movieType">MOVIE CLASSIFICATION</label><select id="movieType" required><option value="non-franchise" selected>Non-Franchise Based Movie</option><option value="franchise">Franchise Based Movie</option></select></div>
+<div class="field" id="franchiseAlphabetField" hidden><label for="franchiseAlphabet">SELECT ALPHABET-BASED FRANCHISE</label><select id="franchiseAlphabet"><option value="">Enter movie name first</option></select><small class="franchise-field-hint" id="franchiseAlphabetHint">Choose an existing franchise subgroup or create the next one.</small></div>
+<div class="field" id="newFranchiseNameField" hidden><label for="newFranchiseName">NEW FRANCHISE NAME</label><input id="newFranchiseName" placeholder="e.g. Avatar Franchise" maxlength="100"></div>
 <div class="field"><label for="movieName">MOVIE NAME</label><input id="movieName" placeholder="Enter movie title" required maxlength="120"></div>
 <div class="field"><label for="movieYear">MOVIE YEAR</label><input id="movieYear" type="number" min="1888" max="2100" placeholder="e.g. 2024" required></div>
-<div class="field"><label for="movieType">MOVIE CLASSIFICATION</label><select id="movieType" required><option value="non-franchise" selected>Non-Franchise Based Movie</option><option value="franchise">Franchise Based Movie</option></select></div>
-<div class="field" id="franchiseNameField" hidden><label for="franchiseName">FRANCHISE NAME</label><input id="franchiseName" placeholder="e.g. Avatar Franchise" maxlength="100"></div>
 <div class="field"><label>MOVIE POSTER</label><label class="upload" for="posterFile"><strong id="uploadTitle">＋ Upload movie poster</strong><span id="uploadHint">JPG, PNG, WEBP, GIF · Max 8 MB</span><img id="posterPreview" class="poster-preview" alt="Selected poster preview"><input id="posterFile" type="file" accept="image/*"></label></div>
 <button class="primary" type="submit">＋ Add movie to collection</button>
 </form><div class="formhint">Your entries are saved in this browser on this device. Poster images are stored locally; they do not automatically sync across devices.</div>
