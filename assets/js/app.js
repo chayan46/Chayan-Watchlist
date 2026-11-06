@@ -1,5 +1,5 @@
 import {initInputSection} from './input-section.js';
-import {initExcelInterface} from './excel-interface.js?v=20261106-poster-preview-restored-v3';
+import {initExcelInterface} from './excel-interface.js?v=20261106-movie-entry-gated-v1';
 initInputSection();
 initExcelInterface();
 
