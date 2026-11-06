@@ -173,7 +173,7 @@ export function initExcelInterface(){
       if(poster)imageByCell.set(row+':'+col,poster);
     }
     for(let row=1;row<=sheet.rowCount;row++){
-      const label=excelCellText(sheet.getCell(row,1).value).trim();
+      const label=excelCellText(sheet.getCell(row,1).value).trim().split(/[\\r\\n(]/)[0].trim();
       const isFranchise=/^[A-Z]\\d+$/.test(label);
       const firstLetter=isFranchise?label.charAt(0):label.toLocaleUpperCase();
       if(!/^[A-Z]$/.test(firstLetter))continue;
