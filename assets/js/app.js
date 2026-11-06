@@ -1,5 +1,5 @@
 import {initInputSection} from './input-section.js';
-import {initExcelInterface} from './excel-interface.js?v=20261106-poster-count25-preview';
+import {initExcelInterface} from './excel-interface.js?v=20261106-no-index-row';
 initInputSection();
 initExcelInterface();
 
