@@ -181,13 +181,14 @@ export function initExcelInterface(){
     if(!sheet)return [];
     const extracted=[];
     const imageByCell=new Map();
-    const media=workbook.model&&Array.isArray(workbook.model.media)?workbook.model.media:[];
     for(const image of sheet.getImages()){
       const range=image.range||{};
       const row=range.tl&&range.tl.row;
       const col=range.tl&&range.tl.col;
       if(!Number.isInteger(row)||!Number.isInteger(col))continue;
-      const item=(media.find(item=>Number(item.index)===Number(image.imageId))||media[Number(image.imageId)]);
+      // ExcelJS imageId is the zero-based index in workbook.media.
+      // workbook.getImage() is the supported API and returns the original image bytes.
+      const item=workbook.getImage(image.imageId)||workbook.media?.[Number(image.imageId)]||null;
       if(!item)continue;
       let poster='';
       try{
@@ -687,11 +688,10 @@ export function initExcelInterface(){
     // ExcelJS stores worksheet pictures separately from cell values. Recreate them
     // in the preview cells so generated language-sheet posters remain visible.
     const previewImages=new Map();
-    const mediaItems=workbook.model&&Array.isArray(workbook.model.media)?workbook.model.media:[];
     for(const image of sheet.getImages()){
       const range=image.range||{},tl=range.tl||{};
       if(!Number.isInteger(tl.row)||!Number.isInteger(tl.col))continue;
-      const media=(mediaItems.find(media=>Number(media.index)===Number(image.imageId))||mediaItems[Number(image.imageId)]);
+      const media=workbook.getImage(image.imageId)||workbook.media?.[Number(image.imageId)]||null;
       if(!media)continue;
       let src='';
       try{
