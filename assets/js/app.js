@@ -1,7 +1,7 @@
 import {initInputSection} from './input-section.js?v=20261106-paste-only-v1';
-import {initExcelInterface} from './excel-interface.js?v=20261106-overall-entry-counters-v1';
+import {initExcelInterface} from './excel-interface.js?v=20261106-overall-entry-counters-v2';
 import {initInputSection as initWebseriesInputSection} from './input-section-webseries.js?v=20261106-independent-webseries-v1';
-import {initExcelInterface as initWebseriesExcelInterface} from './excel-interface-webseries.js?v=20261106-overall-entry-counters-v1';
+import {initExcelInterface as initWebseriesExcelInterface} from './excel-interface-webseries.js?v=20261106-overall-entry-counters-v2';
 initInputSection();
 initExcelInterface();
 initWebseriesInputSection();
