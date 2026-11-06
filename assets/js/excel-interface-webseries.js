@@ -237,9 +237,11 @@ export function initExcelInterface(){
       sheet.mergeCells(row,1,row+2,1);
       const groupCell=sheet.getCell(row,1);
       if(isFranchise){
+        const sectionMatch=String(label).match(/^[A-Z](\d+)$/i);
+        const sectionCount=sectionMatch?Number(sectionMatch[1]):items.length;
         groupCell.value={richText:[
           {text:label,font:{name:'Aptos Display',size:32,bold:true,color:{argb:'FF263445'}}},
-          {text:'\n('+items.length+')',font:{name:'Aptos',size:18,bold:true,italic:true,color:{argb:'FF147D75'}}}
+          {text:'\n('+sectionCount+')',font:{name:'Aptos',size:18,bold:true,italic:true,color:{argb:'FF147D75'}}}
         ]};
         groupCell.font={name:'Aptos Display',size:32,bold:true,color:{argb:'FF263445'}};
         groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+getAlphabetColor(label.charAt(0))}};
@@ -359,7 +361,9 @@ export function initExcelInterface(){
         subgroupLabel.textContent=label;
         const subgroupCount=document.createElement('span');
         subgroupCount.className='webseries-excel-franchise-count';
-        subgroupCount.textContent='('+items.length+')';
+        const sectionMatch=String(label).match(/^[A-Z](\d+)$/i);
+        const sectionCount=sectionMatch?Number(sectionMatch[1]):items.length;
+        subgroupCount.textContent='('+sectionCount+')';
         alphabet.append(subgroupLabel,subgroupCount);
       }else{
         const webseriesCount=items.length;
