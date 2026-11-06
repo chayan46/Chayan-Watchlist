@@ -1,5 +1,5 @@
 import {initInputSection} from './input-section.js';
-import {initExcelInterface} from './excel-interface.js?v=20261106-richtext-sizing-fix';
+import {initExcelInterface} from './excel-interface.js?v=20261106-exact-cell-dimensions';
 initInputSection();
 initExcelInterface();
 
