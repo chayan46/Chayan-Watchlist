@@ -18,6 +18,18 @@ sidebarToggle?.addEventListener('click',()=>{
   const icon=sidebarToggle.querySelector('.toggle-icon');
   if(icon)icon.textContent=collapsed?'›':'‹';
 });
+const webseriesWorkspace=document.getElementById('webseriesWorkspace');
+const webseriesSidebarToggle=document.getElementById('webseriesToggleWebseriesSidebar');
+const webseriesSidebarLabel=webseriesSidebarToggle?.querySelector('.toggle-label');
+webseriesSidebarToggle?.addEventListener('click',()=>{
+  const collapsed=webseriesWorkspace.classList.toggle('sidebar-collapsed');
+  webseriesSidebarToggle.setAttribute('aria-expanded',String(!collapsed));
+  webseriesSidebarToggle.setAttribute('aria-label',collapsed?'Show webseries details sidebar':'Hide webseries details sidebar');
+  if(webseriesSidebarLabel)webseriesSidebarLabel.textContent=collapsed?'Show webseries details':'Hide webseries details';
+  const icon=webseriesSidebarToggle.querySelector('.toggle-icon');
+  if(icon)icon.textContent=collapsed?'›':'‹';
+});
+
 
 const movieEntryPanel=document.getElementById('movieDetailsPanel');
 const webseriesEntryPanel=document.getElementById('webseriesDetailsPanel');
