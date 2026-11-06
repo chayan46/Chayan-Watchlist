@@ -819,3 +819,10 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   white-space:normal!important;
   border:2px solid #C900BD!important;
 }
+
+
+/* Franchise alphabet selector and new subgroup name input. */
+#movieForm .franchise-field-hint{display:block;margin-top:6px;color:#68778d;font-size:10px;line-height:1.4}
+#movieForm #franchiseAlphabet,#movieForm #newFranchiseName{width:100%;height:41px;border:1px solid #dce2eb;border-radius:9px;padding:0 11px;background:#fff;color:var(--ink);font:inherit;outline:none}
+#movieForm #franchiseAlphabet:focus,#movieForm #newFranchiseName:focus{border-color:#6c82ee;box-shadow:0 0 0 3px #4263eb16}
+#movieForm [hidden]{display:none!important}
