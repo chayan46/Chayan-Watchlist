@@ -536,8 +536,8 @@ export function initExcelInterface(){
       tr.appendChild(rh);
       for(let c=1;c<=maxCol;c++){
         if(covered.has(r+':'+c))continue;
-        const cell=row.getCell(c),td=document.createElement('td'),merge=merges.get(r+':'+c),style=cell.style||{};
-        const sourceCol=sheet.getColumn(c);
+        const cell=row.getCell(c),td=document.createElement('td'),merge=merges.get(r+':'+c),sourceCol=sheet.getColumn(c);
+        const style={...(sourceCol.style||{}),...(row.style||{}),...(cell.style||{})};
         if(sourceCol.hidden)td.style.display='none';
         if(merge){td.rowSpan=merge.rowSpan;td.colSpan=merge.colSpan;}
         td.textContent=excelFormattedValue(cell);
@@ -553,7 +553,7 @@ export function initExcelInterface(){
     const wrap=document.createElement('div');wrap.className='movie-excel-scroll excel-source-scroll';wrap.appendChild(table);preview.appendChild(wrap);
     if(sheet.autoFilter&&sheet.autoFilter.from){const filter=document.createElement('p');filter.className='excel-preview-note';filter.textContent='Worksheet auto-filter range: '+JSON.stringify(sheet.autoFilter);preview.appendChild(filter);}
     const note=document.createElement('p');note.className='excel-preview-note';
-    note.textContent='Original worksheet · '+sheet.name+' · '+maxRow+' row(s) × '+maxCol+' column(s). The preview reproduces the source cell typography, fills, borders, alignment, dimensions, merged ranges and number formats supported by the workbook reader.';
+    note.textContent='Original worksheet · '+sheet.name+' · '+maxRow+' row(s) × '+maxCol+' column(s). Source typography, fills, borders, alignment, dimensions, merged ranges and supported number formats are reproduced. Some Excel-only features (such as conditional-format evaluation, charts, and print layout) may differ in a browser preview.';
     preview.appendChild(note);
   }
 
