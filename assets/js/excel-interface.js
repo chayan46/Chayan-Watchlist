@@ -720,13 +720,37 @@ export function initExcelInterface(){
   });
 
   let updateQueue=Promise.resolve();
-  subscribeToMovies(()=>{ /* Keep the uploaded source workbook unchanged until export. */ });
+  let previewConfirmed=false;
+  let liveUpdateError=null;
+  subscribeToMovies(()=>{
+    if(!workbook||!previewConfirmed)return;
+    updateQueue=updateQueue.then(async()=>{
+      await syncLanguageSheets();
+      await persistCurrentWorkbook();
+      showMessage('Movie collection updated. The active Excel workbook and preview are synchronized.');
+    }).catch(error=>{
+      liveUpdateError=error;
+      showMessage('The movie was saved to your collection, but the Excel workbook could not be refreshed: '+(error.message||'Unknown error'));
+      console.error('Live Excel workbook update failed:',error);
+    });
+  });
 
-  confirmPreviewButton?.addEventListener('click',()=>{
-    if(previewWrap.hidden)return;
-    if(completeStage)completeStage.hidden=false;
-    showMessage('Preview confirmed. Export the formatted language worksheets below.');
-    completeStage?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  confirmPreviewButton?.addEventListener('click',async()=>{
+    if(previewWrap.hidden||!workbook)return;
+    try{
+      confirmPreviewButton.disabled=true;
+      showMessage('Preparing the live workbook. Creating the formatted language worksheets…');
+      await updateQueue;
+      await syncLanguageSheets();
+      previewConfirmed=true;
+      await persistCurrentWorkbook();
+      if(completeStage)completeStage.hidden=false;
+      showMessage('Preview confirmed. Live workbook updates are enabled. New movie entries will update the Excel sheets and preview automatically.');
+      completeStage?.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }catch(error){
+      previewConfirmed=false;
+      showMessage('Could not activate live workbook updates: '+(error.message||'Unknown error'));
+    }finally{confirmPreviewButton.disabled=false;}
   });
 
   exportButton?.addEventListener('click',async()=>{
