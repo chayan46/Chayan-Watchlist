@@ -186,9 +186,9 @@ export function initExcelInterface(){
       groupCell.font={name:'Aptos Display',size:22,bold:true,color:{argb:'FF172B4D'}};
       groupCell.alignment={vertical:'middle',horizontal:'center'};
       groupCell.border={top:{style:'medium',color:{argb:'FFB8C6D8'}},bottom:{style:'medium',color:{argb:'FFB8C6D8'}},left:{style:'medium',color:{argb:'FFB8C6D8'}},right:{style:'medium',color:{argb:'FFB8C6D8'}}};
-      sheet.getRow(row).height=25;
-      sheet.getRow(row+1).height=25;
-      sheet.getRow(row+2).height=22;
+      sheet.getRow(row).height=19;
+      sheet.getRow(row+1).height=16;
+      sheet.getRow(row+2).height=15;
       sheet.getRow(row+3).height=190;
       for(const [index,movie] of items.entries()){
         const col=index+2;
@@ -201,7 +201,7 @@ export function initExcelInterface(){
         title.value=movie.name;
         title.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE8D7A5'}};
         title.font={name:'Aptos',size:12,bold:true,color:{argb:'FF202A35'}};
-        title.alignment={horizontal:'center',vertical:'middle',wrapText:true};
+        title.alignment={horizontal:'center',vertical:'middle',wrapText:false,shrinkToFit:true};
         const indexCell=sheet.getCell(row+2,col);
         indexCell.value=index+1;
         indexCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF9CCBC5'}};
@@ -232,7 +232,7 @@ export function initExcelInterface(){
       sheet.getCell('A1').font={bold:true,size:16,color:{argb:'FF174F7D'}};
       sheet.getCell('A2').value='Movies added in this language will appear here, grouped alphabetically and sorted by release year.';
     }
-    sheet.getColumn(1).width=9;
+    sheet.getColumn(1).width=4.5;
     sheet.autoFilter=null;
     return sheet;
   }
