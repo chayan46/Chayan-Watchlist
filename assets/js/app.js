@@ -1,7 +1,11 @@
 import {initInputSection} from './input-section.js?v=20261106-paste-only-v1';
 import {initExcelInterface} from './excel-interface.js?v=20261106-workbook-restore-gate-v1';
+import {initInputSection as initWebseriesInputSection} from './input-section-webseries.js?v=20261106-independent-webseries-v1';
+import {initExcelInterface as initWebseriesExcelInterface} from './excel-interface-webseries.js?v=20261106-independent-webseries-v1';
 initInputSection();
 initExcelInterface();
+initWebseriesInputSection();
+initWebseriesExcelInterface();
 
 const workspace=document.getElementById('mainWorkspace');
 const sidebarToggle=document.getElementById('toggleMovieSidebar');
@@ -16,6 +20,7 @@ sidebarToggle?.addEventListener('click',()=>{
 });
 
 const movieEntryPanel=document.getElementById('movieDetailsPanel');
+const webseriesEntryPanel=document.getElementById('webseriesDetailsPanel');
 function setMovieEntryAvailability(enabled){
   if(!movieEntryPanel)return;
   movieEntryPanel.inert=!enabled;
@@ -23,6 +28,9 @@ function setMovieEntryAvailability(enabled){
   movieEntryPanel.setAttribute('aria-disabled',String(!enabled));
 }
 setMovieEntryAvailability(false);
+function setWebseriesEntryAvailability(enabled){if(!webseriesEntryPanel)return;webseriesEntryPanel.inert=!enabled;webseriesEntryPanel.classList.toggle('webseries-entry-locked',!enabled);webseriesEntryPanel.setAttribute('aria-disabled',String(!enabled));}
+setWebseriesEntryAvailability(false);
+document.addEventListener('webseries-entry-availability',event=>setWebseriesEntryAvailability(Boolean(event.detail&&event.detail.enabled)));
 document.addEventListener('movie-entry-availability',event=>{
   setMovieEntryAvailability(Boolean(event.detail&&event.detail.enabled));
 });
