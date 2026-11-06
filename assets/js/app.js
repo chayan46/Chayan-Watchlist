@@ -63,3 +63,13 @@ collectionTabs.forEach((tab,index)=>{
     });
   });
 });
+
+// A scoped reset carries its collection through the reload; normal visits still default to Movies.
+const requestedCollection=new URLSearchParams(window.location.search).get('activeCollection');
+const initialCollectionIndex=requestedCollection==='webseries'?1:0;
+collectionTabs.forEach((item,index)=>{
+  const active=index===initialCollectionIndex;
+  item.button?.classList.toggle('active',active);
+  item.button?.setAttribute('aria-selected',String(active));
+  if(item.panel)item.panel.hidden=!active;
+});
