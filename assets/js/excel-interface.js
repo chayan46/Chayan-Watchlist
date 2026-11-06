@@ -87,7 +87,42 @@ export function initExcelInterface(){
   let uploadAttempt=0;
   const showMessage=message=>{if(status)status.textContent=message;};
   async function persistCurrentWorkbook(){if(!workbook||!selectedFile)return;const buffer=await workbook.xlsx.writeBuffer();await saveWorkbookState({buffer,fileName:selectedFile.name,sheetName:currentPreviewSheet,previewVisible:!!(previewWrap&&!previewWrap.hidden)});}
-  resetButton?.addEventListener('click',async()=>{resetButton.disabled=true;try{await clearWorkbookState();fileInput.value='';window.location.reload();}catch(error){resetButton.disabled=false;showMessage('Could not clear the saved Excel workbook: '+(error.message||'Unknown error'));}});
+  // Capture the reset action at document level so other UI handlers cannot swallow it.
+  if(resetButton&&!resetButton.dataset.resetHandlerBound){
+    resetButton.dataset.resetHandlerBound='true';
+    resetButton.addEventListener('click',async event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      resetButton.disabled=true;
+      resetButton.textContent='Resetting…';
+      try{
+        await clearWorkbookState();
+        // Clear the older workbook cache used by earlier app versions, if present.
+        await new Promise((resolve,reject)=>{
+          const request=indexedDB.open('chayan-watchlist-workbook');
+          request.onsuccess=()=>{
+            const db=request.result;
+            if(db.objectStoreNames.contains('saved-workbook')){
+              const tx=db.transaction('saved-workbook','readwrite');
+              tx.objectStore('saved-workbook').clear();
+              tx.oncomplete=()=>{db.close();resolve();};
+              tx.onerror=()=>{db.close();reject(tx.error);};
+            }else{db.close();resolve();}
+          };
+          request.onerror=()=>reject(request.error);
+        });
+        // The watchlist is the only other persisted application state.
+        localStorage.removeItem('chayan-watchlist-v1');
+        sessionStorage.clear();
+        window.location.replace(window.location.pathname+'?reset='+Date.now());
+      }catch(error){
+        resetButton.disabled=false;
+        resetButton.textContent='↻ Reset and Upload New File';
+        showMessage('Reset failed: '+(error.message||'Unable to clear saved data. Please retry.'));
+        console.error('Full application reset failed:',error);
+      }
+    },true);
+  }
 
   function getOrCreateLanguageSheet(language){
     const targetName=LANGUAGE_SHEETS[language];
