@@ -836,8 +836,13 @@ export function initExcelInterface(){
           if(attempt!==uploadAttempt)return;
         }
       }
-      workbook=parsed;currentPreviewSheet='';refreshSheetOptions();sheetSelectWrap.hidden=false;
-      await setReadingProgress(100,'Reading completed successfully. '+sheets.length+' worksheet(s) are ready to preview.');
+      workbook=parsed;currentPreviewSheet='';
+      // Prepare the app-managed language worksheets immediately after a successful read.
+      // Preview-only controls are injected while rendering these sheets; they are never
+      // written into the uploaded workbook or exported workbook as cell content.
+      await syncLanguageSheets();
+      refreshSheetOptions();sheetSelectWrap.hidden=false;
+      await setReadingProgress(100,'Reading completed successfully. '+sheets.length+' original worksheet(s) and 3 movie worksheet(s) are ready to preview.');
       await persistCurrentWorkbook();fileHint.textContent=(selectedFile.size/1024/1024).toFixed(2)+' MB · Reading completed';
       showMessage('Reading completed successfully. Choose a worksheet in Proceed to Preview.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
