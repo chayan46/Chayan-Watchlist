@@ -1,5 +1,5 @@
 import {initInputSection} from './input-section.js';
-import {initExcelInterface} from './excel-interface.js?v=20261106-independent-preview-export-v1';
+import {initExcelInterface} from './excel-interface.js?v=20261106-excel-remove-entry-v1';
 initInputSection();
 initExcelInterface();
 
