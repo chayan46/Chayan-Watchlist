@@ -40,13 +40,19 @@
         <span class="excel-file-badge">XLSX</span>
         <input id="excelFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
       </label>
+      <button class="primary read-uploaded-file-button" id="readUploadedFile" type="button" disabled>Read the Uploaded File</button>
+      <div class="excel-reading-progress" id="readingProgressWrap" hidden>
+        <div class="excel-reading-progress-heading"><strong>Reading Completed</strong><strong id="readingProgressText">0%</strong></div>
+        <div class="excel-reading-progress-track" role="progressbar" aria-label="Excel reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="readingProgressTrack"><span id="readingProgressBar"></span></div>
+        <p id="readingProgressDetail">Waiting to read the workbook.</p>
+      </div>
       <button class="secondary reset-excel-button" id="resetAndUploadNewFile" type="button">↻ Reset and Ready for New Upload</button>
     </div>
     <div class="excel-stage sheet-select-stage" id="sheetSelectWrap" hidden>
-      <div class="stage-heading"><span class="stage-icon" aria-hidden="true">▤</span><div><div class="stage-title">Select Sheet for Preview</div><p>Select which sheet you want to inspect before opening its preview.</p></div></div>
+      <div class="stage-heading"><span class="stage-icon" aria-hidden="true">▤</span><div><div class="stage-title">Proceed to Preview</div><p>Reading completed. Choose an original worksheet and click Show the Preview.</p></div></div>
       <label class="sheet-select-label" for="excelSheetSelect">WORKSHEET IN THIS WORKBOOK</label>
       <select id="excelSheetSelect" class="excel-sheet-select" aria-label="Choose worksheet"></select>
-      <button class="primary show-preview-button" id="showExcelPreview" type="button">Show selected sheet preview</button>
+      <button class="primary show-preview-button" id="showExcelPreview" type="button">Show the Preview</button>
       <div class="excel-stage preview-stage" id="excelPreviewWrap" hidden>
       <div class="stage-heading"><span class="stage-icon" aria-hidden="true">◉</span><div><div class="stage-title">Live Excel preview</div><p>Preview of the selected worksheet.</p></div></div>
       <div class="excel-preview-placeholder" id="excelPreview"><div class="preview-sheet-icon" aria-hidden="true">▦</div><strong>Excel preview will appear here</strong><p>Select a worksheet to display its contents.</p></div>
