@@ -904,10 +904,77 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 }
 
 
-/* User-controlled refresh for the merged Excel worksheet preview. */
-.excel-preview-update-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:12px 0 14px;padding:12px 14px;border:1px solid #b8d8d2;border-radius:12px;background:linear-gradient(110deg,#f0faf8,#f7fbff)}
+
+/* Refined, balanced update panel: readable status on the left, compact action on the right. */
+.excel-preview-update-bar{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:22px!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin:14px 0 18px!important;
+  padding:16px 18px!important;
+  border:1px solid #cbd9e8!important;
+  border-left:4px solid #1b7890!important;
+  border-radius:14px!important;
+  background:linear-gradient(115deg,#f4f8fc 0%,#f8fbfd 58%,#eef7f6 100%)!important;
+  box-shadow:0 5px 16px rgba(28,55,82,.055)!important;
+}
 .excel-preview-update-bar[hidden]{display:none!important}
-.excel-preview-update-status{color:#315b59;font-size:12px;line-height:1.45}
-.excel-preview-update-button{flex:0 0 auto;min-width:190px;white-space:nowrap}
-.excel-preview-update-button:disabled{opacity:.65;cursor:wait}
-@media(max-width:640px){.excel-preview-update-bar{align-items:stretch;flex-direction:column}.excel-preview-update-button{width:100%;min-width:0}}
+.excel-preview-update-status{
+  display:flex!important;
+  align-items:center!important;
+  flex:1 1 auto!important;
+  min-width:0!important;
+  color:#40546a!important;
+  font-size:13px!important;
+  font-weight:500!important;
+  line-height:1.55!important;
+  overflow-wrap:normal!important;
+}
+.excel-preview-update-status:before{
+  content:"↻";
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 34px;
+  width:34px;
+  height:34px;
+  margin-right:12px;
+  border-radius:10px;
+  background:#dcefeb;
+  color:#087b75;
+  font-size:20px;
+  font-weight:800;
+}
+.excel-preview-update-button{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:205px!important;
+  max-width:260px!important;
+  min-height:44px!important;
+  padding:0 20px!important;
+  border:1px solid #17649b!important;
+  border-radius:10px!important;
+  background:linear-gradient(135deg,#176ca8,#2785bd)!important;
+  box-shadow:0 4px 10px rgba(23,108,168,.16)!important;
+  color:#fff!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  letter-spacing:.1px!important;
+  white-space:nowrap!important;
+  cursor:pointer!important;
+  transition:transform .16s ease,box-shadow .16s ease,filter .16s ease!important;
+}
+.excel-preview-update-button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 7px 15px rgba(23,108,168,.22)!important;filter:brightness(1.04)}
+.excel-preview-update-button:focus-visible{outline:3px solid #8cc7e8!important;outline-offset:3px!important}
+.excel-preview-update-button:disabled{opacity:.68!important;cursor:wait!important;transform:none!important}
+@media(max-width:680px){
+  .excel-preview-update-bar{align-items:stretch!important;flex-direction:column!important;gap:14px!important;padding:14px!important}
+  .excel-preview-update-status{align-items:flex-start!important}
+  .excel-preview-update-button{width:100%!important;max-width:none!important}
+}
