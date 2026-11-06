@@ -469,3 +469,73 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 .reset-excel-button{width:100%;margin-top:10px;min-height:40px;border-color:#d7deea;color:#52617b;background:#fff}
 .reset-excel-button:hover{border-color:#c45a65;background:#fff7f7;color:#a33a46}
 .reset-excel-button:disabled{opacity:.55;cursor:wait}
+
+/* Full 100 × 100 Excel worksheet preview: fixed cell geometry and two-axis scrolling */
+#excelPreview .excel-grid-scroll{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:min(68vh,620px)!important;
+  max-height:620px!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-x pan-y!important;
+  scrollbar-width:auto!important;
+}
+#excelPreview .excel-grid-100{
+  display:table!important;
+  width:9242px!important;
+  min-width:9242px!important;
+  max-width:none!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+  border-spacing:0!important;
+  background:#fff!important;
+}
+#excelPreview .excel-grid-100 th,
+#excelPreview .excel-grid-100 td{
+  box-sizing:border-box!important;
+  width:92px!important;
+  min-width:92px!important;
+  max-width:92px!important;
+  height:35px!important;
+  min-height:35px!important;
+  max-height:35px!important;
+  padding:5px 8px!important;
+  border:1px solid #dce5ee!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+  text-overflow:ellipsis!important;
+  font-size:11px!important;
+}
+#excelPreview .excel-grid-100 thead th{
+  position:sticky!important;
+  top:0!important;
+  z-index:4!important;
+  background:#e7f1fb!important;
+  color:#174f7d!important;
+  text-align:center!important;
+}
+#excelPreview .excel-grid-100 .excel-grid-corner{
+  position:sticky!important;
+  left:0!important;
+  z-index:6!important;
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  background:#dce8f2!important;
+}
+#excelPreview .excel-grid-100 .excel-grid-row-heading{
+  position:sticky!important;
+  left:0!important;
+  z-index:3!important;
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  background:#f2f6fa!important;
+  color:#5e7488!important;
+  text-align:center!important;
+  font-weight:750!important;
+}
+#excelPreview .excel-grid-100 tbody tr:nth-child(even) td{background:#fbfcfe!important}
