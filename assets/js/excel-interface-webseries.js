@@ -35,6 +35,15 @@ const sortWebseries=webseries=>[...webseries].sort((a,b)=>{
   return yearA-yearB||a.name.localeCompare(b.name,undefined,{sensitivity:'base'});
 });
 const posterCropCache=new Map();
+const workbookPosterImageIds=new WeakMap();
+function getOrAddWorkbookPosterImage(targetWorkbook,data){
+  let imageIds=workbookPosterImageIds.get(targetWorkbook);
+  if(!imageIds){imageIds=new Map();workbookPosterImageIds.set(targetWorkbook,imageIds);}
+  if(imageIds.has(data))return imageIds.get(data);
+  const imageId=targetWorkbook.addImage({base64:data,extension:'png'});
+  imageIds.set(data,imageId);
+  return imageId;
+}
 function cropPosterToCell(data){
   if(posterCropCache.has(data))return posterCropCache.get(data);
   const task=new Promise((resolve,reject)=>{
@@ -180,7 +189,8 @@ export function initExcelInterface(){
     const sheet=workbook.getWorksheet(SOURCE_LANGUAGE_SHEETS[language])||workbook.getWorksheet(language);
     if(!sheet)return [];
     const extracted=[];
-    const imagesByColumn=new Map();
+    // Index poster images by their exact worksheet anchor cell.
+    const imagesByCell=new Map();
     for(const image of sheet.getImages()){
       const range=image.range||{};
       // ExcelJS image anchors are zero-based and may be fractional.
@@ -205,8 +215,8 @@ export function initExcelInterface(){
         }
       }catch(error){console.warn('Could not retain an existing poster:',error);}
       if(poster){
-        if(!imagesByColumn.has(col))imagesByColumn.set(col,[]);
-        imagesByColumn.get(col).push({row,poster});
+        const cellKey=row+':'+col;
+        if(!imagesByCell.has(cellKey))imagesByCell.set(cellKey,poster);
       }
     }
     for(let row=1;row<=sheet.rowCount;row++){
@@ -221,14 +231,9 @@ export function initExcelInterface(){
         const name=excelCellText(titleRow.getCell(col).value).trim();
         const yearValue=Number(excelCellText(yearRow.getCell(col).value).trim());
         if(!name||!Number.isInteger(yearValue)||yearValue<1888||yearValue>2100)continue;
-        // Match the nearest embedded image in this movie's column to its poster row.
-        // Excel files may use fractional anchors or a one-row offset for floating images.
+        // Match only the poster cell belonging to this title/year record.
         const expectedPosterRow=row+2;
-        const nearest=(imagesByColumn.get(col)||[])
-          .map(item=>({...item,distance:Math.abs(item.row-expectedPosterRow)}))
-          .filter(item=>item.distance<=1)
-          .sort((a,b)=>a.distance-b.distance)[0];
-        const poster=nearest?.poster||'';
+        const poster=imagesByCell.get(expectedPosterRow+':'+col)||'';
         extracted.push({
           id:'workbook-'+language.toLowerCase()+'-'+yearValue+'-'+name.toLocaleLowerCase().replace(/[^a-z0-9]+/g,'-'),
           language,name,year:yearValue,poster,
@@ -329,7 +334,7 @@ export function initExcelInterface(){
             const fittedPoster=await cropPosterToCell(webseries.poster);
             // ExcelJS 4.4.0 expects a complete data URI in its `base64` field,
             // not the stripped raw payload. Keep the MIME prefix for XLSX media encoding.
-            const imageId=workbook.addImage({base64:fittedPoster,extension:'png'});
+            const imageId=getOrAddWorkbookPosterImage(workbook,fittedPoster);
             sheet.addImage(imageId,{tl:{col:col-1,row:row+1},br:{col:col,row:row+2},editAs:'twoCell'});
           }catch(error){throw new Error('Could not embed poster for '+webseries.name+': '+(error.message||'Unknown image error'));}
         }
@@ -472,6 +477,29 @@ export function initExcelInterface(){
       }
     }
     table.appendChild(body);
+    const controls=document.createElement('div');
+    controls.className='excel-preview-actions';
+    controls.setAttribute('aria-label','Workbook entry actions');
+    const previewLanguage=getLanguageForSheet(sheet.name);
+    if(previewLanguage){
+      for(let posterRow=3;posterRow<=maxRow;posterRow+=3){
+        for(let controlCol=2;controlCol<=maxCol;controlCol++){
+          const webseriesName=excelCellText(sheet.getCell(posterRow-1,controlCol).value).trim();
+          const webseriesYear=Number(excelCellText(sheet.getCell(posterRow-2,controlCol).value).trim());
+          if(!webseriesName||!Number.isInteger(webseriesYear)||webseriesYear<1888||webseriesYear>2100)continue;
+          const removeButton=document.createElement('button');
+          removeButton.type='button';
+          removeButton.className='excel-preview-remove-webseries';
+          removeButton.dataset.removeWebseriesLanguage=previewLanguage;
+          removeButton.dataset.removeWebseriesName=webseriesName;
+          removeButton.dataset.removeWebseriesYear=String(webseriesYear);
+          removeButton.textContent='Remove '+webseriesName+' ('+webseriesYear+')';
+          removeButton.setAttribute('aria-label','Remove '+webseriesName+' from this Excel workbook');
+          controls.appendChild(removeButton);
+        }
+      }
+    }
+    if(controls.childElementCount)preview.appendChild(controls);
     const wrap=document.createElement('div');wrap.className='webseries-excel-scroll';wrap.appendChild(table);preview.appendChild(wrap);
     const note=document.createElement('p');note.className='excel-preview-note';note.textContent=language+' worksheet · '+webseries.length+' of '+allWebseries.length+' webseries(s) shown'+(query?' · Filter: '+(/^[a-z]$/i.test(query)?'first alphabet':/^\d{4}$/.test(query)?'release year':'webseries name'):'')+' · Alphabetical groups A–Z · Release year oldest to newest.';preview.appendChild(note);
   }
@@ -763,40 +791,7 @@ export function initExcelInterface(){
         tr.appendChild(td);
       }
       body.appendChild(tr);
-      // Put workbook-only controls on a dedicated preview row after each poster row.
-      // This keeps the full poster cell unobstructed and never writes controls into the XLSX.
-      const previewLanguage=getLanguageForSheet(sheet.name);
-      if(previewLanguage&&r%3===0){
-        const controlsRow=document.createElement('tr');
-        controlsRow.className='excel-preview-remove-row';
-        controlsRow.style.height='34px';
-        controlsRow.style.minHeight='34px';
-        const controlsHeading=document.createElement('th');
-        controlsHeading.className='excel-source-row-heading';
-        controlsHeading.textContent='';
-        controlsRow.appendChild(controlsHeading);
-        for(let controlCol=1;controlCol<=maxCol;controlCol++){
-          const controlCell=document.createElement('td');
-          if(sheet.getColumn(controlCol).hidden)controlCell.style.display='none';
-          if(controlCol>=2){
-            const webseriesName=excelCellText(sheet.getCell(r-1,controlCol).value).trim();
-            const webseriesYear=Number(excelCellText(sheet.getCell(r-2,controlCol).value).trim());
-            if(webseriesName&&Number.isInteger(webseriesYear)&&webseriesYear>=1888&&webseriesYear<=2100){
-              const removeButton=document.createElement('button');
-              removeButton.type='button';
-              removeButton.className='excel-preview-remove-webseries';
-              removeButton.dataset.removeWebseriesLanguage=previewLanguage;
-              removeButton.dataset.removeWebseriesName=webseriesName;
-              removeButton.dataset.removeWebseriesYear=String(webseriesYear);
-              removeButton.textContent='Remove';
-              removeButton.setAttribute('aria-label','Remove '+webseriesName+' from this Excel workbook');
-              controlCell.appendChild(removeButton);
-            }
-          }
-          controlsRow.appendChild(controlCell);
-        }
-        body.appendChild(controlsRow);
-      }
+
     }
     table.appendChild(body);
     const wrap=document.createElement('div');wrap.className='webseries-excel-scroll excel-source-scroll';wrap.appendChild(table);preview.appendChild(wrap);
@@ -865,7 +860,7 @@ export function initExcelInterface(){
           // Keep the local collection record, but never discard a poster embedded
           // in the uploaded workbook just because the title already exists locally.
           const existing=mergedWebseries[existingIndex];
-          if(!existing.poster&&webseries.poster)mergedWebseries[existingIndex]={...existing,poster:webseries.poster};
+          if(webseries.poster)mergedWebseries[existingIndex]={...existing,poster:webseries.poster};
         }
       }
     }
