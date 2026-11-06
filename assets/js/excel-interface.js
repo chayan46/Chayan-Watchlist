@@ -514,17 +514,24 @@ export function initExcelInterface(){
     const maxRow=Math.max(1,sheet.rowCount||1),maxCol=Math.max(1,sheet.columnCount||1);
     const view=sheet.views&&sheet.views[0]||{};
     const colLabel=n=>{let x='';while(n){const k=(n-1)%26;x=String.fromCharCode(65+k)+x;n=Math.floor((n-1)/26);}return x;};
-    const table=document.createElement('table');table.className='excel-source-grid';table.style.width='max-content';table.style.minWidth='100%';
-    table.style.fontFamily=(sheet.properties&&sheet.properties.defaultColWidth?'inherit':'Arial,sans-serif');
-    if(sheet.properties&&sheet.properties.defaultRowHeight)table.style.setProperty('--excel-default-row-height',(sheet.properties.defaultRowHeight*4/3)+'px');
+    const table=document.createElement('table');table.className='excel-source-grid';table.style.width='max-content';table.style.minWidth='0';
+    table.style.fontFamily='Calibri,Arial,sans-serif';
+    const defaultColWidth=sheet.properties&&sheet.properties.defaultColWidth||8.43;
+    const excelColumnPixels=width=>Math.max(1,Math.floor(width*7+5));
+    const excelRowPixels=points=>Math.max(1,points*96/72);
     const cg=document.createElement('colgroup'),rowCol=document.createElement('col');rowCol.style.width='44px';cg.appendChild(rowCol);
+    let renderedTableWidth=44;
     for(let c=1;c<=maxCol;c++){
       const sourceCol=sheet.getColumn(c),col=document.createElement('col');
-      const w=sourceCol.width||sheet.properties&&sheet.properties.defaultColWidth;
-      col.style.width=(w?Math.max(1,Math.floor(w*7+5)):92)+'px';
+      const width=sourceCol.width??defaultColWidth;
+      const pixels=excelColumnPixels(width);
+      col.style.width=pixels+'px';
+      renderedTableWidth+=sourceCol.hidden?0:pixels;
       if(sourceCol.hidden)col.style.display='none';
       cg.appendChild(col);
-    }table.appendChild(cg);
+    }
+    table.style.width=renderedTableWidth+'px';
+    table.appendChild(cg);
     const thead=document.createElement('thead'),hr=document.createElement('tr'),corner=document.createElement('th');corner.className='excel-source-corner';hr.appendChild(corner);
     for(let c=1;c<=maxCol;c++){const sourceCol=sheet.getColumn(c),th=document.createElement('th');th.textContent=colLabel(c);if(sourceCol.hidden)th.style.display='none';thead.appendChild(hr);hr.appendChild(th);}
     if(view.showGridLines===false)table.classList.add('excel-hide-gridlines');
@@ -543,8 +550,10 @@ export function initExcelInterface(){
       const row=sheet.getRow(r),tr=document.createElement('tr'),rh=document.createElement('th');
       rh.className='excel-source-row-heading';rh.textContent=String(r);
       if(row.hidden)tr.style.display='none';
-      const rowHeight=row.height||sheet.properties&&sheet.properties.defaultRowHeight;
-      if(rowHeight)tr.style.height=(rowHeight*4/3)+'px';
+      const rowHeight=row.height??(sheet.properties&&sheet.properties.defaultRowHeight)??15;
+      const rowPixels=excelRowPixels(rowHeight);
+      tr.style.height=rowPixels+'px';
+      tr.style.minHeight=rowPixels+'px';
       if(view.showRowColHeaders===false)rh.style.display='none';
       tr.appendChild(rh);
       for(let c=1;c<=maxCol;c++){
@@ -552,7 +561,8 @@ export function initExcelInterface(){
         const cell=row.getCell(c),td=document.createElement('td'),merge=merges.get(r+':'+c),sourceCol=sheet.getColumn(c);
         const style={...(sourceCol.style||{}),...(row.style||{}),...(cell.style||{})};
         if(sourceCol.hidden)td.style.display='none';
-        if(merge){td.rowSpan=merge.rowSpan;td.colSpan=merge.colSpan;}
+        if(merge){td.rowSpan=merge.rowSpan;td.colSpan=merge.colSpan;td.style.height=Array.from({length:merge.rowSpan},(_,offset)=>{const mergedRow=sheet.getRow(r+offset);return excelRowPixels(mergedRow.height??(sheet.properties&&sheet.properties.defaultRowHeight)??15);}).reduce((sum,height)=>sum+height,0)+'px';}
+        else td.style.height=rowPixels+'px';
         renderExcelCellContent(td,cell);
         applyExcelFont(td,style.font);applyExcelFill(td,style.fill);applyExcelBorder(td,style.border);applyExcelAlignment(td,style.alignment);
         if(style.numFmt)td.dataset.numberFormat=style.numFmt;
