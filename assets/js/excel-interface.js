@@ -838,11 +838,22 @@ export function initExcelInterface(){
     // Merge workbook-only entries with the local collection in memory before rebuilding.
     // This preserves the uploaded workbook as the source of truth without bloating localStorage.
     const mergedMovies=[...getMovies()];
-    const known=new Set(mergedMovies.map(movie=>movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year));
+    const movieIndex=new Map(mergedMovies.map((movie,index)=>[
+      movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year,index
+    ]));
     for(const language of LANGUAGES){
       for(const movie of extractExistingLanguageMovies(language)){
         const key=movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year;
-        if(!known.has(key)){known.add(key);mergedMovies.push(movie);}
+        const existingIndex=movieIndex.get(key);
+        if(existingIndex===undefined){
+          movieIndex.set(key,mergedMovies.length);
+          mergedMovies.push(movie);
+        }else{
+          // Keep the local collection record, but never discard a poster embedded
+          // in the uploaded workbook just because the title already exists locally.
+          const existing=mergedMovies[existingIndex];
+          if(!existing.poster&&movie.poster)mergedMovies[existingIndex]={...existing,poster:movie.poster};
+        }
       }
     }
     const retainedMovies=mergedMovies.filter(movie=>!removedWorkbookMovieKeys.has(workbookMovieKey(movie)));
