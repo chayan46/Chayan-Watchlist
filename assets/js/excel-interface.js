@@ -86,6 +86,7 @@ export function initExcelInterface(){
   let currentPreviewSheet='';
   let uploadAttempt=0;
   let resetInProgress=false;
+  let previewSearchQuery='';
   const resetLanding=new URLSearchParams(window.location.search).has('reset');
   const showMessage=message=>{if(status)status.textContent=message;};
   async function persistCurrentWorkbook(){
@@ -235,7 +236,18 @@ export function initExcelInterface(){
   }
 
   function renderLanguagePreview(language){
-    const movies=sortMovies(getMovies().filter(movie=>movie.language===language));
+    const allMovies=sortMovies(getMovies().filter(movie=>movie.language===language));
+    const query=previewSearchQuery.trim();
+    let movies=allMovies;
+    if(query){
+      if(/^[a-z]$/i.test(query)){
+        movies=allMovies.filter(movie=>(movie.name.trim().charAt(0)||'#').toLocaleUpperCase()===query.toLocaleUpperCase());
+      }else if(/^\d{4}$/.test(query)){
+        movies=allMovies.filter(movie=>String(movie.year)===query);
+      }else{
+        movies=allMovies.filter(movie=>movie.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
+      }
+    }
     preview.replaceChildren();
     preview.classList.add('movie-excel-preview');
     const table=document.createElement('table');
@@ -250,7 +262,7 @@ export function initExcelInterface(){
     if(!movies.length){
       const empty=document.createElement('p');
       empty.className='movie-excel-empty';
-      empty.textContent='No '+language+' movies yet. Add a movie using the form; this worksheet will update automatically.';
+      empty.textContent=query?'No '+language+' movies match “'+query+'”. Clear the search to show all movies.':'No '+language+' movies yet. Add a movie using the form; this worksheet will update automatically.';
       preview.appendChild(empty);
       return;
     }
@@ -298,12 +310,33 @@ export function initExcelInterface(){
     }
     table.appendChild(body);
     const wrap=document.createElement('div');wrap.className='movie-excel-scroll';wrap.appendChild(table);preview.appendChild(wrap);
-    const note=document.createElement('p');note.className='excel-preview-note';note.textContent=language+' worksheet · '+movies.length+' movie(s) · Alphabetical groups A–Z · Release year oldest to newest.';preview.appendChild(note);
+    const note=document.createElement('p');note.className='excel-preview-note';note.textContent=language+' worksheet · '+movies.length+' of '+allMovies.length+' movie(s) shown'+(query?' · Filter: '+(/^[a-z]$/i.test(query)?'first alphabet':/^\\d{4}$/.test(query)?'release year':'movie name'):'')+' · Alphabetical groups A–Z · Release year oldest to newest.';preview.appendChild(note);
   }
+
+  // One compact search field filters the selected movie worksheet by title, first letter, or year.
+  const previewHeading=previewWrap.querySelector('.stage-heading');
+  const previewSearch=document.createElement('div');
+  previewSearch.className='movie-preview-search';
+  const previewSearchInput=document.createElement('input');
+  previewSearchInput.type='search';
+  previewSearchInput.className='movie-preview-search-input';
+  previewSearchInput.placeholder='Search movie name, A–Z or year…';
+  previewSearchInput.setAttribute('aria-label','Search movies by name, first alphabet, or release year');
+  previewSearchInput.autocomplete='off';
+  previewSearchInput.value=previewSearchQuery;
+  previewSearch.appendChild(previewSearchInput);
+  if(previewHeading)previewHeading.appendChild(previewSearch);
+  previewSearchInput.addEventListener('input',()=>{
+    previewSearchQuery=previewSearchInput.value;
+    if(workbook&&currentPreviewSheet&&getLanguageForSheet(currentPreviewSheet)){
+      renderLanguagePreview(getLanguageForSheet(currentPreviewSheet));
+    }
+  });
 
   function renderGenericSheet(sheet){
     preview.replaceChildren();
     preview.classList.remove('movie-excel-preview');
+    previewSearch.hidden=true;
     if(!sheet){
       const message=document.createElement('p');
       message.className='movie-excel-empty';
@@ -393,7 +426,7 @@ export function initExcelInterface(){
     const sheet=workbook.getWorksheet(currentPreviewSheet);
     if(!sheet)throw new Error('The selected worksheet is no longer available. Please select it again.');
     const language=getLanguageForSheet(sheet.name);
-    if(language)renderLanguagePreview(language);
+    if(language){previewSearch.hidden=false;renderLanguagePreview(language);}
     else renderGenericSheet(sheet);
     if(previewWrap)previewWrap.hidden=false;
   }
