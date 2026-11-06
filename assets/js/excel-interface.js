@@ -85,6 +85,7 @@ export function initExcelInterface(){
 
   let selectedFile=null;
   let workbook=null;
+  let workbookReadInventory=null;
   let currentPreviewSheet='';
   let originalWorksheetNames=[];
   let uploadAttempt=0;
@@ -872,6 +873,44 @@ export function initExcelInterface(){
 
   const setMovieEntryAvailability=enabled=>document.dispatchEvent(new CustomEvent('movie-entry-availability',{detail:{enabled}}));
   setMovieEntryAvailability(false);
+  // Complete structural scan: inspect every worksheet, every row and every column.
+  // The original ExcelJS workbook remains the source for preview/export; this inventory
+  // records what was actually traversed and is deliberately independent of movie parsing.
+  async function scanCompleteWorkbook(parsed,attempt){
+    const sheets=parsed.worksheets||[];
+    if(!sheets.length)throw new Error('The uploaded workbook contains no readable worksheets.');
+    const totalRows=sheets.reduce((total,sheet)=>total+Math.max(1,sheet.rowCount||1),0);
+    let processedRows=0,populatedCells=0,populatedRows=0,totalColumns=0,totalImages=0;
+    const inventory=[];
+    for(let sheetIndex=0;sheetIndex<sheets.length;sheetIndex++){
+      const sheet=sheets[sheetIndex];
+      const rowCount=Math.max(1,sheet.rowCount||1);
+      const columnCount=Math.max(1,sheet.columnCount||1);
+      totalColumns+=columnCount;
+      let sheetPopulatedCells=0,sheetPopulatedRows=0;
+      for(let rowNumber=1;rowNumber<=rowCount;rowNumber++){
+        const row=sheet.getRow(rowNumber);
+        let rowHasValue=false;
+        for(let columnNumber=1;columnNumber<=columnCount;columnNumber++){
+          const cell=row.getCell(columnNumber);
+          const value=cell.value;
+          if(value!==null&&value!==undefined&&value!==''){
+            populatedCells++;sheetPopulatedCells++;rowHasValue=true;
+          }
+        }
+        if(rowHasValue){populatedRows++;sheetPopulatedRows++;}
+        processedRows++;
+        if(rowNumber===rowCount||rowNumber%10===0){
+          await setReadingProgress(15+processedRows/totalRows*80,'Reading sheet '+(sheetIndex+1)+' of '+sheets.length+' — '+sheet.name+' — row '+rowNumber+' of '+rowCount);
+        }
+        if(attempt!==uploadAttempt) return null;
+      }
+      const images=sheet.getImages();totalImages+=images.length;
+      inventory.push({name:sheet.name,rowCount,columnCount,populatedRows:sheetPopulatedRows,populatedCells:sheetPopulatedCells,mergedRanges:(sheet.model.merges||[]).length,imageCount:images.length,state:sheet.state||'visible'});
+    }
+    return {worksheets:inventory,totalWorksheets:sheets.length,totalRows:processedRows,totalColumns,populatedRows,populatedCells,totalImages};
+  }
+
   const readButton=document.getElementById('readUploadedFile');
   const progressWrap=document.getElementById('readingProgressWrap');
   const progressBar=document.getElementById('readingProgressBar');
@@ -909,16 +948,10 @@ export function initExcelInterface(){
       await setReadingProgress(5,'Loading the uploaded .xlsx file…');
       const parsed=new ExcelJS.Workbook();await parsed.xlsx.load(await selectedFile.arrayBuffer());
       if(attempt!==uploadAttempt)return;await setReadingProgress(15,'Workbook opened. Reading worksheet contents…');
-      const sheets=parsed.worksheets||[];if(!sheets.length)throw new Error('The uploaded workbook contains no readable worksheets.');
-      const totalRows=sheets.reduce((n,sh)=>n+Math.max(1,sh.rowCount||1),0);let done=0;
-      for(let si=0;si<sheets.length;si++){
-        const sh=sheets[si],rows=Math.max(1,sh.rowCount||1),cols=Math.max(1,sh.columnCount||1);
-        for(let rowIndex=1;rowIndex<=rows;rowIndex++){
-          const row=sh.getRow(rowIndex);for(let colIndex=1;colIndex<=cols;colIndex++)void row.getCell(colIndex).value;
-          done++;if(rowIndex===rows||rowIndex%10===0)await setReadingProgress(15+done/totalRows*80,'Reading worksheet '+(si+1)+' of '+sheets.length+': '+sh.name);
-          if(attempt!==uploadAttempt)return;
-        }
-      }
+      const sheets=parsed.worksheets||[];
+      workbookReadInventory=await scanCompleteWorkbook(parsed,attempt);
+      if(attempt!==uploadAttempt)return;
+      if(!workbookReadInventory) return;
       originalWorksheetNames=parsed.worksheets.map(sheet=>sheet.name).filter(name=>!["Bengali Movies","Hindi Movies","English Movies","Bengali Webseries","Hindi Webseries","English Webseries"].includes(name));
       workbook=parsed;currentPreviewSheet='';publishSelectedWorksheet('');
       // Prepare the app-managed language worksheets immediately after a successful read.
@@ -926,9 +959,9 @@ export function initExcelInterface(){
       // written into the uploaded workbook or exported workbook as cell content.
       await syncLanguageSheets();
       refreshSheetOptions();sheetSelectWrap.hidden=false;
-      await setReadingProgress(100,'Reading completed successfully. '+sheets.length+' original worksheet(s) and 3 movie worksheet(s) are ready to preview.');
+      await setReadingProgress(100,'Complete: '+workbookReadInventory.totalWorksheets+' worksheet(s), '+workbookReadInventory.totalRows+' row(s), '+workbookReadInventory.totalColumns+' column positions and '+workbookReadInventory.populatedCells+' populated cells scanned.');
       await persistCurrentWorkbook();setMovieEntryAvailability(true);fileHint.textContent=(selectedFile.size/1024/1024).toFixed(2)+' MB · Reading completed';
-      showMessage('Reading completed successfully. Choose a worksheet in Proceed to Preview.');
+      showMessage('Entire workbook scanned: '+workbookReadInventory.totalWorksheets+' worksheet(s), '+workbookReadInventory.totalRows+' row(s), '+workbookReadInventory.totalColumns+' column positions and '+workbookReadInventory.populatedCells+' populated cells. Choose any original worksheet to preview.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
       if(attempt!==uploadAttempt)return;workbook=null;sheetSelectWrap.hidden=true;setMovieEntryAvailability(false);
