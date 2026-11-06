@@ -487,13 +487,26 @@ export function initExcelInterface(){
     if(value instanceof Date)return value.toLocaleDateString();
     if(typeof value==='number'&&cell.numFmt){
       const fmt=String(cell.numFmt);
-      if(/%/.test(fmt))return (value*100).toFixed((fmt.match(/\.([0#]+)/)||['',''])[1].length)+'%';
+      if(/%/.test(fmt))return (value*100).toFixed((fmt.match(/\\.([0#]+)/)||['',''])[1].length)+'%';
       if(/[ymd]/i.test(fmt)&&value>0&&value<1)return value.toString();
-      const decimals=(fmt.match(/\.([0#]+)/)||['',''])[1].length;
+      const decimals=(fmt.match(/\\.([0#]+)/)||['',''])[1].length;
       if(/#,##0|0,000/.test(fmt))return value.toLocaleString(undefined,{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
       if(decimals)return value.toFixed(decimals);
     }
     return excelCellText(value);
+  }
+  function renderExcelCellContent(element,cell){
+    const value=cell.value;
+    if(value&&typeof value==='object'&&Array.isArray(value.richText)){
+      value.richText.forEach(run=>{
+        const span=document.createElement('span');
+        span.textContent=run.text||'';
+        applyExcelFont(span,run.font);
+        element.appendChild(span);
+      });
+      return;
+    }
+    element.textContent=excelFormattedValue(cell);
   }
   function renderGenericSheet(sheet){
     preview.replaceChildren();preview.classList.remove('movie-excel-preview');previewSearch.hidden=true;
@@ -508,7 +521,7 @@ export function initExcelInterface(){
     for(let c=1;c<=maxCol;c++){
       const sourceCol=sheet.getColumn(c),col=document.createElement('col');
       const w=sourceCol.width||sheet.properties&&sheet.properties.defaultColWidth;
-      col.style.width=(w?Math.max(1,Math.round(w*7+5)):92)+'px';
+      col.style.width=(w?Math.max(1,Math.floor(w*7+5)):92)+'px';
       if(sourceCol.hidden)col.style.display='none';
       cg.appendChild(col);
     }table.appendChild(cg);
@@ -540,7 +553,7 @@ export function initExcelInterface(){
         const style={...(sourceCol.style||{}),...(row.style||{}),...(cell.style||{})};
         if(sourceCol.hidden)td.style.display='none';
         if(merge){td.rowSpan=merge.rowSpan;td.colSpan=merge.colSpan;}
-        td.textContent=excelFormattedValue(cell);
+        renderExcelCellContent(td,cell);
         applyExcelFont(td,style.font);applyExcelFill(td,style.fill);applyExcelBorder(td,style.border);applyExcelAlignment(td,style.alignment);
         if(style.numFmt)td.dataset.numberFormat=style.numFmt;
         if(style.protection){if(style.protection.locked===false)td.classList.add('excel-cell-unlocked');if(style.protection.hidden)td.title='Formula hidden in worksheet protection settings';}
