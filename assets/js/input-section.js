@@ -8,6 +8,20 @@ export function initInputSection(){
   const uploadHint=document.getElementById('uploadHint');
   const movieNameInput=document.getElementById('movieName');
   const movieType=document.getElementById('movieType');
+  const languageSelect=document.getElementById('language');
+  const addMovieButton=document.getElementById('addMovieButton');
+  let selectedWorksheetName='';
+  function syncAddMovieAvailability(){
+    const expectedWorksheet={Bengali:'Bengali Movies',Hindi:'Hindi Movies',English:'English Movies'}[languageSelect.value]||'';
+    const matches=!!expectedWorksheet&&selectedWorksheetName===expectedWorksheet;
+    if(addMovieButton)addMovieButton.disabled=!matches;
+  }
+  languageSelect.addEventListener('change',syncAddMovieAvailability);
+  document.addEventListener('selected-worksheet-change',event=>{
+    selectedWorksheetName=String(event.detail?.sheetName||'');
+    syncAddMovieAvailability();
+  });
+  syncAddMovieAvailability();
   const franchiseAlphabetField=document.getElementById('franchiseAlphabetField');
   const franchiseLetterInput=document.getElementById('franchiseLetter');
   const franchiseSelectField=document.getElementById('franchiseSelectField');
@@ -101,6 +115,8 @@ export function initInputSection(){
   });
   form.addEventListener('submit',event=>{
     event.preventDefault();
+    syncAddMovieAvailability();
+    if(!addMovieButton||addMovieButton.disabled)return;
     const language=document.getElementById('language').value;
     const name=movieNameInput.value.trim();
     const year=Number(document.getElementById('movieYear').value);
