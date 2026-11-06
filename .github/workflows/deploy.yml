@@ -23,6 +23,65 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --input-type=module --check < "$file"
+          done < <(find assets/js -type f -name '*.js' -print0)
+
+      - name: Validate local module imports and page assets
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          import sys
+
+          root = Path(".")
+          errors = []
+          import_pattern = re.compile(
+              r"""(?:\bfrom\s*|\bimport\s*)["']([^"']+)["']"""
+          )
+
+          for source in (root / "assets/js").rglob("*.js"):
+              text = source.read_text(encoding="utf-8")
+              for specifier in import_pattern.findall(text):
+                  if not specifier.startswith("."):
+                      continue
+                  relative_path = specifier.split("?", 1)[0].split("#", 1)[0]
+                  target = (source.parent / relative_path).resolve()
+                  if not target.is_file():
+                      errors.append(f"{source}: missing import {specifier}")
+
+          html = (root / "index.html").read_text(encoding="utf-8")
+          for attribute in ("src", "href"):
+              pattern = re.compile(
+                  rf"""\b{attribute}\s*=\s*["']([^"']+)["']""",
+                  re.IGNORECASE,
+              )
+              for value in pattern.findall(html):
+                  if value.startswith(("http://", "https://", "//", "#", "data:")):
+                      continue
+                  relative_path = value.split("?", 1)[0].split("#", 1)[0]
+                  if not relative_path:
+                      continue
+                  target = root / relative_path
+                  if not target.is_file():
+                      errors.append(f"index.html: missing asset {value}")
+
+          if errors:
+              print("\\n".join(errors))
+              sys.exit(1)
+
+          print("JavaScript imports and index.html assets are valid.")
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
