@@ -440,10 +440,10 @@ export function initExcelInterface(){
   // Explicit preview refresh keeps workbook generation separate from movie-entry capture.
   const previewUpdateBar=document.createElement('div');
   previewUpdateBar.className='excel-preview-update-bar';
-  previewUpdateBar.hidden=true;
+  previewUpdateBar.hidden=false;
   const previewUpdateStatus=document.createElement('span');
   previewUpdateStatus.className='excel-preview-update-status';
-  previewUpdateStatus.textContent='New movie changes are waiting to be shown.';
+  previewUpdateStatus.textContent='Preview is ready. Refresh whenever you want to display the latest movie collection.';
   const updatePreviewButton=document.createElement('button');
   updatePreviewButton.type='button';
   updatePreviewButton.className='primary excel-preview-update-button';
@@ -456,7 +456,7 @@ export function initExcelInterface(){
     previewUpdatePending=true;
     pendingPreviewSnapshot=snapshot||pendingPreviewSnapshot;
     const count=(snapshot||[]).length;
-    previewUpdateStatus.textContent='Movie collection changed. Click Update Excel Preview to refresh the workbook view.';
+    previewUpdateStatus.textContent='Movie collection changed. Refresh the preview to display the latest entries.';
     updatePreviewButton.textContent='↻ Update Excel Preview';
     updatePreviewButton.disabled=false;
     previewUpdateBar.hidden=false;
@@ -464,11 +464,13 @@ export function initExcelInterface(){
   function clearPreviewUpdatePending(){
     previewUpdatePending=false;
     pendingPreviewSnapshot=null;
-    previewUpdateBar.hidden=true;
+    previewUpdateBar.hidden=false;
+    previewUpdateStatus.textContent='Preview is up to date.';
+    updatePreviewButton.textContent='↻ Update Excel Preview';
     updatePreviewButton.disabled=false;
   }
   updatePreviewButton.addEventListener('click',async()=>{
-    if(!workbook||!previewConfirmed||!previewUpdatePending)return;
+    if(!workbook)return;
     try{
       updatePreviewButton.disabled=true;
       updatePreviewButton.textContent='Updating Preview…';
@@ -486,7 +488,6 @@ export function initExcelInterface(){
       await persistCurrentWorkbook();
       clearPreviewUpdatePending();
       showMessage('Excel preview updated successfully. The preview and downloadable workbook now share the same merged data.');
-      updatePreviewButton.textContent='✓ Preview Updated';
     }catch(error){
       updatePreviewButton.disabled=false;
       updatePreviewButton.textContent='↻ Retry Preview Update';
@@ -843,7 +844,7 @@ export function initExcelInterface(){
   let previewConfirmed=false;
   let liveUpdateError=null;
   subscribeToMovies(snapshot=>{
-    if(!workbook||!previewConfirmed)return;
+    if(!workbook)return;
     // Do not rebuild the workbook silently; let the user choose when the preview refreshes.
     setPreviewUpdatePending(snapshot);
   });
@@ -852,18 +853,13 @@ export function initExcelInterface(){
     if(previewWrap.hidden||!workbook)return;
     try{
       confirmPreviewButton.disabled=true;
-      showMessage('Preparing the live workbook. Creating the formatted language worksheets…');
-      await updateQueue;
-      await syncLanguageSheets();
       previewConfirmed=true;
-      clearPreviewUpdatePending();
       await persistCurrentWorkbook();
       if(completeStage)completeStage.hidden=false;
-      showMessage('Preview confirmed. New movie entries are saved automatically; click Update Excel Preview when you want to refresh the worksheet view.');
+      showMessage('Ready to export. Use Update Excel Preview separately whenever you want to refresh the worksheet view.');
       completeStage?.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
-      previewConfirmed=false;
-      showMessage('Could not activate live workbook updates: '+(error.message||'Unknown error'));
+      showMessage('Could not proceed to export: '+(error.message||'Unknown error'));
     }finally{confirmPreviewButton.disabled=false;}
   });
 
