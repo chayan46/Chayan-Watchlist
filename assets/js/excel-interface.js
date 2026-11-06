@@ -837,6 +837,8 @@ export function initExcelInterface(){
 
 
 
+  const setMovieEntryAvailability=enabled=>document.dispatchEvent(new CustomEvent('movie-entry-availability',{detail:{enabled}}));
+  setMovieEntryAvailability(false);
   const readButton=document.getElementById('readUploadedFile');
   const progressWrap=document.getElementById('readingProgressWrap');
   const progressBar=document.getElementById('readingProgressBar');
@@ -855,6 +857,7 @@ export function initExcelInterface(){
   }
   fileInput.addEventListener('change',()=>{
     uploadAttempt++;selectedFile=fileInput.files&&fileInput.files[0]||null;
+    setMovieEntryAvailability(false);
     workbook=null;currentPreviewSheet='';sheetSelectWrap.hidden=true;previewWrap.hidden=true;
     if(completeStage)completeStage.hidden=true;if(progressWrap)progressWrap.hidden=true;
     if(readButton)readButton.disabled=!selectedFile;
@@ -890,11 +893,11 @@ export function initExcelInterface(){
       await syncLanguageSheets();
       refreshSheetOptions();sheetSelectWrap.hidden=false;
       await setReadingProgress(100,'Reading completed successfully. '+sheets.length+' original worksheet(s) and 3 movie worksheet(s) are ready to preview.');
-      await persistCurrentWorkbook();fileHint.textContent=(selectedFile.size/1024/1024).toFixed(2)+' MB · Reading completed';
+      await persistCurrentWorkbook();setMovieEntryAvailability(true);fileHint.textContent=(selectedFile.size/1024/1024).toFixed(2)+' MB · Reading completed';
       showMessage('Reading completed successfully. Choose a worksheet in Proceed to Preview.');
       sheetSelectWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
-      if(attempt!==uploadAttempt)return;workbook=null;sheetSelectWrap.hidden=true;
+      if(attempt!==uploadAttempt)return;workbook=null;sheetSelectWrap.hidden=true;setMovieEntryAvailability(false);
       await setReadingProgress(0,'Reading failed. '+(error.message||'Unable to read this workbook.'));
       showMessage('Excel reading failed: '+(error.message||'Unable to read this workbook.'));
     }finally{if(attempt===uploadAttempt){reading=false;readButton.disabled=!selectedFile;readButton.textContent='Read the Uploaded File';}}
