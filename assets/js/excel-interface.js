@@ -437,6 +437,66 @@ export function initExcelInterface(){
   previewSearchInput.value=previewSearchQuery;
   previewSearch.appendChild(previewSearchInput);
   if(previewHeading)previewHeading.appendChild(previewSearch);
+
+  // Explicit preview refresh keeps workbook generation separate from movie-entry capture.
+  const previewUpdateBar=document.createElement('div');
+  previewUpdateBar.className='excel-preview-update-bar';
+  previewUpdateBar.hidden=true;
+  const previewUpdateStatus=document.createElement('span');
+  previewUpdateStatus.className='excel-preview-update-status';
+  previewUpdateStatus.textContent='New movie changes are waiting to be shown.';
+  const updatePreviewButton=document.createElement('button');
+  updatePreviewButton.type='button';
+  updatePreviewButton.className='primary excel-preview-update-button';
+  updatePreviewButton.textContent='↻ Update Excel Preview';
+  previewUpdateBar.append(previewUpdateStatus,updatePreviewButton);
+  if(previewHeading)previewHeading.insertAdjacentElement('afterend',previewUpdateBar);
+  let previewUpdatePending=false;
+  let pendingPreviewSnapshot=null;
+  function setPreviewUpdatePending(snapshot){
+    previewUpdatePending=true;
+    pendingPreviewSnapshot=snapshot||pendingPreviewSnapshot;
+    const count=(snapshot||[]).length;
+    previewUpdateStatus.textContent='Movie collection changed. Click Update Excel Preview to refresh the workbook view.';
+    updatePreviewButton.textContent='↻ Update Excel Preview';
+    updatePreviewButton.disabled=false;
+    previewUpdateBar.hidden=false;
+  }
+  function clearPreviewUpdatePending(){
+    previewUpdatePending=false;
+    pendingPreviewSnapshot=null;
+    previewUpdateBar.hidden=true;
+    updatePreviewButton.disabled=false;
+  }
+  updatePreviewButton.addEventListener('click',async()=>{
+    if(!workbook||!previewConfirmed||!previewUpdatePending)return;
+    try{
+      updatePreviewButton.disabled=true;
+      updatePreviewButton.textContent='Updating Preview…';
+      previewUpdateStatus.textContent='Merging existing workbook records and refreshing the selected language worksheet…';
+      await updateQueue;
+      await syncLanguageSheets();
+      const latest=pendingPreviewSnapshot;
+      const latestMovie=latest&&latest[0];
+      if(latestMovie&&LANGUAGE_SHEETS[latestMovie.language]){
+        currentPreviewSheet=LANGUAGE_SHEETS[latestMovie.language];
+        refreshSheetOptions();
+        sheetSelect.value=currentPreviewSheet;
+      }
+      renderSelectedPreview();
+      await persistCurrentWorkbook();
+      clearPreviewUpdatePending();
+      showMessage('Excel preview updated successfully. The preview and downloadable workbook now share the same merged data.');
+      updatePreviewButton.textContent='✓ Preview Updated';
+    }catch(error){
+      updatePreviewButton.disabled=false;
+      updatePreviewButton.textContent='↻ Retry Preview Update';
+      previewUpdateStatus.textContent='Preview update failed: '+(error.message||'Unknown error')+'. Your saved movie entries have not been removed.';
+      showMessage('Could not update Excel preview: '+(error.message||'Unknown error'));
+      console.error('Manual Excel preview update failed:',error);
+    }
+  });
+
   previewSearchInput.addEventListener('input',()=>{
     previewSearchQuery=previewSearchInput.value;
     // Source workbook previews are not filtered by the movie collection search.
@@ -785,22 +845,8 @@ export function initExcelInterface(){
   let liveUpdateError=null;
   subscribeToMovies(snapshot=>{
     if(!workbook||!previewConfirmed)return;
-    updateQueue=updateQueue.then(async()=>{
-      await syncLanguageSheets();
-      const latestMovie=snapshot&&snapshot[0];
-      if(latestMovie&&LANGUAGE_SHEETS[latestMovie.language]){
-        currentPreviewSheet=LANGUAGE_SHEETS[latestMovie.language];
-        refreshSheetOptions();
-        sheetSelect.value=currentPreviewSheet;
-        renderSelectedPreview();
-      }
-      await persistCurrentWorkbook();
-      showMessage('Movie collection updated. The active Excel workbook and preview are synchronized.');
-    }).catch(error=>{
-      liveUpdateError=error;
-      showMessage('The movie was saved to your collection, but the Excel workbook could not be refreshed: '+(error.message||'Unknown error'));
-      console.error('Live Excel workbook update failed:',error);
-    });
+    // Do not rebuild the workbook silently; let the user choose when the preview refreshes.
+    setPreviewUpdatePending(snapshot);
   });
 
   confirmPreviewButton?.addEventListener('click',async()=>{
@@ -811,9 +857,10 @@ export function initExcelInterface(){
       await updateQueue;
       await syncLanguageSheets();
       previewConfirmed=true;
+      clearPreviewUpdatePending();
       await persistCurrentWorkbook();
       if(completeStage)completeStage.hidden=false;
-      showMessage('Preview confirmed. Live workbook updates are enabled. New movie entries will update the Excel sheets and preview automatically.');
+      showMessage('Preview confirmed. New movie entries are saved automatically; click Update Excel Preview when you want to refresh the worksheet view.');
       completeStage?.scrollIntoView({behavior:'smooth',block:'nearest'});
     }catch(error){
       previewConfirmed=false;
@@ -828,6 +875,7 @@ export function initExcelInterface(){
       await updateQueue;
       await syncLanguageSheets();
       const buffer=await workbook.xlsx.writeBuffer();
+      if(previewUpdatePending)clearPreviewUpdatePending();
       const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
       const url=URL.createObjectURL(blob);const link=document.createElement('a');
       link.href=url;
