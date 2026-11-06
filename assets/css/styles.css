@@ -805,3 +805,17 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
  #excelPreviewWrap>.stage-heading{align-items:stretch!important;gap:10px!important}
  #excelPreviewWrap .movie-preview-search{width:100%!important;min-width:0!important;flex:1 1 100%!important;margin:0!important}
 }
+
+
+/* Franchise subgroup rows (A1, A2, B1...) in the live Excel preview. */
+#excelPreview .movie-excel-table .movie-excel-franchise{
+  background:#E600D9!important;
+  color:#FFFFFF!important;
+  font-family:"Aptos Display","Segoe UI",Arial,sans-serif!important;
+  font-size:32px!important;
+  font-weight:800!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  white-space:normal!important;
+  border:2px solid #C900BD!important;
+}
