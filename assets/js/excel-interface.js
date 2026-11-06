@@ -826,13 +826,17 @@ export function initExcelInterface(){
     if(workbook.getWorksheet(previous))sheetSelect.value=previous;
     else if(workbook.getWorksheet(LANGUAGE_SHEETS.Bengali))sheetSelect.value=LANGUAGE_SHEETS.Bengali;
     else sheetSelect.value=workbook.worksheets[0]?.name||'';
+    publishSelectedWorksheet(sheetSelect.value);
   }
 
+  const publishSelectedWorksheet=sheetName=>document.dispatchEvent(new CustomEvent('selected-worksheet-change',{detail:{sheetName:sheetName||''}}));
+  publishSelectedWorksheet('');
   sheetSelect.addEventListener('change',()=>{
     if(!workbook)return;
     const previous=currentPreviewSheet;
     currentPreviewSheet=sheetSelect.value;
-    persistCurrentWorkbook().catch(error=>{currentPreviewSheet=previous;console.warn('Could not save worksheet selection:',error);});
+    publishSelectedWorksheet(currentPreviewSheet);
+    persistCurrentWorkbook().catch(error=>{currentPreviewSheet=previous;publishSelectedWorksheet(previous);console.warn('Could not save worksheet selection:',error);});
   });
 
 
@@ -886,7 +890,7 @@ export function initExcelInterface(){
           if(attempt!==uploadAttempt)return;
         }
       }
-      workbook=parsed;currentPreviewSheet='';
+      workbook=parsed;currentPreviewSheet='';publishSelectedWorksheet('');
       // Prepare the app-managed language worksheets immediately after a successful read.
       // Preview-only controls are injected while rendering these sheets; they are never
       // written into the uploaded workbook or exported workbook as cell content.
