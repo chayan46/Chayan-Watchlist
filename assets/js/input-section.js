@@ -108,15 +108,6 @@ export function initInputSection(){
     syncFranchiseFields();
     form.querySelectorAll(':invalid').forEach(field=>field.setCustomValidity(''));
   });
-  fileInput.addEventListener('change',event=>{
-    const file=event.target.files&&event.target.files[0];resetPoster();if(!file)return;
-    if(!file.type.startsWith('image/')){alert('Please choose a valid image file.');event.target.value='';return;}
-    if(file.size>8*1024*1024){alert('Poster must be 8 MB or smaller.');event.target.value='';return;}
-    const reader=new FileReader();
-    reader.onload=()=>showPoster(String(reader.result||''),file.name);
-    reader.onerror=()=>alert('Could not read this poster. Please choose another image.');
-    reader.readAsDataURL(file);
-  });
   form.addEventListener('submit',event=>{
     event.preventDefault();
     syncAddMovieAvailability();
