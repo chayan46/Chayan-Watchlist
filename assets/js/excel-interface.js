@@ -1,4 +1,4 @@
-import {getMovies,subscribeToMovies} from './data-management.js';
+import {getMovies,subscribeToMovies,deleteMovie} from './data-management.js';
 
 const LANGUAGE_SHEETS={Bengali:'Bengali Movies',Hindi:'Hindi Movies',English:'English Movies'};
 const LANGUAGES=Object.keys(LANGUAGE_SHEETS);
@@ -281,8 +281,16 @@ export function initExcelInterface(){
       const posterRow=document.createElement('tr');
       items.forEach(movie=>{
         const cell=document.createElement('td');cell.className='movie-excel-poster';
+        cell.dataset.movieId=movie.id;
         if(movie.poster){const img=document.createElement('img');img.src=movie.poster;img.alt=movie.name+' poster';cell.appendChild(img);}
-        else{const empty=document.createElement('span');empty.textContent='Poster not supplied';cell.appendChild(empty);}
+        else{const empty=document.createElement('span');empty.className='movie-excel-no-poster';empty.textContent='Poster not supplied';cell.appendChild(empty);}
+        const deleteButton=document.createElement('button');
+        deleteButton.type='button';
+        deleteButton.className='movie-excel-delete';
+        deleteButton.dataset.deleteMovieId=movie.id;
+        deleteButton.textContent='Delete entry';
+        deleteButton.setAttribute('aria-label','Delete '+movie.name+' from '+language+' movies');
+        cell.appendChild(deleteButton);
         posterRow.appendChild(cell);
       });
       body.appendChild(posterRow);
@@ -362,6 +370,23 @@ export function initExcelInterface(){
     note.textContent='Showing rows 1–100 and columns A–CV. Scroll horizontally and vertically to explore the full 100 × 100 preview.';
     preview.appendChild(note);
   }
+
+  // Delete controls are delegated because the preview table is rebuilt after every change.
+  preview.addEventListener('click',event=>{
+    const button=event.target.closest('button[data-delete-movie-id]');
+    if(!button||!preview.contains(button))return;
+    const movieId=button.dataset.deleteMovieId;
+    const movie=getMovies().find(item=>item.id===movieId);
+    if(!movie)return;
+    if(!window.confirm('Delete "'+movie.name+'" from the '+movie.language+' movie collection? This will also update the Excel worksheet and poster counter.'))return;
+    button.disabled=true;
+    if(!deleteMovie(movieId)){
+      button.disabled=false;
+      showMessage('The movie could not be deleted. Please try again.');
+      return;
+    }
+    showMessage('"'+movie.name+'" deleted. The alphabet group, poster counter and following worksheet sections are being updated.');
+  });
 
   function renderSelectedPreview(){
     if(!workbook||!currentPreviewSheet)throw new Error('Select a worksheet to preview.');
