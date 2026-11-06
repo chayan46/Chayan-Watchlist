@@ -1,6 +1,7 @@
 import {addMovie,getMovies} from './data-management.js';
 export function initInputSection(){
   const form=document.getElementById('movieForm');
+  const resetButton=document.getElementById('resetMovieInput');
   const fileInput=document.getElementById('posterFile');
   const preview=document.getElementById('posterPreview');
   const uploadTitle=document.getElementById('uploadTitle');
@@ -82,6 +83,13 @@ export function initInputSection(){
   });
   syncFranchiseFields();
   function resetPoster(){posterData='';preview.removeAttribute('src');preview.style.display='none';uploadTitle.textContent='＋ Upload movie poster';uploadHint.textContent='JPG, PNG, WEBP, GIF · Max 8 MB';}
+  resetButton?.addEventListener('click',()=>{
+    form.reset();
+    fileInput.value='';
+    resetPoster();
+    syncFranchiseFields();
+    form.querySelectorAll(':invalid').forEach(field=>field.setCustomValidity(''));
+  });
   fileInput.addEventListener('change',event=>{
     const file=event.target.files&&event.target.files[0];resetPoster();if(!file)return;
     if(!file.type.startsWith('image/')){alert('Please choose a valid image file.');event.target.value='';return;}
