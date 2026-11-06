@@ -179,7 +179,7 @@ export function initExcelInterface(){
     });
     let row=1;
     for(const [letter,items] of [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0]))){
-      sheet.mergeCells(row,1,row+3,1);
+      sheet.mergeCells(row,1,row+2,1);
       const groupCell=sheet.getCell(row,1);
       const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
       groupCell.value={richText:[
@@ -191,8 +191,7 @@ export function initExcelInterface(){
       groupCell.border={top:{style:'medium',color:{argb:'FFB8C6D8'}},bottom:{style:'medium',color:{argb:'FFB8C6D8'}},left:{style:'medium',color:{argb:'FFB8C6D8'}},right:{style:'medium',color:{argb:'FFB8C6D8'}}};
       sheet.getRow(row).height=19;
       sheet.getRow(row+1).height=16;
-      sheet.getRow(row+2).height=15;
-      sheet.getRow(row+3).height=190;
+      sheet.getRow(row+2).height=190;
       for(const [index,movie] of items.entries()){
         const col=index+2;
         const year=sheet.getCell(row,col);
@@ -205,12 +204,7 @@ export function initExcelInterface(){
         title.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE8D7A5'}};
         title.font={name:'Aptos',size:12,bold:true,color:{argb:'FF202A35'}};
         title.alignment={horizontal:'center',vertical:'middle',wrapText:false,shrinkToFit:true};
-        const indexCell=sheet.getCell(row+2,col);
-        indexCell.value=index+1;
-        indexCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF9CCBC5'}};
-        indexCell.font={name:'Aptos',size:11,bold:true,color:{argb:'FF202A35'}};
-        indexCell.alignment={horizontal:'center',vertical:'middle'};
-        const posterCell=sheet.getCell(row+3,col);
+        const posterCell=sheet.getCell(row+2,col);
         posterCell.value=movie.poster?'':'Poster not supplied';
         posterCell.alignment={horizontal:'center',vertical:'middle',wrapText:true};
         posterCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFFFFF'}};
@@ -222,11 +216,11 @@ export function initExcelInterface(){
             const base64=fittedPoster.substring(fittedPoster.indexOf(',')+1);
             const imageId=workbook.addImage({base64,extension:'png'});
             // Anchor to the exact poster cell boundaries: move and size with cells.
-            sheet.addImage(imageId,{tl:{col:col-1,row:row+2},br:{col:col,row:row+3},editAs:'twoCell'});
+            sheet.addImage(imageId,{tl:{col:col-1,row:row+1},br:{col:col,row:row+2},editAs:'twoCell'});
           }catch(error){console.warn('Could not embed fitted poster for '+movie.name,error);}
         }
       }
-      row+=4;
+      row+=3;
       sheet.getRow(row).height=8;
       row++;
     }
@@ -264,7 +258,7 @@ export function initExcelInterface(){
       const groupRow=document.createElement('tr');
       const alphabet=document.createElement('th');
       alphabet.className='movie-excel-letter';
-      alphabet.rowSpan=4;
+      alphabet.rowSpan=3;
       const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
       const letterLabel=document.createElement('span');
       letterLabel.className='movie-excel-letter-label';
@@ -284,9 +278,6 @@ export function initExcelInterface(){
       const titleRow=document.createElement('tr');
       items.forEach(movie=>{const cell=document.createElement('th');cell.className='movie-excel-title';cell.textContent=movie.name;titleRow.appendChild(cell);});
       body.appendChild(titleRow);
-      const indexRow=document.createElement('tr');
-      items.forEach((movie,index)=>{const cell=document.createElement('td');cell.className='movie-excel-index';cell.textContent=String(index+1);indexRow.appendChild(cell);});
-      body.appendChild(indexRow);
       const posterRow=document.createElement('tr');
       items.forEach(movie=>{
         const cell=document.createElement('td');cell.className='movie-excel-poster';
