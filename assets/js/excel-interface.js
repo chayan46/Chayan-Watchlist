@@ -650,6 +650,27 @@ export function initExcelInterface(){
     if(view.showGridLines===false)table.classList.add('excel-hide-gridlines');
     if(view.showRowColHeaders===false){corner.style.display='none';hr.querySelectorAll('th').forEach(th=>th.style.display='none');}
     thead.replaceChildren(hr);table.appendChild(thead);
+    // ExcelJS stores worksheet pictures separately from cell values. Recreate them
+    // in the preview cells so generated language-sheet posters remain visible.
+    const previewImages=new Map();
+    const mediaItems=workbook.model&&Array.isArray(workbook.model.media)?workbook.model.media:[];
+    for(const image of sheet.getImages()){
+      const range=image.range||{},tl=range.tl||{};
+      if(!Number.isInteger(tl.row)||!Number.isInteger(tl.col))continue;
+      const media=mediaItems[Number(image.imageId)-1];
+      if(!media)continue;
+      let src='';
+      try{
+        const raw=media.buffer||media.base64;
+        if(typeof raw==='string')src=raw.startsWith('data:')?raw:'data:image/'+(media.extension||'png')+';base64,'+raw;
+        else if(raw&&raw.byteLength){
+          let binary='';const bytes=new Uint8Array(raw);
+          for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+          src='data:image/'+(media.extension||'png')+';base64,'+btoa(binary);
+        }
+      }catch(error){console.warn('Could not render worksheet poster:',error);}
+      if(src)previewImages.set(tl.row+':'+tl.col,src);
+    }
     const merges=new Map(),covered=new Set();
     (sheet.model.merges||[]).forEach(range=>{
       const m=String(range).match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/i);if(!m)return;
@@ -677,6 +698,15 @@ export function initExcelInterface(){
         if(merge){td.rowSpan=merge.rowSpan;td.colSpan=merge.colSpan;td.style.height=Array.from({length:merge.rowSpan},(_,offset)=>{const mergedRow=sheet.getRow(r+offset);return excelRowPixels(mergedRow.height??(sheet.properties&&sheet.properties.defaultRowHeight)??15);}).reduce((sum,height)=>sum+height,0)+'px';}
         else td.style.height=rowPixels+'px';
         renderExcelCellContent(td,cell);
+        const posterSrc=previewImages.get((r-1)+':'+(c-1));
+        if(posterSrc){
+          const posterImage=document.createElement('img');
+          posterImage.className='excel-source-poster';
+          posterImage.src=posterSrc;
+          posterImage.alt=excelCellText(sheet.getCell(Math.max(1,r-1),c).value).trim()+' poster';
+          posterImage.loading='lazy';
+          td.appendChild(posterImage);
+        }
         applyExcelFont(td,style.font);applyExcelFill(td,style.fill);applyExcelBorder(td,style.border);applyExcelAlignment(td,style.alignment);
         if(style.numFmt)td.dataset.numberFormat=style.numFmt;
         if(style.protection){if(style.protection.locked===false)td.classList.add('excel-cell-unlocked');if(style.protection.hidden)td.title='Formula hidden in worksheet protection settings';}
