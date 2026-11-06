@@ -792,3 +792,16 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 #excelPreview .movie-excel-delete:hover{background:#B42318!important;color:#fff!important}
 #excelPreview .movie-excel-delete:focus-visible{outline:3px solid rgba(180,35,24,.22)!important;outline-offset:1px!important}
 #excelPreview .movie-excel-delete:disabled{opacity:.55!important;cursor:wait!important}
+
+/* Compact worksheet search aligned to the right of the Live Excel Preview heading. */
+#excelPreviewWrap>.stage-heading{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;flex-wrap:wrap!important}
+#excelPreviewWrap>.stage-heading>div:first-of-type{min-width:180px!important;flex:1 1 180px!important}
+#excelPreviewWrap .movie-preview-search{flex:0 1 330px!important;width:min(330px,48%)!important;min-width:220px!important;margin-left:auto!important}
+#excelPreviewWrap .movie-preview-search-input{display:block!important;width:100%!important;min-height:40px!important;box-sizing:border-box!important;padding:9px 13px!important;border:1px solid #B8C6D8!important;border-radius:9px!important;background:#FFFFFF!important;color:#172B4D!important;font:600 13px/1.3 "Aptos","Segoe UI",Arial,sans-serif!important;box-shadow:0 1px 3px rgba(23,43,77,.06)!important;outline:none!important}
+#excelPreviewWrap .movie-preview-search-input::placeholder{color:#718096!important;font-weight:500!important}
+#excelPreviewWrap .movie-preview-search-input:focus{border-color:#287FBD!important;box-shadow:0 0 0 3px rgba(40,127,189,.13)!important}
+#excelPreviewWrap .movie-preview-search[hidden]{display:none!important}
+@media(max-width:680px){
+ #excelPreviewWrap>.stage-heading{align-items:stretch!important;gap:10px!important}
+ #excelPreviewWrap .movie-preview-search{width:100%!important;min-width:0!important;flex:1 1 100%!important;margin:0!important}
+}
