@@ -2,6 +2,8 @@ import {getMovies,subscribeToMovies,deleteMovie} from './data-management.js';
 
 const LANGUAGE_SHEETS={Bengali:'Bengali Movies',Hindi:'Hindi Movies',English:'English Movies'};
 const LANGUAGES=Object.keys(LANGUAGE_SHEETS);
+const ALPHABET_COLORS=["F4CCCC","FCE5CD","FFF2CC","D9EAD3","D0E0E3","CFE2F3","D9D2E9","EAD1DC","F4B6B6","F9CB9C","FFE599","B6D7A8","A2C4C9","9FC5E8","B4A7D6","D5A6BD","E6B8AF","F6D7B0","DDEBF7","D9EAD3","EADCF8","FCE4D6","C9DAF8","D0E0E3","E2F0D9","F4CCCC"];
+const getAlphabetColor=letter=>{const index=String(letter||'').toUpperCase().charCodeAt(0)-65;return index>=0&&index<26?ALPHABET_COLORS[index]:'E8EDF3';};
 const WORKBOOK_DB='chayan-watchlist-excel-state';
 const WORKBOOK_STORE='excel-workspace';
 function openWorkbookDB(){return new Promise((resolve,reject)=>{const request=indexedDB.open(WORKBOOK_DB,1);request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains(WORKBOOK_STORE))request.result.createObjectStore(WORKBOOK_STORE);};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
@@ -188,14 +190,15 @@ export function initExcelInterface(){
           {text:'\\n('+items.length+')',font:{name:'Aptos',size:18,bold:true,italic:true,color:{argb:'FFFFFFFF'}}}
         ]};
         groupCell.font={name:'Aptos Display',size:32,bold:true,color:{argb:'FFFFFFFF'}};
-        groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE600D9'}};
+        groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+getAlphabetColor(label.charAt(0))}};
+        groupCell.font={name:'Aptos Display',size:32,bold:true,color:{argb:'FF263445'}};
       }else{
         const movieCount=items.length;
         groupCell.value={richText:[
           {text:label,font:{name:'Aptos Display',size:50,bold:true,color:{argb:'FF172B4D'}}},
           {text:'\n('+movieCount+')',font:{name:'Aptos',size:25,bold:true,italic:true,color:{argb:'FF147D75'}}}
         ]};
-        groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDCE5F0'}};
+        groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+getAlphabetColor(label.charAt(0))}};
       }
       groupCell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
       groupCell.border={top:{style:'medium',color:{argb:'FFB8C6D8'}},bottom:{style:'medium',color:{argb:'FFB8C6D8'}},left:{style:'medium',color:{argb:'FFB8C6D8'}},right:{style:'medium',color:{argb:'FFB8C6D8'}}};
@@ -297,6 +300,7 @@ export function initExcelInterface(){
       const groupRow=document.createElement('tr');
       const alphabet=document.createElement('th');
       alphabet.className=isFranchise?'movie-excel-letter movie-excel-franchise':'movie-excel-letter';
+      alphabet.style.setProperty('--movie-alphabet-color','#'+getAlphabetColor(label.charAt(0)));
       alphabet.rowSpan=3;
       if(isFranchise){
         const subgroupLabel=document.createElement('span');
