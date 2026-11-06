@@ -166,7 +166,7 @@ export function initExcelInterface(){
     sheet.getImages().forEach(image=>sheet.removeImage(image.imageId));
     [...(sheet.model.merges||[])].forEach(range=>sheet.unMergeCells(range));
     if(sheet.rowCount)sheet.spliceRows(1,sheet.rowCount);
-    sheet.columns=[{width:9},...Array.from({length:Math.max(1,sortMovies(getMovies().filter(m=>m.language===language)).length)},()=>({width:27}))];
+    sheet.columns=[{width:4.5},...Array.from({length:Math.max(1,sortMovies(getMovies().filter(m=>m.language===language)).length)},()=>({width:27}))];
     sheet.views=[{state:'frozen',xSplit:1,ySplit:0,showGridLines:false}];
     sheet.properties.defaultRowHeight=20;
     sheet.properties.defaultColWidth=27;
@@ -183,7 +183,7 @@ export function initExcelInterface(){
       const groupCell=sheet.getCell(row,1);
       groupCell.value=letter;
       groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDCE5F0'}};
-      groupCell.font={name:'Aptos Display',size:24,bold:true,color:{argb:'FF172B4D'}};
+      groupCell.font={name:'Aptos Display',size:22,bold:true,color:{argb:'FF172B4D'}};
       groupCell.alignment={vertical:'middle',horizontal:'center'};
       groupCell.border={top:{style:'medium',color:{argb:'FFB8C6D8'}},bottom:{style:'medium',color:{argb:'FFB8C6D8'}},left:{style:'medium',color:{argb:'FFB8C6D8'}},right:{style:'medium',color:{argb:'FFB8C6D8'}}};
       sheet.getRow(row).height=25;
