@@ -180,7 +180,7 @@ export function initExcelInterface(){
     const sheet=workbook.getWorksheet(SOURCE_LANGUAGE_SHEETS[language])||workbook.getWorksheet(language);
     if(!sheet)return [];
     const extracted=[];
-    const imageByCell=new Map();
+    const imagesByColumn=new Map();
     for(const image of sheet.getImages()){
       const range=image.range||{};
       // ExcelJS image anchors are zero-based and may be fractional.
@@ -204,7 +204,10 @@ export function initExcelInterface(){
           poster='data:image/'+(item.extension||'png')+';base64,'+btoa(binary);
         }
       }catch(error){console.warn('Could not retain an existing poster:',error);}
-      if(poster)imageByCell.set(row+':'+col,poster);
+      if(poster){
+        if(!imagesByColumn.has(col))imagesByColumn.set(col,[]);
+        imagesByColumn.get(col).push({row,poster});
+      }
     }
     for(let row=1;row<=sheet.rowCount;row++){
       const label=excelCellText(sheet.getCell(row,1).value).trim().split(/[\r\n(]/)[0].trim();
@@ -218,9 +221,14 @@ export function initExcelInterface(){
         const name=excelCellText(titleRow.getCell(col).value).trim();
         const yearValue=Number(excelCellText(yearRow.getCell(col).value).trim());
         if(!name||!Number.isInteger(yearValue)||yearValue<1888||yearValue>2100)continue;
-        // Poster row is two worksheet rows below the alphabet/franchise header.
-        // Image anchor keys are now 1-based worksheet coordinates.
-        const poster=imageByCell.get((row+2)+':'+col)||'';
+        // Match the nearest embedded image in this movie's column to its poster row.
+        // Excel files may use fractional anchors or a one-row offset for floating images.
+        const expectedPosterRow=row+2;
+        const nearest=(imagesByColumn.get(col)||[])
+          .map(item=>({...item,distance:Math.abs(item.row-expectedPosterRow)}))
+          .filter(item=>item.distance<=1)
+          .sort((a,b)=>a.distance-b.distance)[0];
+        const poster=nearest?.poster||'';
         extracted.push({
           id:'workbook-'+language.toLowerCase()+'-'+yearValue+'-'+name.toLocaleLowerCase().replace(/[^a-z0-9]+/g,'-'),
           language,name,year:yearValue,poster,
@@ -323,7 +331,7 @@ export function initExcelInterface(){
             // not the stripped raw payload. Keep the MIME prefix for XLSX media encoding.
             const imageId=workbook.addImage({base64:fittedPoster,extension:'png'});
             sheet.addImage(imageId,{tl:{col:col-1,row:row+1},br:{col:col,row:row+2},editAs:'twoCell'});
-          }catch(error){console.warn('Could not embed fitted poster for '+webseries.name,error);}
+          }catch(error){throw new Error('Could not embed poster for '+webseries.name+': '+(error.message||'Unknown image error'));}
         }
       }
       // Keep alphabet/franchise sections contiguous: no spacer row between groups.
