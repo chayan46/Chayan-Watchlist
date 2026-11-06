@@ -166,7 +166,7 @@ export function initExcelInterface(){
     sheet.getImages().forEach(image=>sheet.removeImage(image.imageId));
     [...(sheet.model.merges||[])].forEach(range=>sheet.unMergeCells(range));
     if(sheet.rowCount)sheet.spliceRows(1,sheet.rowCount);
-    sheet.columns=[{width:4.5},...Array.from({length:Math.max(1,sortMovies(getMovies().filter(m=>m.language===language)).length)},()=>({width:27}))];
+    sheet.columns=[{width:5.3},...Array.from({length:Math.max(1,sortMovies(getMovies().filter(m=>m.language===language)).length)},()=>({width:27}))];
     sheet.views=[{state:'frozen',xSplit:1,ySplit:0,showGridLines:false}];
     sheet.properties.defaultRowHeight=20;
     sheet.properties.defaultColWidth=27;
@@ -232,7 +232,7 @@ export function initExcelInterface(){
       sheet.getCell('A1').font={bold:true,size:16,color:{argb:'FF174F7D'}};
       sheet.getCell('A2').value='Movies added in this language will appear here, grouped alphabetically and sorted by release year.';
     }
-    sheet.getColumn(1).width=4.5;
+    sheet.getColumn(1).width=5.3;
     sheet.autoFilter=null;
     return sheet;
   }
