@@ -998,3 +998,11 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 }
 .excel-preview-remove-movie:hover:not(:disabled){background:#ffe8e8!important;border-color:#d98b91!important;transform:translateY(-1px)}
 .excel-preview-remove-movie:disabled{opacity:.55!important;cursor:wait!important}
+
+.excel-preview-remove-movie{
+  display:flex!important;
+  width:max-content!important;
+  margin:7px auto 8px!important;
+  position:relative!important;
+  z-index:2!important;
+}
