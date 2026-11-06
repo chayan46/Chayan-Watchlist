@@ -825,8 +825,7 @@ export function initExcelInterface(){
     sheetSelect.replaceChildren();
     const orderedNames=[
       ...originalWorksheetNames.filter(name=>workbook.getWorksheet(name)),
-      ...LANGUAGES.map(language=>LANGUAGE_SHEETS[language]).filter(name=>workbook.getWorksheet(name)&&!originalWorksheetNames.includes(name)),
-      ...workbook.worksheets.map(sheet=>sheet.name).filter(name=>!originalWorksheetNames.includes(name)&&!LANGUAGES.some(language=>LANGUAGE_SHEETS[language]===name))
+      ...LANGUAGES.map(language=>LANGUAGE_SHEETS[language]).filter(name=>workbook.getWorksheet(name))
     ];
     orderedNames.forEach((name,index)=>{
       const option=document.createElement('option');option.value=name;option.textContent=(index+1)+'. '+name;sheetSelect.appendChild(option);
@@ -898,7 +897,7 @@ export function initExcelInterface(){
           if(attempt!==uploadAttempt)return;
         }
       }
-      originalWorksheetNames=parsed.worksheets.map(sheet=>sheet.name).filter(name=>!['Bengali Webseries','Hindi Webseries','English Webseries'].includes(name));
+      originalWorksheetNames=parsed.worksheets.map(sheet=>sheet.name).filter(name=>!["Bengali Movies","Hindi Movies","English Movies","Bengali Webseries","Hindi Webseries","English Webseries"].includes(name));
       workbook=parsed;currentPreviewSheet='';publishSelectedWorksheet('');
       // Prepare the app-managed language worksheets immediately after a successful read.
       // Preview-only controls are injected while rendering these sheets; they are never
@@ -1007,7 +1006,7 @@ export function initExcelInterface(){
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
         workbook=new ExcelJS.Workbook();
         await workbook.xlsx.load(saved.buffer);
-        originalWorksheetNames=Array.isArray(saved.originalWorksheetNames)?saved.originalWorksheetNames.filter(name=>workbook.getWorksheet(name)):workbook.worksheets.map(sheet=>sheet.name).filter(name=>!['Bengali Webseries','Hindi Webseries','English Webseries'].includes(name));
+        originalWorksheetNames=Array.isArray(saved.originalWorksheetNames)?saved.originalWorksheetNames.filter(name=>workbook.getWorksheet(name)&&!["Bengali Movies","Hindi Movies","English Movies","Bengali Webseries","Hindi Webseries","English Webseries"].includes(name)):workbook.worksheets.map(sheet=>sheet.name).filter(name=>!["Bengali Movies","Hindi Movies","English Movies","Bengali Webseries","Hindi Webseries","English Webseries"].includes(name));
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
       selectedFile={name:saved.fileName||'Saved workbook.xlsx'};
       fileName.textContent=selectedFile.name;
