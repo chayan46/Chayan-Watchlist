@@ -1,4 +1,4 @@
-import {getMovies,subscribeToMovies,deleteMovie,addMovie} from './data-management.js';
+import {getMovies,subscribeToMovies,deleteMovie} from './data-management.js';
 
 const LANGUAGE_SHEETS={Bengali:'Bengali Movies',Hindi:'Hindi Movies',English:'English Movies'};
 const LANGUAGES=Object.keys(LANGUAGE_SHEETS);
@@ -197,19 +197,6 @@ export function initExcelInterface(){
     return extracted;
   }
 
-  function mergeWorkbookMoviesIntoCollection(){
-    const existing=getMovies();
-    const known=new Set(existing.map(movie=>movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year));
-    let added=0;
-    for(const language of LANGUAGES){
-      for(const movie of extractExistingLanguageMovies(language)){
-        const key=movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year;
-        if(known.has(key))continue;
-        if(addMovie(movie)){known.add(key);added++;}
-      }
-    }
-    return added;
-  }
 
   function getOrCreateLanguageSheet(language){
     const targetName=LANGUAGE_SHEETS[language];
@@ -228,16 +215,16 @@ export function initExcelInterface(){
     });
   }
 
-  async function buildLanguageSheet(language){
+  async function buildLanguageSheet(language,sourceMovies=getMovies()){
     const sheet=getOrCreateLanguageSheet(language);
     sheet.getImages().forEach(image=>sheet.removeImage(image.imageId));
     [...(sheet.model.merges||[])].forEach(range=>sheet.unMergeCells(range));
     if(sheet.rowCount)sheet.spliceRows(1,sheet.rowCount);
-    sheet.columns=[{width:15.5},...Array.from({length:Math.max(1,sortMovies(getMovies().filter(m=>m.language===language)).length)},()=>({width:27}))];
+    sheet.columns=[{width:15.5},...Array.from({length:Math.max(1,sortMovies(sourceMovies.filter(m=>m.language===language)).length)},()=>({width:27}))];
     sheet.views=[{state:'frozen',xSplit:1,ySplit:0,showGridLines:false}];
     sheet.properties.defaultRowHeight=20;
     sheet.properties.defaultColWidth=27;
-    const languageMovies=sortMovies(getMovies().filter(movie=>movie.language===language));
+    const languageMovies=sortMovies(sourceMovies.filter(movie=>movie.language===language));
     const groups=new Map();
     languageMovies.forEach(movie=>{
       const letter=(movie.name.trim().charAt(0)||'#').toLocaleUpperCase();
@@ -681,11 +668,18 @@ export function initExcelInterface(){
 
   async function syncLanguageSheets(){
     if(!workbook)return;
-    // Import recognizable existing records before rebuilding the three generated sheets.
-    // This prevents the previous destructive rebuild from replacing workbook-only entries.
-    mergeWorkbookMoviesIntoCollection();
+    // Merge workbook-only entries with the local collection in memory before rebuilding.
+    // This preserves the uploaded workbook as the source of truth without bloating localStorage.
+    const mergedMovies=[...getMovies()];
+    const known=new Set(mergedMovies.map(movie=>movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year));
+    for(const language of LANGUAGES){
+      for(const movie of extractExistingLanguageMovies(language)){
+        const key=movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year;
+        if(!known.has(key)){known.add(key);mergedMovies.push(movie);}
+      }
+    }
     removeDuplicateLanguageSheets();
-    for(const language of LANGUAGES)await buildLanguageSheet(language);
+    for(const language of LANGUAGES)await buildLanguageSheet(language,mergedMovies);
     refreshSheetOptions();
     if(currentPreviewSheet)renderSelectedPreview();
   }
