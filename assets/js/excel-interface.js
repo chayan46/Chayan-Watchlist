@@ -179,15 +179,21 @@ export function initExcelInterface(){
       groups.get(letter).push(movie);
     });
     let row=1;
-    for(const [letter,items] of [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0]))){
+    async function writeMovieGroup(label,items,isFranchise=false){
       sheet.mergeCells(row,1,row+2,1);
       const groupCell=sheet.getCell(row,1);
-      const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
-      groupCell.value={richText:[
-        {text:letter,font:{name:'Aptos Display',size:50,bold:true,color:{argb:'FF172B4D'}}},
-        {text:'\n('+posterCount+')',font:{name:'Aptos',size:25,bold:true,italic:true,color:{argb:'FF147D75'}}}
-      ]};
-      groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDCE5F0'}};
+      if(isFranchise){
+        groupCell.value=label;
+        groupCell.font={name:'Aptos Display',size:32,bold:true,color:{argb:'FFFFFFFF'}};
+        groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE600D9'}};
+      }else{
+        const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
+        groupCell.value={richText:[
+          {text:label,font:{name:'Aptos Display',size:50,bold:true,color:{argb:'FF172B4D'}}},
+          {text:'\n('+posterCount+')',font:{name:'Aptos',size:25,bold:true,italic:true,color:{argb:'FF147D75'}}}
+        ]};
+        groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDCE5F0'}};
+      }
       groupCell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
       groupCell.border={top:{style:'medium',color:{argb:'FFB8C6D8'}},bottom:{style:'medium',color:{argb:'FFB8C6D8'}},left:{style:'medium',color:{argb:'FFB8C6D8'}},right:{style:'medium',color:{argb:'FFB8C6D8'}}};
       sheet.getRow(row).height=19;
@@ -216,7 +222,6 @@ export function initExcelInterface(){
             const fittedPoster=await cropPosterToCell(movie.poster);
             const base64=fittedPoster.substring(fittedPoster.indexOf(',')+1);
             const imageId=workbook.addImage({base64,extension:'png'});
-            // Anchor to the exact poster cell boundaries: move and size with cells.
             sheet.addImage(imageId,{tl:{col:col-1,row:row+1},br:{col:col,row:row+2},editAs:'twoCell'});
           }catch(error){console.warn('Could not embed fitted poster for '+movie.name,error);}
         }
@@ -224,6 +229,20 @@ export function initExcelInterface(){
       row+=3;
       sheet.getRow(row).height=8;
       row++;
+    }
+    for(const [letter,items] of [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0]))){
+      const standardMovies=sortMovies(items.filter(movie=>movie.movieType!=='franchise'));
+      const franchiseMap=new Map();
+      items.filter(movie=>movie.movieType==='franchise'&&movie.franchiseName).forEach(movie=>{
+        const key=movie.franchiseName.trim().toLocaleLowerCase();
+        if(!franchiseMap.has(key))franchiseMap.set(key,{name:movie.franchiseName.trim(),movies:[]});
+        franchiseMap.get(key).movies.push(movie);
+      });
+      if(standardMovies.length)await writeMovieGroup(letter,standardMovies,false);
+      const franchises=[...franchiseMap.values()].sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'}));
+      for(let index=0;index<franchises.length;index++){
+        await writeMovieGroup(letter+(index+1),sortMovies(franchises[index].movies),true);
+      }
     }
     if(!languageMovies.length){
       sheet.getCell('A1').value=language+' MOVIE COLLECTION';
@@ -266,19 +285,23 @@ export function initExcelInterface(){
       preview.appendChild(empty);
       return;
     }
-    for(const [letter,items] of [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0]))){
+    function appendPreviewGroup(label,items,isFranchise=false){
       const groupRow=document.createElement('tr');
       const alphabet=document.createElement('th');
-      alphabet.className='movie-excel-letter';
+      alphabet.className=isFranchise?'movie-excel-letter movie-excel-franchise':'movie-excel-letter';
       alphabet.rowSpan=3;
-      const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
-      const letterLabel=document.createElement('span');
-      letterLabel.className='movie-excel-letter-label';
-      letterLabel.textContent=letter;
-      const posterCountLabel=document.createElement('span');
-      posterCountLabel.className='movie-excel-poster-count';
-      posterCountLabel.textContent='('+posterCount+')';
-      alphabet.append(letterLabel,posterCountLabel);
+      if(isFranchise){
+        alphabet.textContent=label;
+      }else{
+        const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
+        const letterLabel=document.createElement('span');
+        letterLabel.className='movie-excel-letter-label';
+        letterLabel.textContent=label;
+        const posterCountLabel=document.createElement('span');
+        posterCountLabel.className='movie-excel-poster-count';
+        posterCountLabel.textContent='('+posterCount+')';
+        alphabet.append(letterLabel,posterCountLabel);
+      }
       groupRow.appendChild(alphabet);
       items.forEach(movie=>{
         const cell=document.createElement('th');
@@ -307,6 +330,20 @@ export function initExcelInterface(){
       });
       body.appendChild(posterRow);
       const gap=document.createElement('tr');const gapCell=document.createElement('td');gapCell.colSpan=items.length+1;gapCell.className='movie-excel-gap';gap.appendChild(gapCell);body.appendChild(gap);
+    }
+    for(const [letter,items] of [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0]))){
+      const standardMovies=sortMovies(items.filter(movie=>movie.movieType!=='franchise'));
+      const franchiseMap=new Map();
+      items.filter(movie=>movie.movieType==='franchise'&&movie.franchiseName).forEach(movie=>{
+        const key=movie.franchiseName.trim().toLocaleLowerCase();
+        if(!franchiseMap.has(key))franchiseMap.set(key,{name:movie.franchiseName.trim(),movies:[]});
+        franchiseMap.get(key).movies.push(movie);
+      });
+      if(standardMovies.length)appendPreviewGroup(letter,standardMovies,false);
+      const franchises=[...franchiseMap.values()].sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'}));
+      for(let index=0;index<franchises.length;index++){
+        appendPreviewGroup(letter+(index+1),sortMovies(franchises[index].movies),true);
+      }
     }
     table.appendChild(body);
     const wrap=document.createElement('div');wrap.className='movie-excel-scroll';wrap.appendChild(table);preview.appendChild(wrap);
