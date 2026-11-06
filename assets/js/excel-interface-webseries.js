@@ -234,18 +234,15 @@ export function initExcelInterface(){
   }
 
   function removeDuplicateLanguageSheets(){
-    // Remove only legacy app-generated parallel tabs from older workbook sessions.
-    // Uploaded source worksheets remain the sole language worksheets.
-    for(const language of LANGUAGES){
-      const legacyName='_CW_'+language+'_'+(path.endsWith("webseries.js")?'Webseries':'Movies');
-      const legacySheet=workbook.getWorksheet(legacyName);
-      if(legacySheet&&legacyName!==LANGUAGE_SHEETS[language])workbook.removeWorksheet(legacySheet.id);
-    }
+    // Remove every legacy app-generated worksheet. Language data is maintained
+    // directly in the six original workbook worksheets; _CW_ tabs are never user-facing.
+    workbook.worksheets.filter(sheet=>sheet.name.startsWith('_CW_')).forEach(sheet=>workbook.removeWorksheet(sheet.id));
     LANGUAGES.forEach(language=>{
       const preferred=workbook.getWorksheet(LANGUAGE_SHEETS[language]);
       const duplicate=workbook.getWorksheet(language);
       if(preferred&&duplicate&&preferred.id!==duplicate.id&&!originalWorksheetNames.includes(language))workbook.removeWorksheet(duplicate.id);
     });
+    originalWorksheetNames=originalWorksheetNames.filter(name=>!name.startsWith('_CW_'));
   }
 
   async function buildLanguageSheet(language,sourceWebseries=getWebseries()){
@@ -854,10 +851,10 @@ export function initExcelInterface(){
     if(!workbook)return;
     const previous=sheetSelect.value;
     sheetSelect.replaceChildren();
-    const orderedNames=[
-      ...originalWorksheetNames.filter(name=>workbook.getWorksheet(name)),
-      ...LANGUAGES.map(language=>LANGUAGE_SHEETS[language]).filter(name=>workbook.getWorksheet(name))
-    ];
+    const orderedNames=[...new Set(
+      originalWorksheetNames
+        .filter(name=>!name.startsWith('_CW_')&&workbook.getWorksheet(name))
+    )];
     orderedNames.forEach(name=>{
       const option=document.createElement('option');option.value=name;option.textContent=name;sheetSelect.appendChild(option);
     });
@@ -1044,6 +1041,7 @@ export function initExcelInterface(){
         await workbook.xlsx.load(saved.buffer);
         originalWorksheetNames=Array.isArray(saved.originalWorksheetNames)?saved.originalWorksheetNames.filter(name=>workbook.getWorksheet(name)):workbook.worksheets.map(sheet=>sheet.name);
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
+        removeDuplicateLanguageSheets();
       selectedFile={name:saved.fileName||'Saved workbook.xlsx'};
       fileName.textContent=selectedFile.name;
       fileHint.textContent='Restored from this device · Ready to preview';
