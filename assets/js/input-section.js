@@ -8,12 +8,14 @@ export function initInputSection(){
   const movieNameInput=document.getElementById('movieName');
   const movieType=document.getElementById('movieType');
   const franchiseAlphabetField=document.getElementById('franchiseAlphabetField');
+  const franchiseLetterInput=document.getElementById('franchiseLetter');
+  const franchiseSelectField=document.getElementById('franchiseSelectField');
   const franchiseAlphabet=document.getElementById('franchiseAlphabet');
   const franchiseAlphabetHint=document.getElementById('franchiseAlphabetHint');
   const newFranchiseNameField=document.getElementById('newFranchiseNameField');
   const newFranchiseName=document.getElementById('newFranchiseName');
   let posterData='';
-  const firstLetter=()=>((movieNameInput.value.trim().charAt(0)||'').toLocaleUpperCase());
+  const normalizedLetter=()=>franchiseLetterInput.value.trim().toLocaleUpperCase().charAt(0);
   function franchiseGroups(letter){
     const relevant=getMovies().filter(movie=>(movie.name.trim().charAt(0)||'').toLocaleUpperCase()===letter&&movie.movieType==='franchise'&&movie.franchiseName);
     const byName=new Map();
@@ -22,36 +24,20 @@ export function initInputSection(){
       const key=name.toLocaleLowerCase();
       if(!byName.has(key))byName.set(key,{name,code:movie.franchiseCode||''});
     });
-    const groups=[...byName.values()].sort((a,b)=>{
-      const na=Number((a.code.match(/\d+$/)||[])[0])||9999;
-      const nb=Number((b.code.match(/\d+$/)||[])[0])||9999;
-      return na-nb||a.name.localeCompare(b.name,undefined,{sensitivity:'base'});
+    const groups=[...byName.values()];
+    const usedCodes=new Set(groups.map(group=>group.code).filter(code=>new RegExp('^'+letter+'\\d+$').test(code)));
+    let legacyNumber=1;
+    groups.forEach(group=>{
+      if(!group.code){
+        while(usedCodes.has(letter+legacyNumber))legacyNumber++;
+        group.code=letter+legacyNumber;
+        usedCodes.add(group.code);
+        legacyNumber++;
+      }
     });
-    let next=groups.reduce((max,group)=>Math.max(max,Number((group.code.match(/^[A-Z](\d+)$/)||[])[1])||0),0)+1;
-    groups.forEach(group=>{if(!group.code)group.code=letter+(groups.indexOf(group)+1);});
-    return {groups,next:Math.max(next,groups.length+1)};
-  }
-  function refreshFranchiseOptions(){
-    if(movieType.value!=='franchise')return;
-    const letter=firstLetter();
-    franchiseAlphabet.replaceChildren();
-    if(!/^[A-Z]$/.test(letter)){
-      franchiseAlphabet.add(new Option('Enter a movie name first',''));
-      franchiseAlphabet.disabled=true;
-      franchiseAlphabetHint.textContent='The subgroup alphabet is determined by the first letter of the movie title.';
-      return;
-    }
-    franchiseAlphabet.disabled=false;
-    const {groups,next}=franchiseGroups(letter);
-    franchiseAlphabet.add(new Option('Select an existing franchise or create a new one',''));
-    groups.forEach(group=>franchiseAlphabet.add(new Option(group.code+' — '+group.name,'existing|'+group.code)));
-    const newCode=letter+next;
-    franchiseAlphabet.add(new Option('＋ Create New Franchise Alphabet ('+newCode+')','new|'+newCode));
-    franchiseAlphabetHint.textContent=groups.length
-      ?'Existing '+letter+' franchise alphabets are listed above. The next new subgroup will be '+newCode+'.'
-      :'No '+letter+' franchise alphabet exists yet. Create the first subgroup: '+newCode+'.';
-    if(franchiseAlphabet.value&&!Array.from(franchiseAlphabet.options).some(option=>option.value===franchiseAlphabet.value))franchiseAlphabet.value='';
-    syncNewFranchiseName();
+    groups.sort((a,b)=>Number(a.code.slice(1))-Number(b.code.slice(1))||a.name.localeCompare(b.name,undefined,{sensitivity:'base'}));
+    const maxNumber=groups.reduce((max,group)=>Math.max(max,Number(group.code.slice(1))||0),0);
+    return {groups,next:maxNumber+1};
   }
   function syncNewFranchiseName(){
     const creating=franchiseAlphabet.value.startsWith('new|');
@@ -59,20 +45,54 @@ export function initInputSection(){
     newFranchiseName.required=creating;
     if(!creating)newFranchiseName.value='';
   }
+  function refreshFranchiseOptions(){
+    if(movieType.value!=='franchise')return;
+    const letter=normalizedLetter();
+    franchiseAlphabet.replaceChildren();
+    franchiseAlphabet.disabled=true;
+    franchiseSelectField.hidden=true;
+    newFranchiseNameField.hidden=true;
+    newFranchiseName.required=false;
+    if(!/^[A-Z]$/.test(letter)){
+      franchiseAlphabet.add(new Option('Enter first letter first',''));
+      franchiseAlphabetHint.textContent='Enter a single alphabet from A to Z to load its existing franchise sections.';
+      return;
+    }
+    const {groups,next}=franchiseGroups(letter);
+    franchiseSelectField.hidden=false;
+    franchiseAlphabet.disabled=false;
+    franchiseAlphabet.add(new Option('Select an existing section or create a new one',''));
+    groups.forEach(group=>franchiseAlphabet.add(new Option(group.code+' — '+group.name,'existing|'+group.code)));
+    const newCode=letter+next;
+    franchiseAlphabet.add(new Option('＋ Add New Alphabet Section ('+newCode+')','new|'+newCode));
+    franchiseAlphabetHint.textContent=groups.length
+      ?'Found '+groups.length+' existing section(s) in the current saved movie collection. Next available section: '+newCode+'.'
+      :'No existing franchise section for '+letter+'. The first section will be '+newCode+'.';
+    franchiseAlphabet.value='';
+  }
   function syncFranchiseFields(){
     const isFranchise=movieType.value==='franchise';
     franchiseAlphabetField.hidden=!isFranchise;
+    franchiseSelectField.hidden=true;
+    newFranchiseNameField.hidden=true;
+    franchiseLetterInput.required=isFranchise;
+    franchiseAlphabet.required=isFranchise;
+    newFranchiseName.required=false;
     if(!isFranchise){
+      franchiseLetterInput.value='';
+      franchiseAlphabet.replaceChildren(new Option('Enter first letter first',''));
       franchiseAlphabet.value='';
-      newFranchiseNameField.hidden=true;
-      newFranchiseName.required=false;
       newFranchiseName.value='';
       return;
     }
     refreshFranchiseOptions();
   }
   movieType.addEventListener('change',syncFranchiseFields);
-  movieNameInput.addEventListener('input',refreshFranchiseOptions);
+  franchiseLetterInput.addEventListener('input',()=>{
+    const value=franchiseLetterInput.value.toLocaleUpperCase().replace(/[^A-Z]/g,'').slice(0,1);
+    franchiseLetterInput.value=value;
+    refreshFranchiseOptions();
+  });
   franchiseAlphabet.addEventListener('change',syncNewFranchiseName);
   syncFranchiseFields();
   function resetPoster(){posterData='';preview.removeAttribute('src');preview.style.display='none';uploadTitle.textContent='＋ Upload movie poster';uploadHint.textContent='JPG, PNG, WEBP, GIF · Max 8 MB';}
@@ -93,14 +113,24 @@ export function initInputSection(){
     const type=movieType.value;
     let franchiseCode='',franchiseName='';
     if(type==='franchise'){
+      const letter=normalizedLetter();
       const selection=franchiseAlphabet.value;
+      if(!/^[A-Z]$/.test(letter)||name.charAt(0).toLocaleUpperCase()!==letter){
+        alert('The entered franchise alphabet must match the first letter of the movie name.');return;
+      }
       if(selection.startsWith('existing|')){
         franchiseCode=selection.split('|')[1];
-        const match=franchiseGroups((name.charAt(0)||'').toLocaleUpperCase()).groups.find(group=>group.code===franchiseCode);
+        const match=franchiseGroups(letter).groups.find(group=>group.code===franchiseCode);
         franchiseName=match?.name||'';
       }else if(selection.startsWith('new|')){
         franchiseCode=selection.split('|')[1];
         franchiseName=newFranchiseName.value.trim();
+        const latestNext=franchiseGroups(letter).next;
+        if(franchiseCode!==letter+latestNext){
+          refreshFranchiseOptions();
+          alert('The available franchise sections have changed. Please select the updated section.');
+          return;
+        }
       }
     }
     if(!['Bengali','Hindi','English'].includes(language)||!name||!Number.isInteger(year)||year<1888||year>2100||!['franchise','non-franchise'].includes(type)||(type==='franchise'&&(!franchiseCode||!franchiseName))){
