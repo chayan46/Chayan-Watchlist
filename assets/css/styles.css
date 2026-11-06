@@ -755,3 +755,26 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 #excelPreview .movie-excel-table .movie-excel-poster img{display:block!important;width:100%!important;height:253px!important;object-fit:cover!important;object-position:center!important}
 #excelPreview .movie-excel-table .movie-excel-poster span{font-family:"Aptos","Segoe UI",Arial,sans-serif!important;font-size:11px!important;color:#52647B!important}
 #excelPreview .movie-excel-table .movie-excel-gap{height:8px!important;background:#FFFFFF!important;border:0!important}
+
+
+/* Structural fix: isolate the entry sidebar so workbook growth cannot push it down. */
+.workspace{display:grid!important;grid-template-columns:minmax(285px,.68fr) minmax(0,1.32fr)!important;grid-template-rows:auto!important;align-items:start!important;column-gap:20px!important;row-gap:0!important}
+.workspace>.movie-sidebar-stack{grid-column:1!important;grid-row:1!important;align-self:start!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;min-width:0!important;height:max-content!important}
+.workspace>.movie-sidebar-stack>.workspace-sidebar-toggle{align-self:flex-start!important;margin:0!important}
+.workspace>.movie-sidebar-stack>.formpanel{display:block!important;width:100%!important;min-width:0!important;margin:0!important}
+.workspace>.excelpanel{grid-column:2!important;grid-row:1!important;align-self:start!important;min-width:0!important;margin:0!important}
+.workspace.sidebar-collapsed{grid-template-columns:44px minmax(0,1fr)!important}
+.workspace.sidebar-collapsed>.movie-sidebar-stack{grid-column:1!important;grid-row:1!important;width:40px!important}
+.workspace.sidebar-collapsed>.movie-sidebar-stack>.formpanel{display:none!important}
+.workspace.sidebar-collapsed>.movie-sidebar-stack>.workspace-sidebar-toggle{width:40px!important;height:40px!important;min-height:40px!important;justify-content:center!important;padding:5px!important}
+.workspace.sidebar-collapsed>.excelpanel{grid-column:2!important;grid-row:1!important}
+@media(max-width:1100px),(pointer:coarse) and (hover:none){
+.workspace,.workspace.sidebar-collapsed{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;gap:0!important;row-gap:0!important;column-gap:0!important;height:auto!important}
+.workspace>.movie-sidebar-stack{order:0!important;width:100%!important;height:max-content!important;flex:0 0 auto!important;margin:0!important}
+.workspace>.movie-sidebar-stack>.workspace-sidebar-toggle{margin:0!important;align-self:flex-start!important}
+.workspace>.movie-sidebar-stack>.formpanel{width:100%!important;margin:0!important}
+.workspace>.excelpanel{order:1!important;width:100%!important;flex:0 0 auto!important;margin:16px 0 0!important}
+.workspace.sidebar-collapsed>.movie-sidebar-stack{width:40px!important}
+.workspace.sidebar-collapsed>.movie-sidebar-stack>.formpanel{display:none!important}
+.workspace.sidebar-collapsed>.excelpanel{margin-top:16px!important}
+}
