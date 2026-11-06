@@ -16,7 +16,7 @@ export function initInputSection(){
     if(addWebseriesButton)addWebseriesButton.disabled=!matches;
   }
   languageSelect.addEventListener('change',syncAddWebseriesAvailability);
-  document.addEventListener('selected-worksheet-change',event=>{
+  document.addEventListener('webseries-selected-worksheet-change',event=>{
     selectedWorksheetName=String(event.detail?.sheetName||'');
     syncAddWebseriesAvailability();
   });
