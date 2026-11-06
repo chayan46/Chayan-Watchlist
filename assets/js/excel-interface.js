@@ -473,22 +473,23 @@ export function initExcelInterface(){
       }
     }
     table.appendChild(body);
+    // Workbook actions belong to the preview UI, never to the worksheet grid.
     const controls=document.createElement('div');
     controls.className='excel-preview-actions';
     controls.setAttribute('aria-label','Workbook entry actions');
     const previewLanguage=getLanguageForSheet(sheet.name);
     if(previewLanguage){
-      for(let posterRow=3;posterRow<=maxRow;posterRow+=3){
+      for(let recordRow=1;recordRow+2<=maxRow;recordRow+=3){
         for(let controlCol=2;controlCol<=maxCol;controlCol++){
-          const movieName=excelCellText(sheet.getCell(posterRow-1,controlCol).value).trim();
-          const movieYear=Number(excelCellText(sheet.getCell(posterRow-2,controlCol).value).trim());
+          const movieName=excelCellText(sheet.getCell(recordRow+1,controlCol).value).trim();
+          const movieYear=Number(excelCellText(sheet.getCell(recordRow,controlCol).value).trim());
           if(!movieName||!Number.isInteger(movieYear)||movieYear<1888||movieYear>2100)continue;
           const removeButton=document.createElement('button');
           removeButton.type='button';
           removeButton.className='excel-preview-remove-movie';
-          removeButton.dataset.removeMovieLanguage=previewLanguage;
-          removeButton.dataset.removeMovieName=movieName;
-          removeButton.dataset.removeMovieYear=String(movieYear);
+          removeButton.setAttribute('data-remove-movie-language',previewLanguage);
+          removeButton.setAttribute('data-remove-movie-name',movieName);
+          removeButton.setAttribute('data-remove-movie-year',String(movieYear));
           removeButton.textContent='Remove '+movieName+' ('+movieYear+')';
           removeButton.setAttribute('aria-label','Remove '+movieName+' from this Excel workbook');
           controls.appendChild(removeButton);
