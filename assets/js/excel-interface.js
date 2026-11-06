@@ -473,30 +473,6 @@ export function initExcelInterface(){
       }
     }
     table.appendChild(body);
-    // Workbook actions belong to the preview UI, never to the worksheet grid.
-    const controls=document.createElement('div');
-    controls.className='excel-preview-actions';
-    controls.setAttribute('aria-label','Workbook entry actions');
-    const previewLanguage=getLanguageForSheet(sheet.name);
-    if(previewLanguage){
-      for(let recordRow=1;recordRow+2<=maxRow;recordRow+=3){
-        for(let controlCol=2;controlCol<=maxCol;controlCol++){
-          const movieName=excelCellText(sheet.getCell(recordRow+1,controlCol).value).trim();
-          const movieYear=Number(excelCellText(sheet.getCell(recordRow,controlCol).value).trim());
-          if(!movieName||!Number.isInteger(movieYear)||movieYear<1888||movieYear>2100)continue;
-          const removeButton=document.createElement('button');
-          removeButton.type='button';
-          removeButton.className='excel-preview-remove-movie';
-          removeButton.setAttribute('data-remove-movie-language',previewLanguage);
-          removeButton.setAttribute('data-remove-movie-name',movieName);
-          removeButton.setAttribute('data-remove-movie-year',String(movieYear));
-          removeButton.textContent='Remove '+movieName+' ('+movieYear+')';
-          removeButton.setAttribute('aria-label','Remove '+movieName+' from this Excel workbook');
-          controls.appendChild(removeButton);
-        }
-      }
-    }
-    if(controls.childElementCount)preview.appendChild(controls);
     const wrap=document.createElement('div');wrap.className='movie-excel-scroll';wrap.appendChild(table);preview.appendChild(wrap);
     const note=document.createElement('p');note.className='excel-preview-note';note.textContent=language+' worksheet · '+movies.length+' of '+allMovies.length+' movie(s) shown'+(query?' · Filter: '+(/^[a-z]$/i.test(query)?'first alphabet':/^\d{4}$/.test(query)?'release year':'movie name'):'')+' · Alphabetical groups A–Z · Release year oldest to newest.';preview.appendChild(note);
   }
@@ -791,6 +767,31 @@ export function initExcelInterface(){
 
     }
     table.appendChild(body);
+    // Render workbook-only Remove actions beside the actual uploaded worksheet preview.
+    // Detect each title/year pair from worksheet cell content, independent of poster presence.
+    const controls=document.createElement('div');
+    controls.className='excel-preview-actions';
+    controls.setAttribute('aria-label','Workbook entry actions');
+    const previewLanguage=getLanguageForSheet(sheet.name);
+    if(previewLanguage){
+      for(let rowIndex=1;rowIndex<maxRow;rowIndex++){
+        for(let colIndex=2;colIndex<=maxCol;colIndex++){
+          const movieYear=Number(excelCellText(sheet.getCell(rowIndex,colIndex).value).trim());
+          const movieName=excelCellText(sheet.getCell(rowIndex+1,colIndex).value).trim();
+          if(!Number.isInteger(movieYear)||movieYear<1888||movieYear>2100||!movieName)continue;
+          const removeButton=document.createElement('button');
+          removeButton.type='button';
+          removeButton.className='excel-preview-remove-movie';
+          removeButton.setAttribute('data-remove-movie-language',previewLanguage);
+          removeButton.setAttribute('data-remove-movie-name',movieName);
+          removeButton.setAttribute('data-remove-movie-year',String(movieYear));
+          removeButton.textContent='Remove '+movieName+' ('+movieYear+')';
+          removeButton.setAttribute('aria-label','Remove '+movieName+' from this Excel workbook');
+          controls.appendChild(removeButton);
+        }
+      }
+    }
+    if(controls.childElementCount)preview.appendChild(controls);
     const wrap=document.createElement('div');wrap.className='movie-excel-scroll excel-source-scroll';wrap.appendChild(table);preview.appendChild(wrap);
     if(sheet.autoFilter&&sheet.autoFilter.from){const filter=document.createElement('p');filter.className='excel-preview-note';filter.textContent='Worksheet auto-filter range: '+JSON.stringify(sheet.autoFilter);preview.appendChild(filter);}
     const note=document.createElement('p');note.className='excel-preview-note';
