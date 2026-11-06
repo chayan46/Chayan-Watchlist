@@ -184,7 +184,7 @@ export function initExcelInterface(){
       const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
       groupCell.value={richText:[
         {text:letter,font:{name:'Aptos Display',size:50,bold:true,color:{argb:'FF172B4D'}}},
-        {text:'\n('+posterCount+')',font:{name:'Aptos',size:13,bold:true,italic:true,color:{argb:'FF147D75'}}}
+        {text:'\n('+posterCount+')',font:{name:'Aptos',size:25,bold:true,italic:true,color:{argb:'FF147D75'}}}
       ]};
       groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDCE5F0'}};
       groupCell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
@@ -265,7 +265,14 @@ export function initExcelInterface(){
       const alphabet=document.createElement('th');
       alphabet.className='movie-excel-letter';
       alphabet.rowSpan=4;
-      alphabet.textContent=letter;
+      const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
+      const letterLabel=document.createElement('span');
+      letterLabel.className='movie-excel-letter-label';
+      letterLabel.textContent=letter;
+      const posterCountLabel=document.createElement('span');
+      posterCountLabel.className='movie-excel-poster-count';
+      posterCountLabel.textContent='('+posterCount+')';
+      alphabet.append(letterLabel,posterCountLabel);
       groupRow.appendChild(alphabet);
       items.forEach(movie=>{
         const cell=document.createElement('th');
