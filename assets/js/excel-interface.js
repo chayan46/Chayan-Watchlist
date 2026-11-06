@@ -187,8 +187,8 @@ export function initExcelInterface(){
       if(isFranchise){
         groupCell.value={richText:[
           {text:label,font:{name:'Aptos Display',size:32,bold:true,color:{argb:'FF263445'}}},
-          {text:'\\n('+items.length+')',font:{name:'Aptos',size:18,bold:true,italic:true,color:{argb:'FF147D75'}}}
-        ]};
+          {text:label,font:{name:'Aptos Display',size:32,bold:true,color:{argb:'FF263445'}}},
+          {text:'\n('+items.length+')',font:{name:'Aptos',size:18,bold:true,italic:true,color:{argb:'FF147D75'}}}
         groupCell.font={name:'Aptos Display',size:32,bold:true,color:{argb:'FF263445'}};
         groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+getAlphabetColor(label.charAt(0))}};
         groupCell.font={name:'Aptos Display',size:32,bold:true,color:{argb:'FF263445'}};
