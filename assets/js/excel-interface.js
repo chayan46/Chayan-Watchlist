@@ -186,7 +186,7 @@ export function initExcelInterface(){
       const row=range.tl&&range.tl.row;
       const col=range.tl&&range.tl.col;
       if(!Number.isInteger(row)||!Number.isInteger(col))continue;
-      const item=media[Number(image.imageId)];
+      const item=(media.find(item=>Number(item.index)===Number(image.imageId))||media[Number(image.imageId)]);
       if(!item)continue;
       let poster='';
       try{
@@ -502,8 +502,7 @@ export function initExcelInterface(){
       updatePreviewButton.disabled=true;
       updatePreviewButton.textContent='Updating Preview…';
       previewUpdateStatus.textContent='Merging existing workbook records and refreshing the selected language worksheet…';
-      await updateQueue;
-      await syncLanguageSheets();
+      await enqueueWorkbookUpdate(syncLanguageSheets);
       const latest=pendingPreviewSnapshot;
       const latestMovie=latest&&latest[0];
       if(latestMovie&&LANGUAGE_SHEETS[latestMovie.language]){
@@ -682,7 +681,7 @@ export function initExcelInterface(){
     for(const image of sheet.getImages()){
       const range=image.range||{},tl=range.tl||{};
       if(!Number.isInteger(tl.row)||!Number.isInteger(tl.col))continue;
-      const media=mediaItems[Number(image.imageId)];
+      const media=(mediaItems.find(media=>Number(media.index)===Number(image.imageId))||mediaItems[Number(image.imageId)]);
       if(!media)continue;
       let src='';
       try{
@@ -956,6 +955,11 @@ export function initExcelInterface(){
   });
 
   let updateQueue=Promise.resolve();
+  function enqueueWorkbookUpdate(task){
+    const operation=updateQueue.then(task,task);
+    updateQueue=operation.catch(()=>{});
+    return operation;
+  }
   let previewConfirmed=false;
   let liveUpdateError=null;
   subscribeToMovies(snapshot=>{
@@ -982,8 +986,7 @@ export function initExcelInterface(){
     if(!workbook||!selectedFile)return;
     try{
       exportButton.disabled=true;showMessage('Preparing formatted Excel workbook with embedded movie posters…');
-      await updateQueue;
-      await syncLanguageSheets();
+      await enqueueWorkbookUpdate(syncLanguageSheets);
       if(previewUpdatePending){
         const latestMovie=pendingPreviewSnapshot&&pendingPreviewSnapshot[0];
         if(latestMovie&&LANGUAGE_SHEETS[latestMovie.language]){
