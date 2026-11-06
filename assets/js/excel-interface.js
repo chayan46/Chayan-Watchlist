@@ -247,7 +247,10 @@ export function initExcelInterface(){
 
   async function buildLanguageSheet(language,sourceMovies=getMovies()){
     const sheet=getOrCreateLanguageSheet(language);
-    sheet.getImages().forEach(image=>sheet.removeImage(image.imageId));
+    // ExcelJS 4.4.0 exposes getImages() but has no worksheet.removeImage().
+    // Remove image anchors from the worksheet's media collection before rebuilding it.
+    if(Array.isArray(sheet._media))sheet._media=sheet._media.filter(media=>media.type!=='image');
+    else if(sheet.getImages().length)throw new Error('This ExcelJS version cannot safely refresh existing worksheet images.');
     [...(sheet.model.merges||[])].forEach(range=>sheet.unMergeCells(range));
     if(sheet.rowCount)sheet.spliceRows(1,sheet.rowCount);
     sheet.columns=[{width:15.5},...Array.from({length:Math.max(1,sortMovies(sourceMovies.filter(m=>m.language===language)).length)},()=>({width:27}))];
