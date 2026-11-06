@@ -1,5 +1,5 @@
-import {initInputSection} from './input-section.js';
-import {initExcelInterface} from './excel-interface.js?v=20261106-movie-entry-gated-v1';
+import {initInputSection} from './input-section.js?v=20261106-worksheet-match-v1';
+import {initExcelInterface} from './excel-interface.js?v=20261106-worksheet-match-v1';
 initInputSection();
 initExcelInterface();
 
