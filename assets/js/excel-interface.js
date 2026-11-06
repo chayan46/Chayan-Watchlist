@@ -677,23 +677,6 @@ export function initExcelInterface(){
         if(merge){td.rowSpan=merge.rowSpan;td.colSpan=merge.colSpan;td.style.height=Array.from({length:merge.rowSpan},(_,offset)=>{const mergedRow=sheet.getRow(r+offset);return excelRowPixels(mergedRow.height??(sheet.properties&&sheet.properties.defaultRowHeight)??15);}).reduce((sum,height)=>sum+height,0)+'px';}
         else td.style.height=rowPixels+'px';
         renderExcelCellContent(td,cell);
-        // Add a preview-only remove control to each movie title cell in generated language worksheets.
-        const previewLanguage=getLanguageForSheet(sheet.name);
-        if(previewLanguage&&r%3===0&&c>=2){
-          const movieName=excelCellText(sheet.getCell(r-1,c).value).trim();
-          const movieYear=Number(excelCellText(sheet.getCell(r-2,c).value).trim());
-          if(movieName&&Number.isInteger(movieYear)&&movieYear>=1888&&movieYear<=2100){
-            const removeButton=document.createElement('button');
-            removeButton.type='button';
-            removeButton.className='excel-preview-remove-movie';
-            removeButton.dataset.removeMovieLanguage=previewLanguage;
-            removeButton.dataset.removeMovieName=movieName;
-            removeButton.dataset.removeMovieYear=String(movieYear);
-            removeButton.textContent='Remove';
-            removeButton.setAttribute('aria-label','Remove '+movieName+' from this Excel workbook');
-            td.appendChild(removeButton);
-          }
-        }
         applyExcelFont(td,style.font);applyExcelFill(td,style.fill);applyExcelBorder(td,style.border);applyExcelAlignment(td,style.alignment);
         if(style.numFmt)td.dataset.numberFormat=style.numFmt;
         if(style.protection){if(style.protection.locked===false)td.classList.add('excel-cell-unlocked');if(style.protection.hidden)td.title='Formula hidden in worksheet protection settings';}
@@ -701,6 +684,40 @@ export function initExcelInterface(){
         tr.appendChild(td);
       }
       body.appendChild(tr);
+      // Put workbook-only controls on a dedicated preview row after each poster row.
+      // This keeps the full poster cell unobstructed and never writes controls into the XLSX.
+      const previewLanguage=getLanguageForSheet(sheet.name);
+      if(previewLanguage&&r%3===0){
+        const controlsRow=document.createElement('tr');
+        controlsRow.className='excel-preview-remove-row';
+        controlsRow.style.height='34px';
+        controlsRow.style.minHeight='34px';
+        const controlsHeading=document.createElement('th');
+        controlsHeading.className='excel-source-row-heading';
+        controlsHeading.textContent='';
+        controlsRow.appendChild(controlsHeading);
+        for(let controlCol=1;controlCol<=maxCol;controlCol++){
+          const controlCell=document.createElement('td');
+          if(sheet.getColumn(controlCol).hidden)controlCell.style.display='none';
+          if(controlCol>=2){
+            const movieName=excelCellText(sheet.getCell(r-1,controlCol).value).trim();
+            const movieYear=Number(excelCellText(sheet.getCell(r-2,controlCol).value).trim());
+            if(movieName&&Number.isInteger(movieYear)&&movieYear>=1888&&movieYear<=2100){
+              const removeButton=document.createElement('button');
+              removeButton.type='button';
+              removeButton.className='excel-preview-remove-movie';
+              removeButton.dataset.removeMovieLanguage=previewLanguage;
+              removeButton.dataset.removeMovieName=movieName;
+              removeButton.dataset.removeMovieYear=String(movieYear);
+              removeButton.textContent='Remove';
+              removeButton.setAttribute('aria-label','Remove '+movieName+' from this Excel workbook');
+              controlCell.appendChild(removeButton);
+            }
+          }
+          controlsRow.appendChild(controlCell);
+        }
+        body.appendChild(controlsRow);
+      }
     }
     table.appendChild(body);
     const wrap=document.createElement('div');wrap.className='movie-excel-scroll excel-source-scroll';wrap.appendChild(table);preview.appendChild(wrap);
