@@ -477,22 +477,23 @@ export function initExcelInterface(){
       }
     }
     table.appendChild(body);
+    // Workbook actions belong to the preview UI, never to the worksheet grid.
     const controls=document.createElement('div');
     controls.className='excel-preview-actions';
     controls.setAttribute('aria-label','Workbook entry actions');
     const previewLanguage=getLanguageForSheet(sheet.name);
     if(previewLanguage){
-      for(let posterRow=3;posterRow<=maxRow;posterRow+=3){
+      for(let recordRow=1;recordRow+2<=maxRow;recordRow+=3){
         for(let controlCol=2;controlCol<=maxCol;controlCol++){
-          const webseriesName=excelCellText(sheet.getCell(posterRow-1,controlCol).value).trim();
-          const webseriesYear=Number(excelCellText(sheet.getCell(posterRow-2,controlCol).value).trim());
+          const webseriesName=excelCellText(sheet.getCell(recordRow+1,controlCol).value).trim();
+          const webseriesYear=Number(excelCellText(sheet.getCell(recordRow,controlCol).value).trim());
           if(!webseriesName||!Number.isInteger(webseriesYear)||webseriesYear<1888||webseriesYear>2100)continue;
           const removeButton=document.createElement('button');
           removeButton.type='button';
           removeButton.className='excel-preview-remove-webseries';
-          removeButton.dataset.removeWebseriesLanguage=previewLanguage;
-          removeButton.dataset.removeWebseriesName=webseriesName;
-          removeButton.dataset.removeWebseriesYear=String(webseriesYear);
+          removeButton.setAttribute('data-remove-webseries-language',previewLanguage);
+          removeButton.setAttribute('data-remove-webseries-name',webseriesName);
+          removeButton.setAttribute('data-remove-webseries-year',String(webseriesYear));
           removeButton.textContent='Remove '+webseriesName+' ('+webseriesYear+')';
           removeButton.setAttribute('aria-label','Remove '+webseriesName+' from this Excel workbook');
           controls.appendChild(removeButton);
