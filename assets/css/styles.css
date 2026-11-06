@@ -979,7 +979,7 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   .excel-preview-update-button{width:100%!important;max-width:none!important}
 }
 
-/* Compact workbook-only removal control inside movie title cells. */
+/* Floating workbook-only removal control in a dedicated row below each poster. */
 .excel-preview-remove-movie{
   display:inline-flex!important;
   align-items:center!important;
@@ -999,10 +999,12 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 .excel-preview-remove-movie:hover:not(:disabled){background:#ffe8e8!important;border-color:#d98b91!important;transform:translateY(-1px)}
 .excel-preview-remove-movie:disabled{opacity:.55!important;cursor:wait!important}
 
+.excel-preview-remove-row td{height:34px!important;min-height:34px!important;padding:3px 4px!important;vertical-align:middle!important;text-align:center!important;background:#f8fafc!important;overflow:visible!important}
+.excel-preview-remove-row th{height:34px!important;min-height:34px!important}
 .excel-preview-remove-movie{
   display:flex!important;
   width:max-content!important;
-  margin:7px auto 8px!important;
+  margin:2px auto!important;
   position:relative!important;
   z-index:2!important;
 }
