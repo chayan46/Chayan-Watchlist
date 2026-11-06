@@ -978,3 +978,23 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   .excel-preview-update-status{align-items:flex-start!important}
   .excel-preview-update-button{width:100%!important;max-width:none!important}
 }
+
+/* Compact workbook-only removal control inside movie title cells. */
+.excel-preview-remove-movie{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:5px 4px 4px!important;
+  padding:4px 9px!important;
+  min-height:25px!important;
+  border:1px solid #e6b8b8!important;
+  border-radius:7px!important;
+  background:#fff5f5!important;
+  color:#a33d45!important;
+  font:700 10px/1.2 "Segoe UI",Arial,sans-serif!important;
+  white-space:nowrap!important;
+  cursor:pointer!important;
+  transition:background .15s ease,border-color .15s ease,transform .15s ease!important;
+}
+.excel-preview-remove-movie:hover:not(:disabled){background:#ffe8e8!important;border-color:#d98b91!important;transform:translateY(-1px)}
+.excel-preview-remove-movie:disabled{opacity:.55!important;cursor:wait!important}
