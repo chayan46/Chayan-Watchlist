@@ -26,3 +26,20 @@ setMovieEntryAvailability(false);
 document.addEventListener('movie-entry-availability',event=>{
   setMovieEntryAvailability(Boolean(event.detail&&event.detail.enabled));
 });
+
+
+// Top-level collection tabs keep the existing movie workspace intact.
+const collectionTabs=[
+  {button:document.getElementById('movieCollectionTab'),panel:document.getElementById('movieCollectionPanel')},
+  {button:document.getElementById('webseriesCollectionTab'),panel:document.getElementById('webseriesCollectionPanel')}
+];
+collectionTabs.forEach((tab,index)=>{
+  tab.button?.addEventListener('click',()=>{
+    collectionTabs.forEach((item,itemIndex)=>{
+      const active=itemIndex===index;
+      item.button?.classList.toggle('active',active);
+      item.button?.setAttribute('aria-selected',String(active));
+      if(item.panel)item.panel.hidden=!active;
+    });
+  });
+});
