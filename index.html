@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101827"><title>Chayan Watchlist</title>
-<link rel="stylesheet" href="assets/css/styles.css?v=20261106-poster-methods-v1"></head>
+<link rel="stylesheet" href="assets/css/styles.css?v=20261106-paste-only-v1"></head>
 <body>
 <header><div class="topline"><div class="brand"><div class="logo">▣</div><div><div class="eyebrow">Personal collection manager</div><h1>Chayan Watchlist</h1></div></div><div class="topnote">A SIMPLE, DEVICE-LOCAL MOVIE RECORD.</div></div></header>
 <main>
@@ -25,8 +25,7 @@
 <div class="field" id="franchiseSelectField" hidden><label for="franchiseAlphabet">SELECT ALPHABET-BASED SEQUENCE</label><select id="franchiseAlphabet" disabled><option value="">Enter first letter first</option></select><small class="franchise-field-hint" id="franchiseAlphabetHint">Existing franchise sections will appear here.</small></div>
 <div class="field"><label for="movieName">MOVIE NAME</label><input id="movieName" placeholder="Enter movie title" required maxlength="120"></div>
 <div class="field"><label for="movieYear">MOVIE YEAR</label><input id="movieYear" type="number" min="1888" max="2100" placeholder="e.g. 2024" required></div>
-<div class="field poster-method-field"><label>MOVIE POSTER</label><div class="poster-method-tabs" role="tablist" aria-label="Poster input method"><button class="poster-method-tab active" type="button" role="tab" aria-selected="true" data-poster-method="upload">Upload Poster</button><button class="poster-method-tab" type="button" role="tab" aria-selected="false" data-poster-method="paste">Paste the Poster Image</button><button class="poster-method-tab" type="button" role="tab" aria-selected="false" data-poster-method="search">Search Poster Over Internet</button></div><div class="poster-method-panel" data-poster-panel="upload"><label class="upload" for="posterFile"><strong id="uploadTitle">＋ Upload movie poster</strong><span id="uploadHint">JPG, PNG, WEBP, GIF · Max 8 MB</span><input id="posterFile" type="file" accept="image/*"></label></div><div class="poster-method-panel" data-poster-panel="paste" hidden><div class="poster-paste-area" id="posterPasteArea" tabindex="0" role="button" aria-label="Paste poster image here"><strong>Paste poster image here</strong><span>Click this area, then press Ctrl + V, or use the paste button below.</span></div><button class="secondary poster-clipboard-button" id="pastePosterButton" type="button">Paste from Clipboard</button></div><div class="poster-method-panel" data-poster-panel="search" hidden><div class="poster-internet-search"><input id="posterInternetSearch" type="search" placeholder="Search by poster name or movie title..." autocomplete="off"><button class="secondary" id="searchPosterInternet" type="button">Search</button></div><div class="poster-search-status" id="posterSearchStatus" role="status">Search Wikimedia Commons for poster images.</div><div class="poster-search-results" id="posterSearchResults" aria-live="polite"></div></div><div class="poster-preview-wrap"><img id="posterPreview" class="poster-preview" alt="Selected poster preview"></div></div>
-<button class="primary" id="addMovieButton" type="submit" disabled>＋ Add movie to collection</button>
+<div class="field poster-method-field"><label for="posterPasteArea">MOVIE POSTER</label><div class="poster-paste-area" id="posterPasteArea" tabindex="0" role="textbox" aria-label="Paste movie poster image" aria-multiline="false"><strong>Paste the poster image here</strong><span>Click inside this area and press Ctrl + V to paste your poster.</span></div><div class="poster-paste-status" id="posterPasteStatus" role="status">Only image pasting is supported · Maximum 8 MB</div><div class="poster-preview-wrap"><img id="posterPreview" class="poster-preview" alt="Selected poster preview"></div></div><button class="primary" id="addMovieButton" type="submit" disabled>＋ Add movie to collection</button>
 </form><div class="formhint">Your entries are saved in this browser on this device. Poster images are stored locally; they do not automatically sync across devices.</div>
 </aside>
 </div>
@@ -77,4 +76,4 @@
   <div class="webseries-empty-state"><div class="webseries-empty-icon">▤</div><h2>Webseries Collection</h2><p>This workspace is reserved for the upcoming webseries collection features.</p></div>
 </section>
 </main>
-<script type="module" src="assets/js/app.js?v=20261106-poster-methods-v1"></script></body></html>
+<script type="module" src="assets/js/app.js?v=20261106-paste-only-v1"></script></body></html>
