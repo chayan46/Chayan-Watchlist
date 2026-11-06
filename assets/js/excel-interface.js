@@ -239,9 +239,14 @@ export function initExcelInterface(){
         franchiseMap.get(key).movies.push(movie);
       });
       if(standardMovies.length)await writeMovieGroup(letter,standardMovies,false);
-      const franchises=[...franchiseMap.values()].sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'}));
-      for(let index=0;index<franchises.length;index++){
-        await writeMovieGroup(letter+(index+1),sortMovies(franchises[index].movies),true);
+      const legacyNames=[...new Set(languageMovies.filter(movie=>(movie.name.trim().charAt(0)||'#').toLocaleUpperCase()===letter&&movie.movieType==='franchise'&&movie.franchiseName&&!movie.franchiseCode).map(movie=>movie.franchiseName.trim()))].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
+      const franchises=[...franchiseMap.values()].map(franchise=>{
+        const explicit=franchise.movies.map(movie=>movie.franchiseCode).find(Boolean);
+        const legacyIndex=legacyNames.findIndex(name=>name.toLocaleLowerCase()===franchise.name.toLocaleLowerCase());
+        return {...franchise,code:explicit||letter+(legacyIndex+1)};
+      }).sort((a,b)=>Number(a.code.match(/\d+$/)?.[0]||9999)-Number(b.code.match(/\d+$/)?.[0]||9999));
+      for(const franchise of franchises){
+        await writeMovieGroup(franchise.code,sortMovies(franchise.movies),true);
       }
     }
     if(!languageMovies.length){
@@ -340,14 +345,14 @@ export function initExcelInterface(){
         franchiseMap.get(key).movies.push(movie);
       });
       if(standardMovies.length)appendPreviewGroup(letter,standardMovies,false);
-      const franchises=[...franchiseMap.values()].sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'}));
-      const allFranchiseNames=[...new Set(allMovies
-        .filter(movie=>(movie.name.trim().charAt(0)||'#').toLocaleUpperCase()===letter&&movie.movieType==='franchise'&&movie.franchiseName)
-        .map(movie=>movie.franchiseName.trim()))]
-        .sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
+      const legacyNames=[...new Set(allMovies.filter(movie=>(movie.name.trim().charAt(0)||'#').toLocaleUpperCase()===letter&&movie.movieType==='franchise'&&movie.franchiseName&&!movie.franchiseCode).map(movie=>movie.franchiseName.trim()))].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
+      const franchises=[...franchiseMap.values()].map(franchise=>{
+        const explicit=franchise.movies.map(movie=>movie.franchiseCode).find(Boolean);
+        const legacyIndex=legacyNames.findIndex(name=>name.toLocaleLowerCase()===franchise.name.toLocaleLowerCase());
+        return {...franchise,code:explicit||letter+(legacyIndex+1)};
+      }).sort((a,b)=>Number(a.code.match(/\d+$/)?.[0]||9999)-Number(b.code.match(/\d+$/)?.[0]||9999));
       for(const franchise of franchises){
-        const subgroupNumber=allFranchiseNames.findIndex(name=>name.toLocaleLowerCase()===franchise.name.toLocaleLowerCase())+1;
-        appendPreviewGroup(letter+subgroupNumber,sortMovies(franchise.movies),true);
+        appendPreviewGroup(franchise.code,sortMovies(franchise.movies),true);
       }
     }
     table.appendChild(body);
