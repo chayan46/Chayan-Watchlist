@@ -187,10 +187,10 @@ export function initExcelInterface(){
         groupCell.font={name:'Aptos Display',size:32,bold:true,color:{argb:'FFFFFFFF'}};
         groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE600D9'}};
       }else{
-        const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
+        const movieCount=items.length;
         groupCell.value={richText:[
           {text:label,font:{name:'Aptos Display',size:50,bold:true,color:{argb:'FF172B4D'}}},
-          {text:'\n('+posterCount+')',font:{name:'Aptos',size:25,bold:true,italic:true,color:{argb:'FF147D75'}}}
+          {text:'\n('+movieCount+')',font:{name:'Aptos',size:25,bold:true,italic:true,color:{argb:'FF147D75'}}}
         ]};
         groupCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDCE5F0'}};
       }
@@ -298,13 +298,13 @@ export function initExcelInterface(){
       if(isFranchise){
         alphabet.textContent=label;
       }else{
-        const posterCount=items.filter(movie=>Boolean(movie.poster)).length;
+        const movieCount=items.length;
         const letterLabel=document.createElement('span');
         letterLabel.className='movie-excel-letter-label';
         letterLabel.textContent=label;
         const posterCountLabel=document.createElement('span');
         posterCountLabel.className='movie-excel-poster-count';
-        posterCountLabel.textContent='('+posterCount+')';
+        posterCountLabel.textContent='('+movieCount+')';
         alphabet.append(letterLabel,posterCountLabel);
       }
       groupRow.appendChild(alphabet);
