@@ -1,14 +1,14 @@
 import {addWebseries,getWebseries} from './data-management-webseries.js';
 export function initInputSection(){
   const form=document.getElementById('webseriesForm');
-  const resetButton=document.getElementById('resetWebseriesInput');
-  const preview=document.getElementById('posterPreview');
-  const pasteArea=document.getElementById('posterPasteArea');
-  const pasteStatus=document.getElementById('posterPasteStatus');
+  const resetButton=document.getElementById('webseriesResetWebseriesInput');
+  const preview=document.getElementById('webseriesPosterPreview');
+  const pasteArea=document.getElementById('webseriesPosterPasteArea');
+  const pasteStatus=document.getElementById('webseriesPosterPasteStatus');
   const webseriesNameInput=document.getElementById('webseriesName');
   const webseriesType=document.getElementById('webseriesType');
-  const languageSelect=document.getElementById('language');
-  const addWebseriesButton=document.getElementById('addWebseriesButton');
+  const languageSelect=document.getElementById('webseriesLanguage');
+  const addWebseriesButton=document.getElementById('webseriesAddWebseriesButton');
   let selectedWorksheetName='';
   function syncAddWebseriesAvailability(){
     const expectedWorksheet={Bengali:'Bengali Webseries',Hindi:'Hindi Webseries',English:'English Webseries'}[languageSelect.value]||'';
@@ -21,11 +21,11 @@ export function initInputSection(){
     syncAddWebseriesAvailability();
   });
   syncAddWebseriesAvailability();
-  const franchiseAlphabetField=document.getElementById('franchiseAlphabetField');
-  const franchiseLetterInput=document.getElementById('franchiseLetter');
-  const franchiseSelectField=document.getElementById('franchiseSelectField');
-  const franchiseAlphabet=document.getElementById('franchiseAlphabet');
-  const franchiseAlphabetHint=document.getElementById('franchiseAlphabetHint');
+  const franchiseAlphabetField=document.getElementById('webseriesFranchiseAlphabetField');
+  const franchiseLetterInput=document.getElementById('webseriesFranchiseLetter');
+  const franchiseSelectField=document.getElementById('webseriesFranchiseSelectField');
+  const franchiseAlphabet=document.getElementById('webseriesFranchiseAlphabet');
+  const franchiseAlphabetHint=document.getElementById('webseriesFranchiseAlphabetHint');
   let posterData='';
   const normalizedLetter=()=>franchiseLetterInput.value.trim().toLocaleUpperCase().charAt(0);
   function franchiseGroups(letter){
@@ -112,7 +112,7 @@ export function initInputSection(){
     event.preventDefault();
     syncAddWebseriesAvailability();
     if(!addWebseriesButton||addWebseriesButton.disabled)return;
-    const language=document.getElementById('language').value;
+    const language=document.getElementById('webseriesLanguage').value;
     const name=webseriesNameInput.value.trim();
     const year=Number(document.getElementById('webseriesYear').value);
     const type=webseriesType.value;
