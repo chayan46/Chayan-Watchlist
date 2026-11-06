@@ -1053,3 +1053,59 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
   line-height:1.5;
   pointer-events:none;
 }
+
+
+/* Primary collection navigation */
+.collection-tabs{
+  display:flex;
+  align-items:stretch;
+  gap:8px;
+  margin:24px 0 20px;
+  padding:6px;
+  border:1px solid #dce5ef;
+  border-radius:15px;
+  background:#eef3f8;
+  box-shadow:0 5px 18px rgba(24,45,70,.05);
+}
+.collection-tab{
+  flex:1 1 0;
+  min-height:48px;
+  padding:11px 18px;
+  border:1px solid transparent;
+  border-radius:10px;
+  background:transparent;
+  color:#53657a;
+  font:700 14px/1.25 "Segoe UI",Arial,sans-serif;
+  cursor:pointer;
+  transition:background .18s ease,color .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.collection-tab:hover:not(.active){background:rgba(255,255,255,.65);color:#20364f}
+.collection-tab.active{
+  border-color:#cbd9e8;
+  background:#fff;
+  color:#173e66;
+  box-shadow:0 3px 9px rgba(26,54,82,.09);
+}
+.collection-tab:focus-visible{outline:3px solid #8cc7e8;outline-offset:2px}
+.collection-tab-panel[hidden]{display:none!important}
+.webseries-placeholder{
+  min-height:360px;
+  display:grid;
+  place-items:center;
+  padding:32px 20px;
+}
+.webseries-empty-state{
+  width:min(100%,560px);
+  padding:44px 28px;
+  text-align:center;
+  border:1px dashed #c7d5e4;
+  border-radius:18px;
+  background:linear-gradient(145deg,#f8fbff,#f2f6fb);
+}
+.webseries-empty-icon{font-size:34px;color:#7890aa;margin-bottom:12px}
+.webseries-empty-state h2{margin:0 0 9px;color:#243b56;font-size:21px}
+.webseries-empty-state p{margin:0;color:#65768a;font-size:14px;line-height:1.6}
+@media(max-width:520px){
+  .collection-tabs{gap:5px;padding:5px;margin:18px 0 15px}
+  .collection-tab{min-height:44px;padding:9px 7px;font-size:12px}
+}
