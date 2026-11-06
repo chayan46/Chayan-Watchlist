@@ -89,7 +89,7 @@ export function initExcelInterface(){
   let uploadAttempt=0;
   let resetInProgress=false;
   let previewSearchQuery='';
-  const resetLanding=new URLSearchParams(window.location.search).has('reset');
+  const resetLanding=new URLSearchParams(window.location.search).has('resetWebseries');
   const showMessage=message=>{if(status)status.textContent=message;};
   let removedWorkbookWebseriesKeys=new Set();
   const workbookWebseriesKey=webseries=>webseries.language+'|'+String(webseries.name||'').trim().toLocaleLowerCase()+'|'+webseries.year;
@@ -136,7 +136,7 @@ export function initExcelInterface(){
         // Clear all persistent and temporary app state, retaining only the reset lock until reload.
         localStorage.removeItem('chayan-watchlist-webseries-v1');
         localStorage.setItem('chayan-watchlist-reset-in-progress','1');
-        window.location.replace(window.location.pathname+'?reset='+Date.now());
+        window.location.replace(window.location.pathname+'?resetWebseries='+Date.now());
       }catch(error){
         localStorage.removeItem('chayan-watchlist-reset-in-progress');
         resetInProgress=false;
