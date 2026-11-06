@@ -778,3 +778,17 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 .workspace.sidebar-collapsed>.movie-sidebar-stack>.formpanel{display:none!important}
 .workspace.sidebar-collapsed>.excelpanel{margin-top:16px!important}
 }
+
+/* In-preview movie deletion control: visible in poster cells, never exported to XLSX. */
+#excelPreview .movie-excel-table .movie-excel-poster{position:relative!important;vertical-align:top!important;overflow:hidden!important}
+#excelPreview .movie-excel-table .movie-excel-poster img{height:218px!important}
+#excelPreview .movie-excel-table .movie-excel-poster .movie-excel-no-poster{display:flex!important;align-items:center!important;justify-content:center!important;height:218px!important;padding:8px!important}
+#excelPreview .movie-excel-delete{
+ display:block!important;width:calc(100% - 12px)!important;min-height:29px!important;margin:3px 6px 4px!important;
+ padding:5px 8px!important;border:1px solid #B42318!important;border-radius:6px!important;
+ background:#FFF1F0!important;color:#B42318!important;font:700 11px/1.2 "Aptos","Segoe UI",Arial,sans-serif!important;
+ cursor:pointer!important;touch-action:manipulation!important
+}
+#excelPreview .movie-excel-delete:hover{background:#B42318!important;color:#fff!important}
+#excelPreview .movie-excel-delete:focus-visible{outline:3px solid rgba(180,35,24,.22)!important;outline-offset:1px!important}
+#excelPreview .movie-excel-delete:disabled{opacity:.55!important;cursor:wait!important}
