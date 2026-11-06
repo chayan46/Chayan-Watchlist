@@ -1,5 +1,5 @@
 import {initInputSection} from './input-section.js';
-import {initExcelInterface} from './excel-interface.js?v=20261106-live-workbook-sync';
+import {initExcelInterface} from './excel-interface.js?v=20261106-live-preview-state-fix';
 initInputSection();
 initExcelInterface();
 
