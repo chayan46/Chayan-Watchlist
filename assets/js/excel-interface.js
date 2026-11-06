@@ -85,40 +85,60 @@ export function initExcelInterface(){
   let workbook=null;
   let currentPreviewSheet='';
   let uploadAttempt=0;
+  let resetInProgress=false;
+  const resetLanding=new URLSearchParams(window.location.search).has('reset');
   const showMessage=message=>{if(status)status.textContent=message;};
-  async function persistCurrentWorkbook(){if(!workbook||!selectedFile)return;const buffer=await workbook.xlsx.writeBuffer();await saveWorkbookState({buffer,fileName:selectedFile.name,sheetName:currentPreviewSheet,previewVisible:!!(previewWrap&&!previewWrap.hidden)});}
-  // Capture the reset action at document level so other UI handlers cannot swallow it.
+  async function persistCurrentWorkbook(){
+    if(resetInProgress||localStorage.getItem('chayan-watchlist-reset-in-progress')==='1'||!workbook||!selectedFile)return;
+    const buffer=await workbook.xlsx.writeBuffer();
+    if(resetInProgress||localStorage.getItem('chayan-watchlist-reset-in-progress')==='1')return;
+    await saveWorkbookState({buffer,fileName:selectedFile.name,sheetName:currentPreviewSheet,previewVisible:!!(previewWrap&&!previewWrap.hidden)});
+  }
+  // A reset invalidates in-flight uploads/restores before clearing every app-owned cache.
   if(resetButton&&!resetButton.dataset.resetHandlerBound){
     resetButton.dataset.resetHandlerBound='true';
     resetButton.addEventListener('click',async event=>{
       event.preventDefault();
       event.stopPropagation();
+      if(resetInProgress)return;
+      resetInProgress=true;
+      uploadAttempt++;
+      workbook=null;
+      selectedFile=null;
+      currentPreviewSheet='';
       resetButton.disabled=true;
       resetButton.textContent='Resetting…';
+      if(preview)preview.replaceChildren();
+      previewWrap.hidden=true;
+      sheetSelectWrap.hidden=true;
+      if(completeStage)completeStage.hidden=true;
+      showMessage('Clearing previous workbook and saved application data…');
       try{
-        await clearWorkbookState();
-        // Clear the older workbook cache used by earlier app versions, if present.
-        await new Promise((resolve,reject)=>{
-          const request=indexedDB.open('chayan-watchlist-workbook');
-          request.onsuccess=()=>{
-            const db=request.result;
-            if(db.objectStoreNames.contains('saved-workbook')){
-              const tx=db.transaction('saved-workbook','readwrite');
-              tx.objectStore('saved-workbook').clear();
-              tx.oncomplete=()=>{db.close();resolve();};
-              tx.onerror=()=>{db.close();reject(tx.error);};
-            }else{db.close();resolve();}
-          };
-          request.onerror=()=>reject(request.error);
-        });
-        // The watchlist is the only other persisted application state.
-        localStorage.removeItem('chayan-watchlist-v1');
+        localStorage.setItem('chayan-watchlist-reset-in-progress','1');
+        // Remove every IndexedDB database owned by this application, including legacy versions.
+        if(typeof indexedDB.databases==='function'){
+          const databases=await indexedDB.databases();
+          const owned=databases.map(db=>db.name).filter(name=>name&&/chayan-watchlist/i.test(name));
+          await Promise.all(owned.map(name=>new Promise((resolve,reject)=>{
+            const request=indexedDB.deleteDatabase(name);
+            request.onsuccess=()=>resolve();
+            request.onerror=()=>reject(request.error||new Error('Could not delete '+name));
+            request.onblocked=()=>reject(new Error('A workbook database is still open. Close other app tabs and retry.'));
+          })));
+        }else{
+          await clearWorkbookState();
+        }
+        // Clear all persistent and temporary app state, retaining only the reset lock until reload.
+        for(const key of Object.keys(localStorage))localStorage.removeItem(key);
         sessionStorage.clear();
+        localStorage.setItem('chayan-watchlist-reset-in-progress','1');
         window.location.replace(window.location.pathname+'?reset='+Date.now());
       }catch(error){
+        localStorage.removeItem('chayan-watchlist-reset-in-progress');
+        resetInProgress=false;
         resetButton.disabled=false;
-        resetButton.textContent='↻ Reset and Upload New File';
-        showMessage('Reset failed: '+(error.message||'Unable to clear saved data. Please retry.'));
+        resetButton.textContent='↻ Reset and Ready for New Upload';
+        showMessage('Reset failed: '+(error.message||'Unable to clear saved data. Please close other app tabs and retry.'));
         console.error('Full application reset failed:',error);
       }
     },true);
@@ -474,14 +494,29 @@ export function initExcelInterface(){
     }catch(error){showMessage('Could not export workbook: '+(error.message||'Unknown error'));}
     finally{exportButton.disabled=false;}
   });
-  // Restore only the Excel workbook and its preview controls after a normal refresh.
-  (async()=>{
-    try{
-      const saved=await readWorkbookState();
-      if(!saved||!saved.buffer)return;
-      const ExcelJS=await loadExcelJS();
-      workbook=new ExcelJS.Workbook();
-      await workbook.xlsx.load(saved.buffer);
+  // A reset landing must never restore a workbook from an earlier page lifecycle.
+  if(resetLanding){
+    localStorage.removeItem('chayan-watchlist-reset-in-progress');
+    window.history.replaceState({},'',window.location.pathname);
+    fileInput.value='';
+    fileName.textContent='Choose Excel workbook';
+    fileHint.textContent='Click to browse · Upload required each time';
+    sheetSelectWrap.hidden=true;
+    previewWrap.hidden=true;
+  }else{
+    // Restore only the Excel workbook and its preview controls after a normal refresh.
+    (async()=>{
+      const restoreAttempt=uploadAttempt;
+      try{
+        if(localStorage.getItem('chayan-watchlist-reset-in-progress')==='1')return;
+        const saved=await readWorkbookState();
+        if(restoreAttempt!==uploadAttempt||resetInProgress||localStorage.getItem('chayan-watchlist-reset-in-progress')==='1')return;
+        if(!saved||!saved.buffer)return;
+        const ExcelJS=await loadExcelJS();
+        if(restoreAttempt!==uploadAttempt||resetInProgress)return;
+        workbook=new ExcelJS.Workbook();
+        await workbook.xlsx.load(saved.buffer);
+        if(restoreAttempt!==uploadAttempt||resetInProgress)return;
       selectedFile={name:saved.fileName||'Saved workbook.xlsx'};
       fileName.textContent=selectedFile.name;
       fileHint.textContent='Restored from this device · Ready to preview';
@@ -491,7 +526,8 @@ export function initExcelInterface(){
       if(currentPreviewSheet)sheetSelect.value=currentPreviewSheet;
       if(saved.previewVisible&&currentPreviewSheet){renderSelectedPreview();showMessage('Restored your Excel workbook and preview from this device.');}
       else showMessage('Restored your Excel workbook. Select a worksheet to preview.');
-    }catch(error){console.warn('Could not restore saved Excel workspace:',error);showMessage('Saved Excel workbook could not be restored. Please upload it again.');}
-  })();
+      }catch(error){console.warn('Could not restore saved Excel workspace:',error);showMessage('Saved Excel workbook could not be restored. Please upload it again.');}
+    })();
+  }
 
 }
