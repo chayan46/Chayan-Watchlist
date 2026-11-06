@@ -1024,3 +1024,32 @@ footer{color:#8294a5;letter-spacing:1px;font-weight:700}
 }
 #excelPreview .excel-source-grid td{vertical-align:middle}
 #excelPreview .excel-source-grid tr:has(.excel-source-poster){height:220px!important}
+
+
+/* Keep the movie-entry sidebar visibly locked until the uploaded workbook is read. */
+#movieDetailsPanel.movie-entry-locked{
+  opacity:.48!important;
+  filter:grayscale(.35)!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  position:relative!important;
+}
+#movieDetailsPanel.movie-entry-locked:after{
+  content:"UPLOAD AND READ AN EXCEL WORKBOOK TO ENABLE";
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  position:absolute;
+  inset:0;
+  z-index:10;
+  padding:18px;
+  border-radius:inherit;
+  background:rgba(245,248,252,.58);
+  color:#52647b;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.7px;
+  line-height:1.5;
+  pointer-events:none;
+}
