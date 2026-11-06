@@ -92,6 +92,28 @@ export function initExcelInterface(){
   let previewSearchQuery='';
   const resetLanding=new URLSearchParams(window.location.search).has('resetWebseries');
   const showMessage=message=>{if(status)status.textContent=message;};
+  const worksheetCounterPanel=document.getElementById('webseriesWorksheetCounters');
+  const worksheetCounterValues={Bengali:document.getElementById('webseriesCounterBengali'),Hindi:document.getElementById('webseriesCounterHindi'),English:document.getElementById('webseriesCounterEnglish'),total:document.getElementById('webseriesCounterTotal')};
+  function updateWorksheetCounters(){
+    if(!workbook)return;
+    let overall=0;
+    for(const language of LANGUAGES){
+      const sheet=workbook.getWorksheet(LANGUAGE_SHEETS[language]);
+      let count=0;
+      if(sheet){
+        for(let row=1;row<=sheet.rowCount;row++){
+          const value=sheet.getCell(row,1).value;
+          const label=value&&typeof value==='object'&&Array.isArray(value.richText)?value.richText.map(run=>run.text||'').join(''):String(value??'');
+          for(const match of label.matchAll(/\\((\\d+)\\)/g))count+=Number(match[1])||0;
+        }
+      }
+      overall+=count;
+      if(worksheetCounterValues[language])worksheetCounterValues[language].textContent=count.toLocaleString();
+    }
+    if(worksheetCounterValues.total)worksheetCounterValues.total.textContent=overall.toLocaleString();
+    if(worksheetCounterPanel)worksheetCounterPanel.hidden=false;
+  }
+
   let removedWorkbookWebseriesKeys=new Set();
   const workbookWebseriesKey=webseries=>webseries.language+'|'+String(webseries.name||'').trim().toLocaleLowerCase()+'|'+webseries.year;
   async function persistCurrentWorkbook(){
@@ -834,6 +856,7 @@ export function initExcelInterface(){
     else if(workbook.getWorksheet(LANGUAGE_SHEETS.Bengali))sheetSelect.value=LANGUAGE_SHEETS.Bengali;
     else sheetSelect.value=orderedNames[0]||'';
     publishSelectedWorksheet(sheetSelect.value);
+    updateWorksheetCounters();
   }
 
   const publishSelectedWorksheet=sheetName=>document.dispatchEvent(new CustomEvent('webseries-selected-worksheet-change',{detail:{sheetName:sheetName||''}}));
