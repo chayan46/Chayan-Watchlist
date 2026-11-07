@@ -835,6 +835,18 @@ export function initExcelInterface(){
     previewWrap.hidden=false;
   }
 
+  function publishWorkbookFranchiseSections(){
+    if(!workbook)return;
+    const byCode=new Map();
+    for(const language of LANGUAGES){
+      for(const entry of extractExistingLanguageWebseries(language)){
+        const code=String(entry.franchiseCode||'').toLocaleUpperCase();
+        if(/^[A-Z]\\d+$/.test(code)&&!byCode.has(code))byCode.set(code,{code,name:String(entry.franchiseName||code)});
+      }
+    }
+    document.dispatchEvent(new CustomEvent('webseries-workbook-franchise-sections',{detail:{sections:[...byCode.values()]}}));
+  }
+
   async function syncLanguageSheets(){
     if(!workbook)return;
     // Merge workbook-only entries with the local collection in memory before rebuilding.
@@ -946,6 +958,7 @@ export function initExcelInterface(){
       }
       originalWorksheetNames=parsed.worksheets.map(sheet=>sheet.name);
       workbook=parsed;currentPreviewSheet='';publishSelectedWorksheet('');
+      publishWorkbookFranchiseSections();
       // Prepare the app-managed language worksheets immediately after a successful read.
       // Preview-only controls are injected while rendering these sheets; they are never
       // written into the uploaded workbook or exported workbook as cell content.
@@ -1057,6 +1070,7 @@ export function initExcelInterface(){
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
         workbook=new ExcelJS.Workbook();
         await workbook.xlsx.load(saved.buffer);
+        publishWorkbookFranchiseSections();
         originalWorksheetNames=Array.isArray(saved.originalWorksheetNames)?saved.originalWorksheetNames.filter(name=>workbook.getWorksheet(name)):workbook.worksheets.map(sheet=>sheet.name);
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
         removeDuplicateLanguageSheets();
