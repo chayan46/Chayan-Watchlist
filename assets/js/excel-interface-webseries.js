@@ -129,7 +129,7 @@ export function initExcelInterface(){
   }
 
   let removedWorkbookWebseriesKeys=new Set();
-  const workbookWebseriesKey=webseries=>webseries.language+'|'+String(webseries.name||'').trim().toLocaleLowerCase()+'|'+webseries.year;
+  const workbookWebseriesKey=webseries=>String(webseries.language||'').trim().toLocaleLowerCase()+'|'+String(webseries.name||'').trim().replace(/\\s+/g,' ').toLocaleLowerCase()+'|'+Number(webseries.year);
   async function persistCurrentWorkbook(){
     if(resetInProgress||localStorage.getItem('chayan-watchlist-webseries-reset-in-progress')==='1'||!workbook||!selectedFile)return;
     const buffer=await workbook.xlsx.writeBuffer();
@@ -773,6 +773,8 @@ export function initExcelInterface(){
             removeButton.setAttribute('data-remove-webseries-language',previewLanguage);
             removeButton.setAttribute('data-remove-webseries-name',webseriesName);
             removeButton.setAttribute('data-remove-webseries-year',String(webseriesYear));
+            removeButton.setAttribute('data-remove-webseries-row',String(r));
+            removeButton.setAttribute('data-remove-webseries-col',String(c));
             removeButton.textContent='Remove';
             removeButton.setAttribute('aria-label','Remove '+webseriesName+' ('+webseriesYear+') from this Excel workbook');
             td.appendChild(removeButton);
@@ -801,6 +803,15 @@ export function initExcelInterface(){
     if(!button||!preview.contains(button))return;
     const webseries={language:button.dataset.removeWebseriesLanguage,name:button.dataset.removeWebseriesName,year:Number(button.dataset.removeWebseriesYear)};
     if(!window.confirm('Remove "'+webseries.name+'" ('+webseries.year+') from this Excel workbook and future exports? It will remain in your main Chayan Watchlist collection.'))return;
+    // Normalize the identity from the clicked worksheet entry before rebuilding.
+    const sourceSheet=workbook.getWorksheet(currentPreviewSheet);
+    const sourceRow=Number(button.dataset.removeWebseriesRow);
+    const sourceCol=Number(button.dataset.removeWebseriesCol);
+    if(sourceSheet&&Number.isInteger(sourceRow)&&Number.isInteger(sourceCol)){
+      const actualYear=Number(excelCellText(sourceSheet.getCell(sourceRow-2,sourceCol).value).trim());
+      const actualName=excelCellText(sourceSheet.getCell(sourceRow-1,sourceCol).value).trim();
+      if(actualName&&Number.isInteger(actualYear)){webseries.name=actualName;webseries.year=actualYear;}
+    }
     const key=workbookWebseriesKey(webseries);
     removedWorkbookWebseriesKeys.add(key);
     button.disabled=true;
@@ -853,11 +864,11 @@ export function initExcelInterface(){
     // This preserves the uploaded workbook as the source of truth without bloating localStorage.
     const mergedWebseries=[...getWebseries()];
     const webseriesIndex=new Map(mergedWebseries.map((webseries,index)=>[
-      webseries.language+'|'+webseries.name.trim().toLocaleLowerCase()+'|'+webseries.year,index
+      workbookWebseriesKey(webseries),index
     ]));
     for(const language of LANGUAGES){
       for(const webseries of extractExistingLanguageWebseries(language)){
-        const key=webseries.language+'|'+webseries.name.trim().toLocaleLowerCase()+'|'+webseries.year;
+        const key=workbookWebseriesKey(webseries);
         const existingIndex=webseriesIndex.get(key);
         if(existingIndex===undefined){
           webseriesIndex.set(key,mergedWebseries.length);
