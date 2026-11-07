@@ -129,7 +129,7 @@ export function initExcelInterface(){
   }
 
   let removedWorkbookWebseriesKeys=new Set();
-  const workbookWebseriesKey=webseries=>String(webseries.language||'').trim().toLocaleLowerCase()+'|'+String(webseries.name||'').trim().replace(/\\s+/g,' ').toLocaleLowerCase()+'|'+Number(webseries.year);
+  const workbookWebseriesKey=webseries=>String(webseries.language||'').trim().toLocaleLowerCase()+'|'+String(webseries.name||'').trim().replaceAll('  ',' ').toLocaleLowerCase()+'|'+Number(webseries.year);
   async function persistCurrentWorkbook(){
     if(resetInProgress||localStorage.getItem('chayan-watchlist-webseries-reset-in-progress')==='1'||!workbook||!selectedFile)return;
     const buffer=await workbook.xlsx.writeBuffer();
