@@ -129,7 +129,7 @@ export function initExcelInterface(){
   }
 
   let removedWorkbookMovieKeys=new Set();
-  const workbookMovieKey=movie=>movie.language+'|'+String(movie.name||'').trim().toLocaleLowerCase()+'|'+movie.year;
+  const workbookMovieKey=movie=>String(movie.language||'').trim().toLocaleLowerCase()+'|'+String(movie.name||'').trim().replace(/\\s+/g,' ').toLocaleLowerCase()+'|'+Number(movie.year);
   async function persistCurrentWorkbook(){
     if(resetInProgress||localStorage.getItem('chayan-watchlist-movie-reset-in-progress')==='1'||!workbook||!selectedFile)return;
     const buffer=await workbook.xlsx.writeBuffer();
@@ -769,6 +769,8 @@ export function initExcelInterface(){
             removeButton.setAttribute('data-remove-movie-language',previewLanguage);
             removeButton.setAttribute('data-remove-movie-name',movieName);
             removeButton.setAttribute('data-remove-movie-year',String(movieYear));
+            removeButton.setAttribute('data-remove-movie-row',String(r));
+            removeButton.setAttribute('data-remove-movie-col',String(c));
             removeButton.textContent='Remove';
             removeButton.setAttribute('aria-label','Remove '+movieName+' ('+movieYear+') from this Excel workbook');
             td.appendChild(removeButton);
@@ -797,6 +799,15 @@ export function initExcelInterface(){
     if(!button||!preview.contains(button))return;
     const movie={language:button.dataset.removeMovieLanguage,name:button.dataset.removeMovieName,year:Number(button.dataset.removeMovieYear)};
     if(!window.confirm('Remove "'+movie.name+'" ('+movie.year+') from this Excel workbook and future exports? It will remain in your main Chayan Watchlist collection.'))return;
+    // Normalize the identity from the clicked worksheet entry before rebuilding.
+    const sourceSheet=workbook.getWorksheet(currentPreviewSheet);
+    const sourceRow=Number(button.dataset.removeMovieRow);
+    const sourceCol=Number(button.dataset.removeMovieCol);
+    if(sourceSheet&&Number.isInteger(sourceRow)&&Number.isInteger(sourceCol)){
+      const actualYear=Number(excelCellText(sourceSheet.getCell(sourceRow-2,sourceCol).value).trim());
+      const actualName=excelCellText(sourceSheet.getCell(sourceRow-1,sourceCol).value).trim();
+      if(actualName&&Number.isInteger(actualYear)){movie.name=actualName;movie.year=actualYear;}
+    }
     const key=workbookMovieKey(movie);
     removedWorkbookMovieKeys.add(key);
     button.disabled=true;
@@ -849,11 +860,11 @@ export function initExcelInterface(){
     // This preserves the uploaded workbook as the source of truth without bloating localStorage.
     const mergedMovies=[...getMovies()];
     const movieIndex=new Map(mergedMovies.map((movie,index)=>[
-      movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year,index
+      workbookMovieKey(movie),index
     ]));
     for(const language of LANGUAGES){
       for(const movie of extractExistingLanguageMovies(language)){
-        const key=movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year;
+        const key=workbookMovieKey(movie);
         const existingIndex=movieIndex.get(key);
         if(existingIndex===undefined){
           movieIndex.set(key,mergedMovies.length);
