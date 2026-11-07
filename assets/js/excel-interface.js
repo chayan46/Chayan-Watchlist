@@ -129,7 +129,7 @@ export function initExcelInterface(){
   }
 
   let removedWorkbookMovieKeys=new Set();
-  const workbookMovieKey=movie=>String(movie.language||'').trim().toLocaleLowerCase()+'|'+String(movie.name||'').trim().replace(/\\s+/g,' ').toLocaleLowerCase()+'|'+Number(movie.year);
+  const workbookMovieKey=movie=>String(movie.language||'').trim().toLocaleLowerCase()+'|'+String(movie.name||'').trim().replaceAll('  ',' ').toLocaleLowerCase()+'|'+Number(movie.year);
   async function persistCurrentWorkbook(){
     if(resetInProgress||localStorage.getItem('chayan-watchlist-movie-reset-in-progress')==='1'||!workbook||!selectedFile)return;
     const buffer=await workbook.xlsx.writeBuffer();
