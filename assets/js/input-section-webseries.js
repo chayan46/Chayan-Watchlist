@@ -37,7 +37,7 @@ export function initInputSection(){
     let groups;
     if(workbookFranchiseSections!==null){
       groups=workbookFranchiseSections
-        .filter(group=>String(group.code||'').toLocaleUpperCase().startsWith(letter)&&new RegExp('^'+letter+'\\\\d+$','i').test(String(group.code||'')))
+        .filter(group=>String(group.code||'').toLocaleUpperCase().startsWith(letter)&&new RegExp('^'+letter+'\\d+$','i').test(String(group.code||'')))
         .map(group=>({name:String(group.name||group.code),code:String(group.code).toLocaleUpperCase()}));
     }else{
       const relevant=getWebseries().filter(item=>(item.name.trim().charAt(0)||'').toLocaleUpperCase()===letter&&item.webseriesType==='franchise'&&item.franchiseName);
@@ -48,7 +48,7 @@ export function initInputSection(){
         if(!byName.has(key))byName.set(key,{name,code:item.franchiseCode||''});
       });
       groups=[...byName.values()];
-      const usedCodes=new Set(groups.map(group=>group.code).filter(code=>new RegExp('^'+letter+'\\\\d+$').test(code)));
+      const usedCodes=new Set(groups.map(group=>group.code).filter(code=>new RegExp('^'+letter+'\\d+$').test(code)));
       let legacyNumber=1;
       groups.forEach(group=>{
         if(!group.code){while(usedCodes.has(letter+legacyNumber))legacyNumber++;group.code=letter+legacyNumber;usedCodes.add(group.code);legacyNumber++;}
