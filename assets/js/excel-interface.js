@@ -129,8 +129,7 @@ export function initExcelInterface(){
   }
 
   let removedWorkbookMovieKeys=new Set();
-  const normalizeWorkbookEntryPart=value=>String(value??'').normalize('NFKC').replace(/\s+/g,' ').trim().toLocaleLowerCase();
-  const workbookMovieKey=movie=>normalizeWorkbookEntryPart(movie.language)+'|'+normalizeWorkbookEntryPart(movie.name)+'|'+String(Number(movie.year));
+  const workbookMovieKey=movie=>movie.language+'|'+String(movie.name||'').trim().toLocaleLowerCase()+'|'+movie.year;
   async function persistCurrentWorkbook(){
     if(resetInProgress||localStorage.getItem('chayan-watchlist-movie-reset-in-progress')==='1'||!workbook||!selectedFile)return;
     const buffer=await workbook.xlsx.writeBuffer();
@@ -770,8 +769,6 @@ export function initExcelInterface(){
             removeButton.setAttribute('data-remove-movie-language',previewLanguage);
             removeButton.setAttribute('data-remove-movie-name',movieName);
             removeButton.setAttribute('data-remove-movie-year',String(movieYear));
-            removeButton.setAttribute('data-remove-movie-row',String(r));
-            removeButton.setAttribute('data-remove-movie-col',String(c));
             removeButton.textContent='Remove';
             removeButton.setAttribute('aria-label','Remove '+movieName+' ('+movieYear+') from this Excel workbook');
             td.appendChild(removeButton);
@@ -800,15 +797,6 @@ export function initExcelInterface(){
     if(!button||!preview.contains(button))return;
     const movie={language:button.dataset.removeMovieLanguage,name:button.dataset.removeMovieName,year:Number(button.dataset.removeMovieYear)};
     if(!window.confirm('Remove "'+movie.name+'" ('+movie.year+') from this Excel workbook and future exports? It will remain in your main Chayan Watchlist collection.'))return;
-    // Normalize the identity from the clicked worksheet entry before rebuilding.
-    const sourceSheet=workbook.getWorksheet(currentPreviewSheet);
-    const sourceRow=Number(button.dataset.removeMovieRow);
-    const sourceCol=Number(button.dataset.removeMovieCol);
-    if(sourceSheet&&Number.isInteger(sourceRow)&&Number.isInteger(sourceCol)){
-      const actualYear=Number(excelCellText(sourceSheet.getCell(sourceRow-2,sourceCol).value).trim());
-      const actualName=excelCellText(sourceSheet.getCell(sourceRow-1,sourceCol).value).trim();
-      if(actualName&&Number.isInteger(actualYear)){movie.name=actualName;movie.year=actualYear;}
-    }
     const key=workbookMovieKey(movie);
     removedWorkbookMovieKeys.add(key);
     button.disabled=true;
@@ -843,29 +831,17 @@ export function initExcelInterface(){
     previewWrap.hidden=false;
   }
 
-  function publishWorkbookFranchiseSections(){
-    if(!workbook)return;
-    const byCode=new Map();
-    for(const language of LANGUAGES){
-      for(const entry of extractExistingLanguageMovies(language)){
-        const code=String(entry.franchiseCode||'').toLocaleUpperCase();
-        if(/^[A-Z]\\d+$/.test(code)&&!byCode.has(code))byCode.set(code,{code,name:String(entry.franchiseName||code)});
-      }
-    }
-    document.dispatchEvent(new CustomEvent('movie-workbook-franchise-sections',{detail:{sections:[...byCode.values()]}}));
-  }
-
   async function syncLanguageSheets(){
     if(!workbook)return;
     // Merge workbook-only entries with the local collection in memory before rebuilding.
     // This preserves the uploaded workbook as the source of truth without bloating localStorage.
     const mergedMovies=[...getMovies()];
     const movieIndex=new Map(mergedMovies.map((movie,index)=>[
-      workbookMovieKey(movie),index
+      movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year,index
     ]));
     for(const language of LANGUAGES){
       for(const movie of extractExistingLanguageMovies(language)){
-        const key=workbookMovieKey(movie);
+        const key=movie.language+'|'+movie.name.trim().toLocaleLowerCase()+'|'+movie.year;
         const existingIndex=movieIndex.get(key);
         if(existingIndex===undefined){
           movieIndex.set(key,mergedMovies.length);
@@ -966,7 +942,6 @@ export function initExcelInterface(){
       }
       originalWorksheetNames=parsed.worksheets.map(sheet=>sheet.name);
       workbook=parsed;currentPreviewSheet='';publishSelectedWorksheet('');
-      publishWorkbookFranchiseSections();
       // Prepare the app-managed language worksheets immediately after a successful read.
       // Preview-only controls are injected while rendering these sheets; they are never
       // written into the uploaded workbook or exported workbook as cell content.
@@ -1078,7 +1053,6 @@ export function initExcelInterface(){
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
         workbook=new ExcelJS.Workbook();
         await workbook.xlsx.load(saved.buffer);
-        publishWorkbookFranchiseSections();
         originalWorksheetNames=Array.isArray(saved.originalWorksheetNames)?saved.originalWorksheetNames.filter(name=>workbook.getWorksheet(name)):workbook.worksheets.map(sheet=>sheet.name);
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
         removeDuplicateLanguageSheets();

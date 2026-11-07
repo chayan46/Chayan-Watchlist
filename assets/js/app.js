@@ -1,7 +1,7 @@
 import {initInputSection} from './input-section.js?v=20261106-paste-only-v1';
-import {initExcelInterface} from './excel-interface.js?v=20261108-remove-key-whitespace-v17';
+import {initExcelInterface} from './excel-interface.js?v=20261107-poster-cell-remove-v13';
 import {initInputSection as initWebseriesInputSection} from './input-section-webseries.js?v=20261106-independent-webseries-v1';
-import {initExcelInterface as initWebseriesExcelInterface} from './excel-interface-webseries.js?v=20261108-remove-key-whitespace-v17';
+import {initExcelInterface as initWebseriesExcelInterface} from './excel-interface-webseries.js?v=20261107-poster-cell-remove-v13';
 initInputSection();
 initExcelInterface();
 initWebseriesInputSection();

@@ -129,8 +129,7 @@ export function initExcelInterface(){
   }
 
   let removedWorkbookWebseriesKeys=new Set();
-  const normalizeWorkbookEntryPart=value=>String(value??'').normalize('NFKC').replace(/\s+/g,' ').trim().toLocaleLowerCase();
-  const workbookWebseriesKey=webseries=>normalizeWorkbookEntryPart(webseries.language)+'|'+normalizeWorkbookEntryPart(webseries.name)+'|'+String(Number(webseries.year));
+  const workbookWebseriesKey=webseries=>webseries.language+'|'+String(webseries.name||'').trim().toLocaleLowerCase()+'|'+webseries.year;
   async function persistCurrentWorkbook(){
     if(resetInProgress||localStorage.getItem('chayan-watchlist-webseries-reset-in-progress')==='1'||!workbook||!selectedFile)return;
     const buffer=await workbook.xlsx.writeBuffer();
@@ -774,8 +773,6 @@ export function initExcelInterface(){
             removeButton.setAttribute('data-remove-webseries-language',previewLanguage);
             removeButton.setAttribute('data-remove-webseries-name',webseriesName);
             removeButton.setAttribute('data-remove-webseries-year',String(webseriesYear));
-            removeButton.setAttribute('data-remove-webseries-row',String(r));
-            removeButton.setAttribute('data-remove-webseries-col',String(c));
             removeButton.textContent='Remove';
             removeButton.setAttribute('aria-label','Remove '+webseriesName+' ('+webseriesYear+') from this Excel workbook');
             td.appendChild(removeButton);
@@ -804,15 +801,6 @@ export function initExcelInterface(){
     if(!button||!preview.contains(button))return;
     const webseries={language:button.dataset.removeWebseriesLanguage,name:button.dataset.removeWebseriesName,year:Number(button.dataset.removeWebseriesYear)};
     if(!window.confirm('Remove "'+webseries.name+'" ('+webseries.year+') from this Excel workbook and future exports? It will remain in your main Chayan Watchlist collection.'))return;
-    // Normalize the identity from the clicked worksheet entry before rebuilding.
-    const sourceSheet=workbook.getWorksheet(currentPreviewSheet);
-    const sourceRow=Number(button.dataset.removeWebseriesRow);
-    const sourceCol=Number(button.dataset.removeWebseriesCol);
-    if(sourceSheet&&Number.isInteger(sourceRow)&&Number.isInteger(sourceCol)){
-      const actualYear=Number(excelCellText(sourceSheet.getCell(sourceRow-2,sourceCol).value).trim());
-      const actualName=excelCellText(sourceSheet.getCell(sourceRow-1,sourceCol).value).trim();
-      if(actualName&&Number.isInteger(actualYear)){webseries.name=actualName;webseries.year=actualYear;}
-    }
     const key=workbookWebseriesKey(webseries);
     removedWorkbookWebseriesKeys.add(key);
     button.disabled=true;
@@ -847,29 +835,17 @@ export function initExcelInterface(){
     previewWrap.hidden=false;
   }
 
-  function publishWorkbookFranchiseSections(){
-    if(!workbook)return;
-    const byCode=new Map();
-    for(const language of LANGUAGES){
-      for(const entry of extractExistingLanguageWebseries(language)){
-        const code=String(entry.franchiseCode||'').toLocaleUpperCase();
-        if(/^[A-Z]\\d+$/.test(code)&&!byCode.has(code))byCode.set(code,{code,name:String(entry.franchiseName||code)});
-      }
-    }
-    document.dispatchEvent(new CustomEvent('webseries-workbook-franchise-sections',{detail:{sections:[...byCode.values()]}}));
-  }
-
   async function syncLanguageSheets(){
     if(!workbook)return;
     // Merge workbook-only entries with the local collection in memory before rebuilding.
     // This preserves the uploaded workbook as the source of truth without bloating localStorage.
     const mergedWebseries=[...getWebseries()];
     const webseriesIndex=new Map(mergedWebseries.map((webseries,index)=>[
-      workbookWebseriesKey(webseries),index
+      webseries.language+'|'+webseries.name.trim().toLocaleLowerCase()+'|'+webseries.year,index
     ]));
     for(const language of LANGUAGES){
       for(const webseries of extractExistingLanguageWebseries(language)){
-        const key=workbookWebseriesKey(webseries);
+        const key=webseries.language+'|'+webseries.name.trim().toLocaleLowerCase()+'|'+webseries.year;
         const existingIndex=webseriesIndex.get(key);
         if(existingIndex===undefined){
           webseriesIndex.set(key,mergedWebseries.length);
@@ -970,7 +946,6 @@ export function initExcelInterface(){
       }
       originalWorksheetNames=parsed.worksheets.map(sheet=>sheet.name);
       workbook=parsed;currentPreviewSheet='';publishSelectedWorksheet('');
-      publishWorkbookFranchiseSections();
       // Prepare the app-managed language worksheets immediately after a successful read.
       // Preview-only controls are injected while rendering these sheets; they are never
       // written into the uploaded workbook or exported workbook as cell content.
@@ -1082,7 +1057,6 @@ export function initExcelInterface(){
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
         workbook=new ExcelJS.Workbook();
         await workbook.xlsx.load(saved.buffer);
-        publishWorkbookFranchiseSections();
         originalWorksheetNames=Array.isArray(saved.originalWorksheetNames)?saved.originalWorksheetNames.filter(name=>workbook.getWorksheet(name)):workbook.worksheets.map(sheet=>sheet.name);
         if(restoreAttempt!==uploadAttempt||resetInProgress)return;
         removeDuplicateLanguageSheets();
