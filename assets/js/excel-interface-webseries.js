@@ -773,6 +773,8 @@ export function initExcelInterface(){
             removeButton.setAttribute('data-remove-webseries-language',previewLanguage);
             removeButton.setAttribute('data-remove-webseries-name',webseriesName);
             removeButton.setAttribute('data-remove-webseries-year',String(webseriesYear));
+            removeButton.setAttribute('data-remove-record-row',String(r));
+            removeButton.setAttribute('data-remove-record-col',String(c));
             removeButton.textContent='Remove';
             removeButton.setAttribute('aria-label','Remove '+webseriesName+' ('+webseriesYear+') from this Excel workbook');
             td.appendChild(removeButton);
@@ -796,24 +798,45 @@ export function initExcelInterface(){
   }
 
   // Workbook-only removals affect this Excel workspace and its exports, not the main watchlist.
+  // Remove the complete source record by its exact worksheet coordinates, then rebuild all language sections.
   preview.addEventListener('click',async event=>{
     const button=event.target.closest('button[data-remove-webseries-language]');
     if(!button||!preview.contains(button))return;
     const webseries={language:button.dataset.removeWebseriesLanguage,name:button.dataset.removeWebseriesName,year:Number(button.dataset.removeWebseriesYear)};
     if(!window.confirm('Remove "'+webseries.name+'" ('+webseries.year+') from this Excel workbook and future exports? It will remain in your main Chayan Watchlist collection.'))return;
+    const sourceSheet=workbook&&workbook.getWorksheet(currentPreviewSheet);
+    const recordRow=Number(button.dataset.removeRecordRow);
+    const recordCol=Number(button.dataset.removeRecordCol);
+    if(!sourceSheet||!Number.isInteger(recordRow)||!Number.isInteger(recordCol)||recordRow<3||recordCol<2){
+      showMessage('Could not identify the complete worksheet record. Please refresh the preview and try again.');
+      return;
+    }
+    const yearCell=sourceSheet.getCell(recordRow-2,recordCol);
+    const titleCell=sourceSheet.getCell(recordRow-1,recordCol);
+    const originalYear=yearCell.value;
+    const originalTitle=titleCell.value;
+    if(excelCellText(titleCell.value).trim()!==webseries.name||Number(excelCellText(yearCell.value).trim())!==webseries.year){
+      showMessage('This preview entry has changed. Refresh the preview before removing it.');
+      return;
+    }
     const key=workbookWebseriesKey(webseries);
     removedWorkbookWebseriesKeys.add(key);
+    yearCell.value=null;
+    titleCell.value=null;
     button.disabled=true;
     try{
       await syncLanguageSheets();
       renderSelectedPreview();
       await persistCurrentWorkbook();
-      showMessage('"'+webseries.name+'" removed from the Excel workbook. Section counts have been recalculated; the main watchlist is unchanged.');
+      showMessage('"'+webseries.name+'" removed completely. Remaining entries have been compacted, empty alphabet sections removed, and counters recalculated. The main watchlist is unchanged.');
     }catch(error){
+      yearCell.value=originalYear;
+      titleCell.value=originalTitle;
       removedWorkbookWebseriesKeys.delete(key);
       button.disabled=false;
       showMessage('Could not remove this Excel entry: '+(error.message||'Unknown error'));
       console.error('Workbook-only webseries removal failed:',error);
+      try{renderSelectedPreview();}catch(renderError){console.error('Could not restore preview after removal failure:',renderError);}
     }
   });
 
